@@ -1,0 +1,11 @@
+console.log("Raw result for debugging:", JSON.stringify(data));
+
+    const results = data.d.results;
+
+    if (results && results.length > 0 && results[0].StringId) {
+        const contentTypeId = results[0].StringId;
+        console.log("Found Content Type ID:", contentTypeId);
+        AddSiteContentTypeToListUsingContentTypeId(contentTypeId);
+    } else {
+        console.warn("Content type not found or missing StringId");
+    }
