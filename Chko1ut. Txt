@@ -1,0 +1,60 @@
+
+Perfect! Here's the same functionality using AJAX (jQuery) to get the major and minor version of a file in SharePoint.
+
+
+---
+
+Full AJAX Code (jQuery) - Get Major & Minor Version of a File
+
+var fileUrl = "/sites/YOUR_SITE/Shared Documents/YOUR_FILE.docx"; // update with actual path
+
+// Step 1: Get the X-RequestDigest (FormDigestValue)
+$.ajax({
+  url: "/_api/contextinfo",
+  method: "POST",
+  headers: {
+    "Accept": "application/json;odata=verbose"
+  },
+  success: function (data) {
+    var digestValue = data.d.GetContextWebInformation.FormDigestValue;
+    console.log("FormDigestValue:", digestValue);
+
+    // Step 2: Get Major and Minor version
+    $.ajax({
+      url: "/_api/web/getfilebyserverrelativeurl('" + fileUrl + "')/ListItemAllFields",
+      method: "GET",
+      headers: {
+        "Accept": "application/json;odata=verbose"
+      },
+      success: function (data) {
+        var majorVersion = data.d.MajorVersion;
+        var minorVersion = data.d.MinorVersion;
+
+        console.log("Major Version:", majorVersion);
+        console.log("Minor Version:", minorVersion);
+      },
+      error: function (err) {
+        console.error("Error fetching version:", err);
+      }
+    });
+
+  },
+  error: function (err) {
+    console.error("Error fetching FormDigestValue:", err);
+  }
+});
+
+
+---
+
+Notes:
+
+You must be logged into SharePoint.
+
+Make sure jQuery is loaded in your page.
+
+You can also use this structure for PATCH, checkout, or publish operations — just change the endpoint and method.
+
+
+Want me to show you how to checkout the file or publish a major version next with this same style?
+
