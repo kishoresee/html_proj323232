@@ -1,0 +1,57 @@
+
+Got it! Here's the full working AJAX code (using jQuery) to check out a file from SharePoint.
+
+
+---
+
+AJAX (jQuery) Code to Checkout a File in SharePoint
+
+var fileUrl = "/sites/YOUR_SITE/Shared Documents/YOUR_FILE.docx"; // Replace with your actual server-relative file URL
+
+// Step 1: Get the X-RequestDigest (FormDigestValue)
+$.ajax({
+  url: "/_api/contextinfo",
+  method: "POST",
+  headers: {
+    "Accept": "application/json;odata=verbose"
+  },
+  success: function (data) {
+    var digestValue = data.d.GetContextWebInformation.FormDigestValue;
+    console.log("FormDigestValue:", digestValue);
+
+    // Step 2: Perform Checkout
+    $.ajax({
+      url: "/_api/web/getfilebyserverrelativeurl('" + fileUrl + "')/checkout",
+      method: "POST",
+      headers: {
+        "Accept": "application/json;odata=verbose",
+        "X-RequestDigest": digestValue,
+        "IF-MATCH": "*"
+      },
+      success: function () {
+        console.log("File checked out successfully.");
+      },
+      error: function (err) {
+        console.error("Checkout failed:", err.responseText);
+      }
+    });
+
+  },
+  error: function (err) {
+    console.error("Error fetching FormDigestValue:", err.responseText);
+  }
+});
+
+
+---
+
+Example Console Output:
+
+FormDigestValue: 0x123ABC...
+File checked out successfully.
+
+
+---
+
+Let me know if you want the check-in, publish, or undo checkout version as well — I can share those next in the same style.
+
