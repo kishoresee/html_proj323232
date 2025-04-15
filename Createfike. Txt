@@ -1,0 +1,52 @@
+
+Great! Here's how you can add a button in a Script Editor Web Part on a SharePoint page and include the full minified-style JavaScript inside <script> tags to create a file in a Document Library using REST API.
+
+
+---
+
+✅ Paste this in Script Editor Web Part:
+
+<button onclick="CreateFileInLibrary()">Create File</button>
+
+<script type="text/javascript">
+    function CreateFileInLibrary() {
+        var webUrl = _spPageContextInfo.webAbsoluteUrl;
+        var libraryName = "Document%20Library"; // Internal name (URL encoded)
+        var fileName = "NewFile.txt";
+        var fileContent = "This is a sample content added via AJAX.";
+
+        $.ajax({
+            url: webUrl + "/_api/web/getfolderbyserverrelativeurl('" + _spPageContextInfo.webServerRelativeUrl + "/" + libraryName + "')/Files/add(url='" + fileName + "',overwrite=true)",
+            type: "POST",
+            data: fileContent,
+            processData: false,
+            headers: {
+                "Accept": "application/json;odata=verbose",
+                "Content-Type": "text/plain; charset=utf-8",
+                "X-RequestDigest": $("#__REQUESTDIGEST").val()
+            },
+            success: function (data) {
+                alert("File created successfully!");
+            },
+            error: function (xhr, status, error) {
+                alert("File creation failed:\n" + xhr.responseText);
+            }
+        });
+    }
+</script>
+
+
+---
+
+✅ Minified Script (if you prefer compact version):
+
+<button onclick="CreateFileInLibrary()">Create File</button>
+<script type="text/javascript">
+function CreateFileInLibrary(){var u=_spPageContextInfo.webAbsoluteUrl,l="Document%20Library",f="NewFile.txt",c="This is a sample content added via AJAX.";$.ajax({url:u+"/_api/web/getfolderbyserverrelativeurl('"+_spPageContextInfo.webServerRelativeUrl+"/"+l+"')/Files/add(url='"+f+"',overwrite=true)",type:"POST",data:c,processData:!1,headers:{"Accept":"application/json;odata=verbose","Content-Type":"text/plain; charset=utf-8","X-RequestDigest":$("#__REQUESTDIGEST").val()},success:function(d){alert("File created successfully!")},error:function(x,s,e){alert("File creation failed:\n"+x.responseText)}});}
+</script>
+
+
+---
+
+Let me know if you want to create .docx, PDF, or support file uploads via file input — I’ll tweak this accordingly.
+
