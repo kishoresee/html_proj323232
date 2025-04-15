@@ -1,0 +1,81 @@
+
+Perfect! Here's how you can create and delete a file using JSOM (JavaScript Object Model) in SharePoint — works directly in Script Editor Web Part with a button.
+
+
+---
+
+✅ 1. Create File using JSOM
+
+<button onclick="createFileJSOM()">Create File</button>
+
+<script type="text/javascript">
+    function createFileJSOM() {
+        var clientContext = new SP.ClientContext.get_current();
+        var web = clientContext.get_web();
+        var list = web.get_lists().getByTitle("Document Library"); // Your library name here
+
+        var createInfo = new SP.FileCreationInformation();
+        createInfo.set_url("NewFileJSOM.txt"); // File name
+        createInfo.set_content(new SP.Base64EncodedByteArray());
+
+        var content = "This is the file content"; // Add your content here
+        for (var i = 0; i < content.length; i++) {
+            createInfo.get_content().append(content.charCodeAt(i));
+        }
+
+        var newFile = list.get_rootFolder().get_files().add(createInfo);
+        clientContext.load(newFile);
+
+        clientContext.executeQueryAsync(
+            function () {
+                alert("File created successfully.");
+            },
+            function (sender, args) {
+                alert("File creation failed:\n" + args.get_message());
+            }
+        );
+    }
+</script>
+
+
+---
+
+✅ 2. Delete File using JSOM
+
+<button onclick="deleteFileJSOM()">Delete File</button>
+
+<script type="text/javascript">
+    function deleteFileJSOM() {
+        var clientContext = new SP.ClientContext.get_current();
+        var fileUrl = _spPageContextInfo.webServerRelativeUrl + "/Document Library/NewFileJSOM.txt"; // full path
+
+        var file = clientContext.get_web().getFileByServerRelativeUrl(fileUrl);
+        file.deleteObject();
+
+        clientContext.executeQueryAsync(
+            function () {
+                alert("File deleted successfully.");
+            },
+            function (sender, args) {
+                alert("File deletion failed:\n" + args.get_message());
+            }
+        );
+    }
+</script>
+
+
+---
+
+Notes:
+
+Works best when added inside a Script Editor Web Part.
+
+Replace "Document Library" with your actual library name.
+
+Supports text file creation with basic content.
+
+File path must match exactly for delete.
+
+
+Let me know if you want to use folders, create Word/Excel files, or attach metadata!
+
