@@ -1,0 +1,53 @@
+Nice job reaching the "Success" message! If the column isn’t visible in the list UI (like Modern View), it’s probably because:
+
+By default, the new field:
+
+Is not shown in the default view.
+
+It’s added to the list, but not part of the list’s default view.
+
+
+
+---
+
+✅ Solution: Add the field to the Default View
+
+Add this after creating the column:
+
+function addFieldToDefaultView(listTitle, internalFieldName) {
+    $.ajax({
+        url: _spPageContextInfo.webAbsoluteUrl + "/_api/web/lists/getbytitle('" + listTitle + "')/DefaultView/ViewFields/addviewfield('" + internalFieldName + "')",
+        type: "POST",
+        headers: {
+            "Accept": "application/json;odata=verbose",
+            "Content-Type": "application/json;odata=verbose",
+            "X-RequestDigest": $("#__REQUESTDIGEST").val()
+        },
+        success: function () {
+            alert("Field added to default view!");
+        },
+        error: function (xhr) {
+            alert("Field created but NOT added to view:\n" + xhr.responseText);
+        }
+    });
+}
+
+And call it at the end of your addColumnToList() success function like this:
+
+success: function () {
+    alert("Column added successfully!");
+    addFieldToDefaultView(listTitle, colName); // add to view
+}
+
+
+---
+
+Let me know if you want to:
+
+Add it to a custom view instead of default.
+
+Make it required, read-only, or hidden via script.
+
+
+Want the final version with all this combined?
+
