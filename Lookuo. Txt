@@ -1,0 +1,121 @@
+Sure! Here's how you can separate the HTML and JavaScript for your SharePoint Lookup Column Creator into two files:
+
+
+---
+
+✅ lookup-column.html
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Lookup Column</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="lookup-column.js"></script>
+</head>
+<body>
+    <h2>Add Lookup Column to SharePoint List</h2>
+
+    <label>Target List Name:</label>
+    <input type="text" id="targetListName" placeholder="e.g., MyCustomList" /><br><br>
+
+    <label>Column Name:</label>
+    <input type="text" id="colName" placeholder="e.g., MyLookupColumn" /><br><br>
+
+    <label>Lookup List Name:</label>
+    <input type="text" id="lookupListName" placeholder="e.g., SourceList" /><br><br>
+
+    <label>Lookup Field Name:</label>
+    <input type="text" id="lookupFieldName" value="Title" /><br><br>
+
+    <button onclick="addLookupColumn()">Add Lookup Column</button>
+</body>
+</html>
+
+
+---
+
+✅ lookup-column.js
+
+function addLookupColumn() {
+    var listTitle = $("#targetListName").val().trim();
+    var colName = $("#colName").val().trim();
+    var lookupListName = $("#lookupListName").val().trim();
+    var lookupFieldName = $("#lookupFieldName").val().trim();
+
+    if (!listTitle || !colName || !lookupListName || !lookupFieldName) {
+        alert("Please fill in all fields.");
+        return;
+    }
+
+    // Step 1: Get Lookup List ID
+    $.ajax({
+        url: _spPageContextInfo.webAbsoluteUrl + "/_api/web/lists/getbytitle('" + lookupListName + "')?$select=Id",
+        type: "GET",
+        headers: {
+            "Accept": "application/json;odata=verbose"
+        },
+        success: function (data) {
+            var lookupListId = data.d.Id;
+
+            // Step 2: Create Lookup Column
+            var payload = {
+                '__metadata': { 'type': 'SP.FieldLookup' },
+                'Title': colName,
+                'FieldTypeKind': 7,
+                'LookupList': lookupListId,
+                'LookupField': lookupFieldName,
+                'Required': false
+            };
+
+            $.ajax({
+                url: _spPageContextInfo.webAbsoluteUrl + "/_api/web/lists/getbytitle('" + listTitle + "')/fields",
+                type: "POST",
+                contentType: "application/json;odata=verbose",
+                headers: {
+                    "Accept": "application/json;odata=verbose",
+                    "X-RequestDigest": $("#__REQUESTDIGEST").val()
+                },
+                data: JSON.stringify(payload),
+                success: function () {
+                    alert("Lookup column added successfully!");
+                },
+                error: function (xhr) {
+                    alert("Error adding lookup column:\n" + xhr.responseText);
+                }
+            });
+        },
+        error: function (xhr) {
+            alert("Error getting Lookup List ID:\n" + xhr.responseText);
+        }
+    });
+}
+
+
+---
+
+✅ How to Use:
+
+1. Upload both files to a SharePoint library (like Site Assets).
+
+
+2. Open lookup-column.html in your browser within SharePoint context.
+
+
+3. Fill in the values and hit "Add Lookup Column".
+
+
+
+
+---
+
+Would you like me to:
+
+Make it support multi-value lookup?
+
+Add UI for required or hidden column flags?
+
+Allow selecting content types or site columns?
+
+
+Let me know how else you’d like to customize this!
+
