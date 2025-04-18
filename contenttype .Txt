@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Content Type to List</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h2>Add Content Type to a List</h2>
+
+    <label for="predefinedTypes">Select a predefined content type:</label>
+    <select id="predefinedTypes">
+        <option value="">--Select--</option>
+        <option value="0x0101">Document</option>
+        <option value="0x0102">Event</option>
+        <option value="0x0103">Issue</option>
+    </select>
+
+    <br><br>
+
+    <label for="customName">Or enter custom content type name:</label>
+    <input type="text" id="customName" placeholder="E.g. My Custom Content Type" />
+
+    <br><br>
+
+    <label for="listName">List Name:</label>
+    <input type="text" id="listName" placeholder="Enter target list name" />
+
+    <br><br>
+
+    <button onclick="AddContentTypeToList()">Add Content Type</button>
+
+    <script>
+        function AddContentTypeToList() {
+            const selectedTypeId = $("#predefinedTypes").val();
+            const customTypeName = $("#customName").val().trim();
+            const listName = $("#listName").val().trim();
+
+            if (!listName) {
+                alert("Please enter a list name.");
+                return;
+            }
+
+            if (selectedTypeId) {
+                AddSiteContentTypeToListUsingContentTypeId(selectedTypeId, listName);
+            } else if (customTypeName) {
+                GetSiteContentTypeIdByName(customTypeName, listName);
+            } else {
+                alert("Please select or enter a content type.");
+            }
+        }
+
+        function GetSiteContentTypeIdByName(contentTypeName, listName) {
+            $.ajax({
+                url: _spPageContextInfo.webAbsoluteUrl + "/_api/web/contenttypes?$filter=Name eq '" + contentTypeName + "'&$top=1&$select=StringId",
+                type: "GET",
+                headers: {
+                    "Accept": "application/json;odata=verbose"
+                },
+                success: function (data) {
+                    if (data.d.results.length > 0) {
+                        const contentTypeId = data.d.results[0].StringId;
+                        AddSiteContentTypeToListUsingContentTypeId(contentTypeId, listName);
+                    } else {
+                        alert("Content type not found. Please check the name.");
+                    }
+                },
+                error: function () {
+                    alert("Error while fetching content type.");
+                }
+            });
+        }
+
+        function AddSiteContentTypeToListUsingContentTypeId(contentTypeId, listName) {
+            $.ajax({
+                url: _spPageContextInfo.webAbsoluteUrl + "/_api/web/lists/getByTitle('" + encodeURIComponent(listName) + "')/contenttypes/AddAvailableContentType",
+                type: "POST",
+                data: JSON.stringify({ "contentTypeId": contentTypeId }),
+                headers: {
+                    "Accept": "application/json;odata=verbose",
+                    "Content-Type": "application/json;odata=verbose",
+                    "X-RequestDigest": $("#__REQUESTDIGEST").val()
+                },
+                success: function () {
+                    alert("Content type added successfully!");
+                },
+                error: function () {
+                    alert("Failed to add content type. Check list name or permissions.");
+                }
+            });
+        }
+    </script>
+</body>
+</html>
