@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Columns to SharePoint List</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+
+<body class="bg-light p-5">
+  <div class="container">
+    <h3 class="text-success mb-4">Add Column to SharePoint List (Basic Types)</h3>
+
+    <div class="mb-3">
+      <label class="form-label">Enter List Name:</label>
+      <input id="c1" type="text" class="form-control">
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Enter Column Name:</label>
+      <input id="c2" type="text" class="form-control">
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Select Column Type:</label>
+      <select id="c3" class="form-select" onchange="toggleExtraFields()">
+        <option value="">-- Select Type --</option>
+        <option value="text">Text</option>
+        <option value="number">Number</option>
+        <option value="choice">Choice</option>
+        <option value="date">Date</option>
+        <option value="boolean">Boolean</option>
+        <option value="lookup">Lookup</option>
+      </select>
+    </div>
+
+    <div class="mb-3 hidden" id="choiceOptions">
+      <label class="form-label">Choice Options (comma separated):</label>
+      <input id="choiceVals" type="text" class="form-control" placeholder="e.g. Active, Delay">
+    </div>
+
+    <div class="mb-3 hidden" id="lookupSection">
+      <label class="form-label">Enter Lookup List Name:</label>
+      <input id="c4" type="text" class="form-control">
+      <label class="form-label mt-2">Enter Field Name to Inherit:</label>
+      <input id="c5" type="text" class="form-control">
+    </div>
+
+    <button class="btn btn-success mt-3" onclick="addBasicType()">Submit</button>
+  </div>
+
+  <script>
+    function toggleExtraFields() {
+      const type = document.getElementById("c3").value.toLowerCase();
+      document.getElementById("choiceOptions").classList.toggle("hidden", type !== "choice");
+      document.getElementById("lookupSection").classList.toggle("hidden", type !== "lookup");
+    }
+
+    function addBasicType() {
+      const listname = document.getElementById('c1').value;
+      const columnname = document.getElementById('c2').value;
+      const columntype = document.getElementById('c3').value.toLowerCase();
+
+      const lookupList = document.getElementById('c4').value;
+      const lookupField = document.getElementById('c5').value;
+      const choiceVals = document.getElementById('choiceVals').value.split(',').map(c => c.trim());
+
+      const typemap = {
+        "text": "SP.FieldText",
+        "number": "SP.FieldNumber",
+        "choice": "SP.FieldChoice",
+        "date": "SP.FieldDateTime",
+        "boolean": "SP.FieldBoolean",
+        "lookup": "SP.FieldLookup"
+      };
+
+      if (!typemap[columntype]) {
+        alert("Invalid column type entered");
+        return;
+      }
+
+      let payload = {
+        '__metadata': { 'type': typemap[columntype] },
+        'Title': columnname,
+        'FieldTypeKind': getFieldTypeKind(columntype),
+        'Required': false
+      };
+
+      if (columntype === "choice") {
+        payload.Choices = {
+          '__metadata': { 'type': 'Collection(Edm.String)' },
+          'results': choiceVals
+        };
+        payload.EditFormat = 0; // 0 for dropdown
+      }
+
+      if (columntype === "lookup") {
+        payload.LookupList = getLookupListId(lookupList);
+        payload.LookupFieldName = lookupField;
+      }
+
+      $.ajax({
+        url: _spPageContextInfo.webAbsoluteUrl + "/_api/web/lists/getbytitle('" + listname + "')/fields",
+        type: "POST",
+        headers: {
+          "Accept": "application/json;odata=verbose",
+          "Content-Type": "application/json;odata=verbose",
+          "X-RequestDigest": $("#__REQUESTDIGEST").val()
+        },
+        data: JSON.stringify(payload),
+        success: function (data) {
+          alert("Column created successfully!");
+          addFieldToDefaultView(listname, columnname);
+        },
+        error: function (xhr) {
+          alert("Failed to create column:\n" + xhr.responseText);
+        }
+      });
+    }
+
+    function getFieldTypeKind(type) {
+      switch (type) {
+        case "text": return 2;
+        case "number": return 9;
+        case "choice": return 6;
+        case "date": return 4;
+        case "boolean": return 8;
+        case "lookup": return 7;
+        default: return 2;
+      }
+    }
+
+    function addFieldToDefaultView(listTitle, internalFieldName) {
+      $.ajax({
+        url: _spPageContextInfo.webAbsoluteUrl + "/_api/web/lists/getbytitle('" + listTitle + "')/DefaultView/ViewFields/addviewfield('" + internalFieldName + "')",
+        type: "POST",
+        headers: {
+          "Accept": "application/json;odata=verbose",
+          "Content-Type": "application/json;odata=verbose",
+          "X-RequestDigest": $("#__REQUESTDIGEST").val()
+        },
+        success: function () {
+          alert("Field added to default view!");
+        },
+        error: function (xhr) {
+          alert("Field created but NOT added to view:\n" + xhr.responseText);
+        }
+      });
+    }
+
+    // Get the List ID for Lookup
+    function getLookupListId(listTitle) {
+      // This is a stub. Ideally, this should be async call to fetch list ID from title
+      // For now, return static value or pre-known ID
+      alert("Please replace 'getLookupListId()' with an actual API call to fetch Lookup List ID.");
+      return "00000000-0000-0000-0000-000000000000";
+    }
+  </script>
+</body>
+
+</html>
