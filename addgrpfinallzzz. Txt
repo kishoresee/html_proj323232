@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Assign Group to List</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+        }
+        .form-control {
+            background-color: #2a2a2a;
+            border: 1px solid #444;
+            color: #fff;
+        }
+        .btn-custom {
+            background-color: #28a745;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container mt-5">
+    <h2 class="text-info mb-4">Add Group to SharePoint List with Permission</h2>
+
+    <div class="mb-3">
+        <label class="form-label">Group Name:</label>
+        <input type="text" id="groupName" class="form-control" placeholder="e.g. HR group">
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Permission Role:</label>
+        <input type="text" id="roleName" class="form-control" placeholder="e.g. Full Control">
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">List Name:</label>
+        <input type="text" id="listName" class="form-control" placeholder="e.g. restapi">
+    </div>
+
+    <button class="btn btn-custom" onclick="addGroupToList()">Assign Group to List</button>
+
+    <div id="status" class="mt-3 text-success fw-bold"></div>
+</div>
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Script Logic -->
+<script>
+    function addGroupToList() {
+        const groupName = $('#groupName').val().trim();
+        const roleName = $('#roleName').val().trim();
+        const listName = $('#listName').val().trim();
+
+        if (!groupName || !roleName || !listName) {
+            $('#status').text("Please fill all fields.").addClass("text-danger");
+            return;
+        }
+
+        getGroupId(groupName, roleName, listName);
+    }
+
+    function getGroupId(groupName, roleName, listName) {
+        $.ajax({
+            url: _spPageContextInfo.webAbsoluteUrl + "/_api/web/sitegroups/getbyname('" + groupName + "')/id",
+            type: "GET",
+            async: false,
+            headers: {
+                "Accept": "application/json;odata=verbose"
+            },
+            success: function (data) {
+                const groupId = data.d.Id;
+                getRoleDefinitionId(groupId, roleName, listName);
+            },
+            error: function () {
+                $('#status').text("Failed to get group ID.").addClass("text-danger");
+            }
+        });
+    }
+
+    function getRoleDefinitionId(groupId, roleName, listName) {
+        $.ajax({
+            url: _spPageContextInfo.webAbsoluteUrl + "/_api/web/roledefinitions/getbyname('" + roleName + "')/id",
+            type: "GET",
+            async: false,
+            headers: {
+                "Accept": "application/json;odata=verbose"
+            },
+            success: function (data) {
+                const roleDefinitionId = data.d.Id;
+                addGroupToListUsingGroupIdAndRoleId(groupId, roleDefinitionId, listName);
+            },
+            error: function () {
+                $('#status').text("Failed to get role definition ID.").addClass("text-danger");
+            }
+        });
+    }
+
+    function addGroupToListUsingGroupIdAndRoleId(groupId, roleDefinitionId, listName) {
+        $.ajax({
+            url: _spPageContextInfo.webAbsoluteUrl +
+                "/_api/web/lists/getByTitle('" + listName + "')/roleassignments/addroleassignment(principalid=" + groupId +
+                ",roledefid=" + roleDefinitionId + ")",
+            type: "POST",
+            headers: {
+                "Accept": "application/json;odata=verbose",
+                "X-RequestDigest": $("#__REQUESTDIGEST").val()
+            },
+            success: function () {
+                $('#status').removeClass("text-danger").addClass("text-success").text("Group assigned to list successfully!");
+            },
+            error: function (xhr) {
+                $('#status').text("Failed to assign group: " + xhr.responseText).addClass("text-danger");
+            }
+        });
+    }
+</script>
+
+</body>
+</html>
