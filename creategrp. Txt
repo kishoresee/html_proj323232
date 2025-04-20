@@ -17,7 +17,11 @@
 <!-- Permission Level Dropdown -->
 <label for="permissionLevel">Select Permission Level:</label>
 <select id="permissionLevel">
-    <!-- Options will be populated dynamically -->
+    <option value="1073741829">Full Control</option>
+    <option value="1073741830">Edit</option>
+    <option value="1073741827">Contribute</option>
+    <option value="1073741826">Read</option>
+    <option value="1073741825">View Only</option>
 </select>
 
 <!-- Create Button -->
