@@ -1,4 +1,3 @@
-<script>
 function CreateFileInLibrary() {
   var docLibName = $('#listName').val().trim();
   var docFileName = $('#fileName').val().trim();
@@ -11,8 +10,9 @@ function CreateFileInLibrary() {
   var weburl = _spPageContextInfo.webAbsoluteUrl;
   var serverRelUrl = _spPageContextInfo.webServerRelativeUrl;
   var libraryPath = serverRelUrl + "/" + docLibName;
-  var fileContent = "This file was created via REST API. You're viewing the content inside it.";
-  
+  var fileContent = "This file was created via REST API.";
+
+  // Step 1: Upload the file
   $.ajax({
     url: weburl + "/_api/web/getfolderbyserverrelativeurl('" + libraryPath + "')/Files/add(url='" + docFileName + "',overwrite=true)",
     type: "POST",
@@ -23,12 +23,34 @@ function CreateFileInLibrary() {
       "Content-Type": "text/plain; charset=utf-8",
       "X-RequestDigest": $("#__REQUESTDIGEST").val()
     },
-    success: function () {
-      alert("File created successfully!");
+    success: function (data) {
+      var listItemUri = data.d.ListItemAllFields.__deferred.uri;
+
+      // Step 2: Set Classification metadata
+      $.ajax({
+        url: listItemUri,
+        type: "POST",
+        headers: {
+          "Accept": "application/json;odata=verbose",
+          "Content-Type": "application/json;odata=verbose",
+          "X-RequestDigest": $("#__REQUESTDIGEST").val(),
+          "X-HTTP-Method": "MERGE",
+          "If-Match": "*"
+        },
+        data: JSON.stringify({
+          __metadata: { type: "SP.Data." + docLibName.replace(/_/g, "_x005f_") + "Item" },
+          Classification: "General"  // 👈 Replace with actual internal name and value
+        }),
+        success: function () {
+          alert("File created and classified successfully!");
+        },
+        error: function (xhr) {
+          alert("File created but classification failed:\n" + xhr.responseText);
+        }
+      });
     },
     error: function (xhr) {
       alert("Error creating file:\n" + xhr.responseText);
     }
   });
 }
-</script>
