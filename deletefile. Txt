@@ -1,0 +1,32 @@
+<script>
+function deleteFileFromLibrary() {
+  var docLibName = $('#deleteListName').val().trim();
+  var docFileName = $('#deleteFileName').val().trim();
+
+  if (!docLibName || !docFileName) {
+    alert("Please enter both the document library name and file name.");
+    return;
+  }
+
+  var serverRelUrl = _spPageContextInfo.webServerRelativeUrl;
+  var weburl = _spPageContextInfo.webAbsoluteUrl;
+  var fileUrl = serverRelUrl + "/" + docLibName + "/" + docFileName;
+
+  $.ajax({
+    url: weburl + "/_api/web/GetFileByServerRelativeUrl('" + fileUrl + "')",
+    type: "POST",
+    headers: {
+      "X-RequestDigest": $("#__REQUESTDIGEST").val(),
+      "IF-MATCH": "*",
+      "X-HTTP-Method": "DELETE"
+    },
+    success: function () {
+      alert("File deleted successfully!");
+    },
+    error: function (xhr) {
+      console.error("Delete failed:", xhr.responseText);
+      alert("Error deleting file:\n" + xhr.responseText);
+    }
+  });
+}
+</script>
