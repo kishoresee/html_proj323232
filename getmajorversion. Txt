@@ -1,0 +1,25 @@
+function getmajorversionfile() {
+    var webserverurl = _spPageContextInfo.webServerRelativeUrl;
+    var docLibName = "Learning_Resources";  // check actual internal name!
+    var docFileName = "test.docx";          // case-sensitive!
+    var compurl = webserverurl + "/" + docLibName + "/" + docFileName;
+
+    var serverrelativeurloffile = webserverurl + "/_api/web/GetFileByServerRelativeUrl('" + compurl + "')";
+
+    $.ajax({
+        url: serverrelativeurloffile,
+        type: "GET",
+        headers: {
+            "Accept": "application/json;odata=verbose"
+        },
+        success: function (data, status, xhr) {
+            console.log(data.d.MajorVersion);
+        },
+        error: function (err, status, xhr) {
+            console.log("Error Response Text:", err.responseText);
+            console.log("Status:", status);
+            console.log("XHR:", xhr);
+            alert("Error: " + err.responseText);
+        }
+    });
+}
