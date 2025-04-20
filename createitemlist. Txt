@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Item to SharePoint List</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        body {
+            background-color: #121212;
+            color: white;
+        }
+        .form-control {
+            background-color: #2a2a2a;
+            color: white;
+            border: 1px solid #444;
+        }
+        .btn-custom {
+            background-color: #0d6efd;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container mt-5">
+    <h2 class="text-info mb-4">Add Item to SharePoint List</h2>
+
+    <div class="mb-3">
+        <label class="form-label">List Name:</label>
+        <input type="text" id="listName" class="form-control" placeholder="e.g. Tasks">
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Column Name:</label>
+        <input type="text" id="columnName" class="form-control" placeholder="e.g. Title">
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Content to Add:</label>
+        <input type="text" id="columnValue" class="form-control" placeholder="e.g. Sample Task">
+    </div>
+
+    <button class="btn btn-custom" onclick="addListItem()">Add Item</button>
+
+    <div class="mt-3 fw-bold" id="statusMsg"></div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+function addListItem() {
+    const listName = $('#listName').val().trim();
+    const columnName = $('#columnName').val().trim();
+    const columnValue = $('#columnValue').val().trim();
+
+    if (!listName || !columnName || !columnValue) {
+        $('#statusMsg').text('Please fill all fields.').addClass('text-danger');
+        return;
+    }
+
+    getColumnType(listName, columnName, columnValue);
+}
+
+function getColumnType(listName, columnName, columnValue) {
+    $.ajax({
+        url: _spPageContextInfo.webAbsoluteUrl + "/_api/web/lists/getbytitle('" + listName + "')/fields?$filter=Title eq '" + columnName + "'",
+        type: "GET",
+        headers: {
+            "Accept": "application/json;odata=verbose"
+        },
+        success: function(data) {
+            const field = data.d.results[0];
+            if (!field) {
+                $('#statusMsg').text("Column not found.").addClass("text-danger");
+                return;
+            }
+
+            const fieldType = field.TypeAsString;
+
+            let formattedData = {
+                "__metadata": { "type": "SP.Data." + listName.replace(/\s/g, '_x0020_') + "ListItem" }
+            };
+
+            if (fieldType === "Text" || fieldType === "Note") {
+                formattedData[columnName] = columnValue;
+            } else if (fieldType === "Number") {
+                formattedData[columnName] = parseFloat(columnValue);
+            } else if (fieldType === "Boolean") {
+                formattedData[columnName] = (columnValue.toLowerCase() === "true" || columnValue === "1");
+            } else if (fieldType === "Choice") {
+                formattedData[columnName] = columnValue; // assuming valid choice input
+            } else {
+                $('#statusMsg').text("Field type '" + fieldType + "' is not supported in this demo.").addClass("text-warning");
+                return;
+            }
+
+            createListItem(listName, formattedData);
+        },
+        error: function(xhr) {
+            $('#statusMsg').text("Failed to get column type: " + xhr.responseText).addClass("text-danger");
+        }
+    });
+}
+
+function createListItem(listName, itemData) {
+    $.ajax({
+        url: _spPageContextInfo.webAbsoluteUrl + "/_api/web/lists/getbytitle('" + listName + "')/items",
+        type: "POST",
+        contentType: "application/json;odata=verbose",
+        data: JSON.stringify(itemData),
+        headers: {
+            "Accept": "application/json;odata=verbose",
+            "X-RequestDigest": $("#__REQUESTDIGEST").val()
+        },
+        success: function(data) {
+            $('#statusMsg').removeClass("text-danger text-warning").addClass("text-success").text("Item added successfully!");
+        },
+        error: function(xhr) {
+            $('#statusMsg').text("Failed to add item: " + xhr.responseText).addClass("text-danger");
+        }
+    });
+}
+</script>
+
+</body>
+</html>
