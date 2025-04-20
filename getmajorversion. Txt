@@ -1,25 +1,61 @@
-function getmajorversionfile() {
-    var webserverurl = _spPageContextInfo.webServerRelativeUrl;
-    var docLibName = "Learning_Resources";  // check actual internal name!
-    var docFileName = "test.docx";          // case-sensitive!
-    var compurl = webserverurl + "/" + docLibName + "/" + docFileName;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Get File Major Version</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body class="bg-dark text-white p-4">
 
-    var serverrelativeurloffile = webserverurl + "/_api/web/GetFileByServerRelativeUrl('" + compurl + "')";
+  <div class="container">
+    <h3 class="text-info mb-4">Get File Major Version from SharePoint</h3>
 
-    $.ajax({
+    <div class="mb-3">
+      <label for="listName" class="form-label">Enter Document Library Name:</label>
+      <input type="text" id="listName" class="form-control" placeholder="e.g. Learning_Resources">
+    </div>
+
+    <div class="mb-3">
+      <label for="fileName" class="form-label">Enter File Name (with extension):</label>
+      <input type="text" id="fileName" class="form-control" placeholder="e.g. test.docx">
+    </div>
+
+    <button class="btn btn-primary" onclick="getmajorversionfile()">Check Major Version</button>
+  </div>
+
+  <script>
+    function getmajorversionfile() {
+      var webserverurl = _spPageContextInfo.webServerRelativeUrl;
+      var docLibName = $('#listName').val().trim();
+      var docFileName = $('#fileName').val().trim();
+
+      if (!docLibName || !docFileName) {
+        alert("Please enter both the document library name and file name.");
+        return;
+      }
+
+      var compurl = webserverurl + "/" + docLibName + "/" + docFileName;
+      var serverrelativeurloffile = webserverurl + "/_api/web/GetFileByServerRelativeUrl('" + compurl + "')";
+
+      $.ajax({
         url: serverrelativeurloffile,
         type: "GET",
         headers: {
-            "Accept": "application/json;odata=verbose"
+          "Accept": "application/json;odata=verbose"
         },
-        success: function (data, status, xhr) {
-            console.log(data.d.MajorVersion);
+        success: function (data) {
+          alert("Major Version of the file: " + data.d.MajorVersion);
+          console.log("Major Version:", data.d.MajorVersion);
         },
-        error: function (err, status, xhr) {
-            console.log("Error Response Text:", err.responseText);
-            console.log("Status:", status);
-            console.log("XHR:", xhr);
-            alert("Error: " + err.responseText);
+        error: function (err) {
+          console.log("Error Response Text:", err.responseText);
+          alert("Error: " + err.responseText);
         }
-    });
-}
+      });
+    }
+  </script>
+
+</body>
+</html>
