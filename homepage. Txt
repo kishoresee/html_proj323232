@@ -1,1 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SharePoint REST API Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(135deg, #4ed988, #c3f5cd);
+      animation: bgShift 10s ease infinite alternate;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    @keyframes bgShift {
+      0% { background-position: 0 0; }
+      100% { background-position: 100% 100%; }
+    }
+
+    .main-container {
+      max-width: 1000px;
+      margin: 60px auto;
+    }
+
+    .card-custom {
+      border-left: 5px solid #0b9d3b;
+      background-color: #f1fff4;
+    }
+
+    .card-title {
+      font-weight: bold;
+      color: #0b6722;
+    }
+
+    .btn-link {
+      background-color: #0b9d3b;
+      color: #fff;
+    }
+
+    .btn-link:hover {
+      background-color: #087f23;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container main-container">
+    <div class="card shadow-lg p-4 bg-white rounded">
+      <h1 class="text-center fw-bold text-success mb-4">My SharePoint REST API Features</h1>
+
+      <div class="card mb-3 border card-custom p-3">
+        <h4 class="card-title">1. Add Group</h4>
+        <p class="text-black">Used REST API to create SharePoint groups with dropdown permission selection. Automatically assigns users to the group with a smooth interface.</p>
+        <a href="addgrp.aspx" class="btn btn-link">Go to Add Group</a>
+      </div>
+
+      <div class="card mb-3 border card-custom p-3">
+        <h4 class="card-title">2. Get Major Version</h4>
+        <p class="text-black">Fetched and displayed major versions of SharePoint documents using REST API with easy-to-use AJAX calls.</p>
+        <a href="getmajorversion.aspx" class="btn btn-link">View Major Versions</a>
+      </div>
+
+      <div class="card mb-3 border card-custom p-3">
+        <h4 class="card-title">3. Content Type Binding</h4>
+        <p class="text-black">Attached custom content types like AppForm to lists dynamically using SharePoint REST endpoints.</p>
+        <a href="bindcontenttype.aspx" class="btn btn-link">Bind Content Types</a>
+      </div>
+
+      <div class="card mb-3 border card-custom p-3">
+        <h4 class="card-title">4. Create Lists</h4>
+        <p class="text-black">Created SharePoint lists programmatically through REST API using AJAX calls with configurable templates.</p>
+        <a href="createlist.aspx" class="btn btn-link">Create New List</a>
+      </div>
+
+      <div class="card mb-3 border card-custom p-3">
+        <h4 class="card-title">5. Add List Items</h4>
+        <p class="text-black">Added list items using a dynamic input interface connected to the REST API — supports text, number, and choice fields.</p>
+        <a href="additems.aspx" class="btn btn-link">Add Items</a>
+      </div>
+
+      <div class="card mb-3 border card-custom p-3">
+        <h4 class="card-title">6. Assign Permissions</h4>
+        <p class="text-black">Granted different permission levels to groups and users through REST role definitions with secure endpoint integration.</p>
+        <a href="assignpermissions.aspx" class="btn btn-link">Assign Permissions</a>
+      </div>
+
+      <div class="card mb-3 border card-custom p-3">
+        <h4 class="card-title">7. Get Site Groups</h4>
+        <p class="text-black">Fetched and displayed site groups along with their metadata for better permission management overview.</p>
+        <a href="getsitegroups.aspx" class="btn btn-link">View Groups</a>
+      </div>
+
+      <div class="card mb-3 border card-custom p-3">
+        <h4 class="card-title">8. Manage Content Types</h4>
+        <p class="text-black">Listed all content types from site collections, including detailed internal names and description using REST endpoints.</p>
+        <a href="getcontenttypes.aspx" class="btn btn-link">Explore Content Types</a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
 
