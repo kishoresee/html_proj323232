@@ -48,7 +48,12 @@
 
   <div class="container main-container">
     <div class="card shadow-lg p-4 bg-white rounded">
-      <h1 class="text-center fw-bold text-success mb-4">My SharePoint REST API Features</h1>
+      <h1 class="text-center fw-bold text-primary mb-2">
+  SharePoint OOB
+</h1>
+<p class="text-center text-muted fst-italic mb-4" style="margin-top: -10px;">
+  Made easy with REST API 🚀
+</p>
 
       <div class="card mb-3 border card-custom p-3">
         <h4 class="card-title">1. Add Group</h4>
