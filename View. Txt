@@ -1,0 +1,65 @@
+
+To get parameters from the user dynamically (like view name, list name, selected fields), you can use simple input fields in an HTML form.
+
+Here's an example that gets input from the user and creates a view in SharePoint using jQuery and REST API:
+
+
+---
+
+HTML + JavaScript Code
+
+<!-- HTML Form -->
+<div>
+  <label>List Name: <input type="text" id="listName" /></label><br>
+  <label>View Name: <input type="text" id="viewName" /></label><br>
+  <label>Fields (comma separated): <input type="text" id="viewFields" /></label><br>
+  <button onclick="createView()">Create View</button>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+  function createView() {
+    var listTitle = $("#listName").val();
+    var viewTitle = $("#viewName").val();
+    var viewFields = $("#viewFields").val().split(',').map(field => field.trim());
+
+    $.ajax({
+      url: _spPageContextInfo.webAbsoluteUrl + "/_api/web/lists/GetByTitle('" + listTitle + "')/views",
+      method: "POST",
+      contentType: "application/json;odata=verbose",
+      headers: {
+        "Accept": "application/json;odata=verbose",
+        "X-RequestDigest": $("#__REQUESTDIGEST").val()
+      },
+      data: JSON.stringify({
+        '__metadata': { 'type': 'SP.View' },
+        'Title': viewTitle,
+        'ViewFields': { 'Items': viewFields },
+        'RowLimit': 30,
+        'ViewQuery': '<OrderBy><FieldRef Name="Created" Ascending="FALSE" /></OrderBy>'
+      })
+    }).done(function (data) {
+      alert("View created successfully!");
+    }).fail(function (error) {
+      console.error("Error creating view: ", error);
+    });
+  }
+</script>
+
+
+---
+
+How to Use:
+
+1. Paste the HTML and script inside a Content Editor Web Part or Script Editor on a classic SharePoint page.
+
+
+2. Fill the form inputs (e.g., Documents, My Custom View, Title,Author,Created).
+
+
+3. Click "Create View" — it will create a new view in the specified list/library.
+
+
+
+Want to include filters or group-by options from user input too?
+
