@@ -1,0 +1,128 @@
+
+This error means that when SharePoint parses your <Field> XML, it’s seeing something like:
+
+<Field … Name=""MyField"" … />
+              ^ here ─ two quotes in a row
+
+In other words, the very first character of your Name value is itself a quote ("), which SharePoint rejects.
+
+
+---
+
+1. Why it’s happening
+
+In your JavaScript you probably did something like:
+
+var internalName = `"MyField"`;      // including quotes by mistake
+var xml = `<Field Name="${internalName}" … />`;
+
+or you built with template literals and ended up with an extra set of quotes, producing:
+
+Name=""MyField""
+
+
+---
+
+2. How to fix it
+
+A. Strip out any stray quotes and whitespace
+
+Before you build your XML, sanitize the incoming field name:
+
+function sanitizeName(raw) {
+  // remove all double‐quotes and trim whitespace
+  return raw.replace(/"/g, '').trim();
+}
+
+B. Build your XML string with single-quoted JS literal
+
+That way you can safely use double-quotes inside for XML attributes:
+
+function defineField(rawName, type, callback) {
+  var internalName = sanitizeName(rawName);
+  // ensure it starts with a letter or underscore
+  if (!/^[A-Za-z_]/.test(internalName)) {
+    internalName = 'F' + internalName;
+  }
+
+  var ctx    = SP.ClientContext.get_current(),
+      web    = ctx.get_web(),
+      fields = web.get_fields(),
+      id     = SP.Guid.newGuid().toString(),
+      xml    = '<Field ' +
+                 'ID="{'+ id +'}" ' +
+                 'Name="' + internalName + '" ' +
+                 'DisplayName="' + internalName + '" ' +
+                 'Type="' + type + '" ' +
+                 'Group="CustomColumns" ' +
+               '/>';
+
+  console.log(xml);    // <— check it in your browser console before sending
+  fields.addFieldAsXml(xml, true, SP.AddFieldOptions.defaultValue);
+  ctx.executeQueryAsync(
+    function() { console.log("Field created"); callback(); },
+    function(s, e) {
+      console.error("Field error: " + e.get_message());
+      callback();
+    }
+  );
+}
+
+
+---
+
+3. Line-by-line explanation
+
+1. sanitizeName(rawName)
+
+Strips out any " characters and trims spaces so you don’t end up with Name=""Foo"".
+
+
+
+2. if (!/^[A-Za-z_]/.test(internalName))
+
+Ensures the first character is valid (letter or underscore) by prepending F if needed.
+
+
+
+3. Building xml with single-quoted JS string
+
+xml = '<Field ' +
+        'ID="{'+ id +'}" ' +            // Unique GUID
+        'Name="' + internalName + '" ' +// Correctly quoted
+        'DisplayName="' + internalName + '" ' +
+        'Type="' + type + '" ' +
+        'Group="CustomColumns" ' +
+      '/>';
+
+Using single quotes around the JS string literal lets us safely use double-quotes for XML attribute values.
+
+
+
+4. console.log(xml)
+
+Always inspect the final XML string in your browser’s console to confirm it looks like:
+
+<Field ID="{...}" Name="MyField" DisplayName="MyField" Type="Text" Group="CustomColumns" />
+
+
+
+5. fields.addFieldAsXml(xml, …)
+
+Sends the clean, valid XML to SharePoint.
+
+
+
+
+
+---
+
+🔑 Key Takeaway
+
+Never let your internalName start or end with a quote or space.
+
+Always sanitize user input and inspect your XML string before sending it to addFieldAsXml().
+
+
+With this in place, you’ll eliminate the Name cannot begin with the character '"' error and your defineField() will succeed.
+
