@@ -1,0 +1,131 @@
+
+The error
+
+cts.getByName is not a function
+
+means that in JSOM’s SP.ContentTypeCollection object there is no getByName() method. The only built-in retrieval methods are:
+
+getById(contentTypeId) — if you know the CT’s ID (a hex string like 0x0100...)
+
+get_item(index) — index in the collection
+
+Or you can enumerate the entire collection and match on the Name property.
+
+
+
+---
+
+How to fix “no getByName” by enumerating
+
+Below is a helper function that retrieves a content type by its display name:
+
+/**
+ * Finds a content type by its display name.
+ *
+ * @param {string} ctName    The display name of the content type to find.
+ * @param {function} onFound Called with (ct) when found, or null if not.
+ */
+function findContentTypeByName(ctName, onFound) {
+  var ctx = SP.ClientContext.get_current();
+  var web = ctx.get_web();
+  var cts = web.get_contentTypes();
+  ctx.load(cts, 'Include(Name, Id)');       // load Name and Id for each CT
+  ctx.executeQueryAsync(
+    function() {
+      var enumCt = cts.getEnumerator();
+      var found = null;
+      while (enumCt.moveNext()) {
+        var current = enumCt.get_current();
+        if (current.get_name() === ctName) {
+          found = current;
+          break;
+        }
+      }
+      onFound(found);
+    },
+    function(sender, args) {
+      console.error('Error loading content types: ' + args.get_message());
+      onFound(null);
+    }
+  );
+}
+
+Usage in your addFieldToCT flow
+
+Replace the direct cts.getByName() call with this enumeration helper:
+
+function addFieldToCT(ctName, fldName, cb) {
+  var ctx    = SP.ClientContext.get_current(),
+      web    = ctx.get_web(),
+      fields = web.get_fields();
+
+  // First, find the Content Type object by name…
+  findContentTypeByName(ctName, function(ct) {
+    if (!ct) {
+      console.error('Content Type not found: ' + ctName);
+      return cb();
+    }
+
+    // Then load the field object
+    var fld = fields.getByInternalNameOrTitle(fldName);
+    ctx.load(fld);
+
+    ctx.executeQueryAsync(
+      function() {
+        // Now link the field into the found CT
+        var link = new SP.FieldLinkCreationInformation();
+        link.set_field(fld);
+        ct.get_fieldLinks().add(link);
+        ct.update(true);
+        ctx.executeQueryAsync(
+          function() {
+            console.log('Field ' + fldName + ' added to ' + ctName);
+            cb();
+          },
+          function(s, e) {
+            console.error('Error adding field link: ' + e.get_message());
+            cb();
+          }
+        );
+      },
+      function(s, e) {
+        console.error('Error loading field: ' + e.get_message());
+        cb();
+      }
+    );
+  });
+}
+
+
+---
+
+Alternative: Use getById if you know the CT ID
+
+If you already know the Content Type’s ID (for a custom CT you just created, you can capture it when you call add()), you can skip enumeration:
+
+// Suppose after creation you did:
+var newCt = cts.add(ctInfo);
+ctx.load(newCt, 'Id');
+ctx.executeQueryAsync(function() {
+  var ctId = newCt.get_id().toString();
+  // Later you can retrieve it directly:
+  var ct = web.get_contentTypes().getById(ctId);
+  // …
+}, errorHandler);
+
+But in most provisioning scripts, enumeration by name is simplest.
+
+
+---
+
+Recap
+
+getByName() doesn’t exist on SP.ContentTypeCollection.
+
+Use enumeration (getEnumerator()) to match on get_name().
+
+Or capture & use the CT’s ID with getById().
+
+
+This change will eliminate your “not a function” error and let you add site-columns into your Content Type as intended. Let me know if you need more help hooking this into your full provisioning flow!
+
