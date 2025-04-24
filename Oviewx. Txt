@@ -1,0 +1,58 @@
+
+Got it! You want to create a SharePoint view where:
+
+The Title field is shown.
+
+Items are sorted in ascending order by Title.
+
+No filter on Status (i.e., remove the <Where> clause).
+
+
+Here’s the updated JSOM script with a simplified CAML query to sort by Title only:
+
+<script type="text/javascript">
+    function createAlphabeticalTitleView() {
+        var clientContext = new SP.ClientContext.get_current();
+        var oList = clientContext.get_web().get_lists().getByTitle("YourListName");
+
+        // CAML to sort Title in ascending order
+        var viewXml = 
+        "<View>" +
+            "<Query>" +
+                "<OrderBy>" +
+                    "<FieldRef Name='Title' Ascending='TRUE'/>" +
+                "</OrderBy>" +
+            "</Query>" +
+            "<ViewFields>" +
+                "<FieldRef Name='Title'/>" +
+            "</ViewFields>" +
+        "</View>";
+
+        var viewCreationInfo = new SP.ViewCreationInformation();
+        viewCreationInfo.set_title("Title A-Z View");
+        viewCreationInfo.set_viewFields(["Title"]);
+        viewCreationInfo.set_paged(true);
+        viewCreationInfo.set_personalView(false);
+        viewCreationInfo.set_viewTypeKind(SP.ViewType.none);
+        viewCreationInfo.set_query(viewXml);
+
+        var oViewCollection = oList.get_views();
+        oViewCollection.add(viewCreationInfo);
+
+        clientContext.load(oViewCollection);
+        clientContext.executeQueryAsync(
+            function () {
+                alert("Alphabetical view created successfully!");
+            },
+            function (sender, args) {
+                alert("Error: " + args.get_message());
+            }
+        );
+    }
+</script>
+<button onclick="createAlphabeticalTitleView()">Create A-Z Title View</button>
+
+Reminder: Replace "YourListName" with your actual SharePoint list title.
+
+Want me to help include multiple columns or add row limit as well?
+
