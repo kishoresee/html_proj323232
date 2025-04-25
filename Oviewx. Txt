@@ -1,41 +1,36 @@
-Ah, got it! If you're getting set_viewXml is not a function, the issue is likely one of these:
+Thanks for confirming — since you’re using the correct object (SP.ViewCreationInformation) and still getting:
+
+> set_viewXml is not a function
+
+
+
+this likely means the version of the JSOM API loaded in your SharePoint environment doesn’t support set_viewXml(). This sometimes happens in classic SharePoint or restricted modern environments.
 
 
 ---
 
-1. Root Cause: Wrong Object
+✅ Solution: Use set_query() Instead of set_viewXml()
 
-You're probably calling set_viewXml() on the wrong object. That function is only valid on SP.ViewCreationInformation objects — not on SP.View, SP.List, or anything else.
-
-
----
-
-✅ Correct Usage (Fully CAML-based view)
+You can embed the CAML query part (no <ViewFields>, no <RowLimit>) inside set_query(), like this:
 
 <script type="text/javascript">
     function createSimpleTitleView() {
         var ctx = SP.ClientContext.get_current();
         var list = ctx.get_web().get_lists().getByTitle("YourListName");
 
-        var viewXml =
-            "<View>" +
-                "<Query>" +
-                    "<OrderBy>" +
-                        "<FieldRef Name='Title' Ascending='TRUE' />" +
-                    "</OrderBy>" +
-                "</Query>" +
-                "<ViewFields>" +
-                    "<FieldRef Name='Title' />" +
-                "</ViewFields>" +
-                "<RowLimit>50</RowLimit>" +
-            "</View>";
+        var camlQuery =
+            "<Query>" +
+                "<OrderBy>" +
+                    "<FieldRef Name='Title' Ascending='TRUE' />" +
+                "</OrderBy>" +
+            "</Query>";
 
-        var viewInfo = new SP.ViewCreationInformation(); // Must be this object
+        var viewInfo = new SP.ViewCreationInformation();
         viewInfo.set_title("Title A-Z Only");
+        viewInfo.set_query(camlQuery); // Use this instead of set_viewXml
         viewInfo.set_viewTypeKind(SP.ViewType.none);
         viewInfo.set_paged(true);
         viewInfo.set_rowLimit(50);
-        viewInfo.set_viewXml(viewXml); // Make sure you're calling on this object
 
         var views = list.get_views();
         views.add(viewInfo);
@@ -57,24 +52,15 @@ You're probably calling set_viewXml() on the wrong object. That function is only
 
 ---
 
-2. Bonus Tip — How to Debug
+What’s Missing Without set_viewXml()?
 
-Put a console.log(viewInfo) right before viewInfo.set_viewXml(viewXml); — if it doesn't show [SP.ViewCreationInformation], you're not working with the correct object.
+You can’t define <ViewFields> here, so it’ll use default fields (including Title).
 
-
----
-
-Still Getting That Error?
-
-Double-check these:
-
-Make sure the SharePoint page has loaded sp.js using SP.SOD.executeFunc.
-
-Make sure you're not using viewInfo = list.get_views() — that would be incorrect.
+To customize displayed columns, you'd need to do that separately via the UI or additional JSOM calls.
 
 
 
 ---
 
-Let me know the exact line where the error shows up (or share the updated snippet), and I’ll pinpoint it for you!
+If you want a version with full column control or need to exclude Title, we can use REST or PnP JS — just let me know your environment (Classic, Modern, Online/On-Prem).
 
