@@ -1,77 +1,41 @@
-Thanks for sharing the screenshot. The message:
-
-"Cannot complete this action. Please try again."
-with a Correlation ID usually indicates an internal SharePoint error.
-
-Even though the view is created, SharePoint is struggling to complete the render or post-creation action, possibly due to one of the following:
+Ah, got it! If you're getting set_viewXml is not a function, the issue is likely one of these:
 
 
 ---
 
-Possible Causes & Fixes:
+1. Root Cause: Wrong Object
 
-1. set_viewFields() vs ViewFields conflict
-In JSOM, if you’re using set_viewFields(["Title"]), don’t include <ViewFields> inside your viewXml string. It causes conflicts.
-
-Fix: Remove this part from viewXml if you're already using set_viewFields():
-
-<ViewFields>
-    <FieldRef Name='Title'/>
-</ViewFields>
-
-
-2. Use Either viewXml or Property Setters – Not Both for the Same Values
-If you’re passing both set_query(viewXml) and set_viewFields(...), the internal engine can throw a conflict error if the ViewFields overlap or are mismatched.
-
-Fix Recommendation: Either:
-
-Fully define everything in viewXml, or
-
-Use only the set_*() methods and leave viewXml minimal or unset.
-
-
-
-3. Permissions Issue
-Ensure the logged-in user has Design or Full Control permission to create views on that list.
-
-
-4. Check Field Internal Name
-Make sure you're using the internal name of the fields. For example, if you renamed "Title" in the UI, its internal name might still be "Title".
-
-
-5. Browser Cache/Script Load Delays
-Sometimes, JSOM libraries don't load completely. Wrap your script inside:
-
-SP.SOD.executeFunc('sp.js', 'SP.ClientContext', createAlphabeticalTitleView);
-
-
+You're probably calling set_viewXml() on the wrong object. That function is only valid on SP.ViewCreationInformation objects — not on SP.View, SP.List, or anything else.
 
 
 ---
 
-✅ Clean and Safe Version (No conflicts):
+✅ Correct Usage (Fully CAML-based view)
 
 <script type="text/javascript">
     function createSimpleTitleView() {
         var ctx = SP.ClientContext.get_current();
         var list = ctx.get_web().get_lists().getByTitle("YourListName");
 
-        var camlQuery =
+        var viewXml =
             "<View>" +
                 "<Query>" +
                     "<OrderBy>" +
                         "<FieldRef Name='Title' Ascending='TRUE' />" +
                     "</OrderBy>" +
                 "</Query>" +
+                "<ViewFields>" +
+                    "<FieldRef Name='Title' />" +
+                "</ViewFields>" +
                 "<RowLimit>50</RowLimit>" +
             "</View>";
 
-        var viewInfo = new SP.ViewCreationInformation();
+        var viewInfo = new SP.ViewCreationInformation(); // Must be this object
         viewInfo.set_title("Title A-Z Only");
-        viewInfo.set_query(camlQuery);
-        viewInfo.set_rowLimit(50);
-        viewInfo.set_paged(true);
         viewInfo.set_viewTypeKind(SP.ViewType.none);
+        viewInfo.set_paged(true);
+        viewInfo.set_rowLimit(50);
+        viewInfo.set_viewXml(viewXml); // Make sure you're calling on this object
 
         var views = list.get_views();
         views.add(viewInfo);
@@ -87,9 +51,30 @@ SP.SOD.executeFunc('sp.js', 'SP.ClientContext', createAlphabeticalTitleView);
         );
     }
 
-    // Make sure sp.js is loaded
     SP.SOD.executeFunc('sp.js', 'SP.ClientContext', createSimpleTitleView);
 </script>
 
-Let me know if the error still appears or if you'd like to log that Correlation ID with SharePoint ULS logs.
+
+---
+
+2. Bonus Tip — How to Debug
+
+Put a console.log(viewInfo) right before viewInfo.set_viewXml(viewXml); — if it doesn't show [SP.ViewCreationInformation], you're not working with the correct object.
+
+
+---
+
+Still Getting That Error?
+
+Double-check these:
+
+Make sure the SharePoint page has loaded sp.js using SP.SOD.executeFunc.
+
+Make sure you're not using viewInfo = list.get_views() — that would be incorrect.
+
+
+
+---
+
+Let me know the exact line where the error shows up (or share the updated snippet), and I’ll pinpoint it for you!
 
