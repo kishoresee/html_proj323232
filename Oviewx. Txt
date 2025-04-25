@@ -1,34 +1,35 @@
-Thanks for confirming — since you’re using the correct object (SP.ViewCreationInformation) and still getting:
+Perfect — since set_query() is working for you, let's build a clean JSOM version that creates a view with:
 
-> set_viewXml is not a function
+Sorted in ascending order by uidNo field
+
+Only using set_query()
+
+Avoids view rendering conflicts (Correlation ID error)
 
 
-
-this likely means the version of the JSOM API loaded in your SharePoint environment doesn’t support set_viewXml(). This sometimes happens in classic SharePoint or restricted modern environments.
+Here's a safe and minimal version:
 
 
 ---
 
-✅ Solution: Use set_query() Instead of set_viewXml()
-
-You can embed the CAML query part (no <ViewFields>, no <RowLimit>) inside set_query(), like this:
+✅ JSOM Code — View Sorted by uidNo
 
 <script type="text/javascript">
-    function createSimpleTitleView() {
+    function createUidNoSortedView() {
         var ctx = SP.ClientContext.get_current();
-        var list = ctx.get_web().get_lists().getByTitle("YourListName");
+        var list = ctx.get_web().get_lists().getByTitle("YourListName"); // Replace with your list name
 
         var camlQuery =
             "<Query>" +
                 "<OrderBy>" +
-                    "<FieldRef Name='Title' Ascending='TRUE' />" +
+                    "<FieldRef Name='uidNo' Ascending='TRUE' />" +
                 "</OrderBy>" +
             "</Query>";
 
         var viewInfo = new SP.ViewCreationInformation();
-        viewInfo.set_title("Title A-Z Only");
-        viewInfo.set_query(camlQuery); // Use this instead of set_viewXml
-        viewInfo.set_viewTypeKind(SP.ViewType.none);
+        viewInfo.set_title("UID No Ascending View");
+        viewInfo.set_query(camlQuery);
+        viewInfo.set_viewTypeKind(SP.ViewType.none);  // Keep this unless you need a different type
         viewInfo.set_paged(true);
         viewInfo.set_rowLimit(50);
 
@@ -46,21 +47,21 @@ You can embed the CAML query part (no <ViewFields>, no <RowLimit>) inside set_qu
         );
     }
 
-    SP.SOD.executeFunc('sp.js', 'SP.ClientContext', createSimpleTitleView);
+    // Ensure SP.js is loaded
+    SP.SOD.executeFunc('sp.js', 'SP.ClientContext', createUidNoSortedView);
 </script>
 
 
 ---
 
-What’s Missing Without set_viewXml()?
+Notes:
 
-You can’t define <ViewFields> here, so it’ll use default fields (including Title).
+uidNo must be the internal name of the field.
 
-To customize displayed columns, you'd need to do that separately via the UI or additional JSOM calls.
+This avoids using <ViewFields>, which is what causes rendering issues in your case.
+
+You can later manually customize columns in the SharePoint UI if needed (or with REST or PnP if you want dynamic control).
 
 
-
----
-
-If you want a version with full column control or need to exclude Title, we can use REST or PnP JS — just let me know your environment (Classic, Modern, Online/On-Prem).
+Let me know if you'd like to add a filter in the view (e.g., Status = Active), and I’ll update the CAML query!
 
