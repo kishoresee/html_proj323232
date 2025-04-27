@@ -112,82 +112,68 @@
             return raw.replace(/"/g, '').trim(); //replace function is used double ("") replaced with then trimed to remove the trailing
         }
 
-       function defineFields(fieldName, fieldType, lc) {
+      function defineFields(fieldName, fieldType, lc) {
     var internalName = sanitizeName(fieldName);
 
-    var ctx = SP.ClientContext.get_current(),
-        web = ctx.get_web(),
-        fields = web.get_fields();
+    var ctx = SP.ClientContext.get_current();
+    var web = ctx.get_web();
+    var fields = web.get_fields();
 
+    var fieldExists = false;
+
+    // Try to get existing field
     try {
         var field = fields.getByInternalNameOrTitle(internalName);
         ctx.load(field);
-        ctx.executeQueryAsync(
-            function() {
-                // Field exists
-                console.log("Field already exists: " + fieldName + " - Updating validation if needed");
-                createFieldNow(); // ⚡ FORCE create/update even if exists
-            },
-            function(s, e) {
-                // Field does not exist, create it
-                console.log("Field does not exist: " + fieldName + " - Creating now");
-                createFieldNow();
-            }
-        );
-    } catch (e) {
-        console.log("Exception in field loading, creating field now");
-        createFieldNow();
+    } catch (err) {
+        console.log("Field not found, safe to create.");
     }
 
-    function createFieldNow() {
-        var id = SP.Guid.newGuid().toString(),
-            xml = '<Field' +
+    ctx.executeQueryAsync(
+        function() {
+            // Success => field exists
+            console.log("Field already exists: " + internalName);
+            $("#listFieldMsg").html("Field " + fieldName + " already exists.").removeClass("text-danger").addClass("text-warning");
+            lc(); // Proceed to next step without creating
+        },
+        function(sender, args) {
+            // Error => field does not exist, safe to create
+            console.log("Field does not exist, creating: " + internalName);
+
+            var id = SP.Guid.newGuid().toString();
+            var xml = '<Field' +
                 ' ID="{' + id + '}" ' +
                 ' Name="' + internalName + '"' +
-                ' DisplayName="' + fieldName + '"' +
+                ' DisplayName="' + internalName + '"' +
                 ' Type="' + fieldType + '"' +
                 ' Group="CustomColumns"' +
+                (fieldName === "uidNo" ? ' MaxLength="10" MinLength="5"' : '') +
                 '/>';
 
-        console.log("Creating field with XML:", xml);
+            // Add validation for uidNo
+            if (fieldName == "uidNo") {
+                xml = xml.replace('/>', '>');
+                xml += '<Validation Message="UID must be between 5 and 10 digits">=5 &amp;&amp; ' + fieldName + ' &lt;=10</Validation></Field>';
+            }
 
-        fields.addFieldAsXml(xml, true, SP.AddFieldOptions.AddToDefaultContentType);
-        ctx.load(fields);
+            fields.addFieldAsXml(xml, true, SP.AddFieldOptions.defaultValue);
 
-        ctx.executeQueryAsync(
-            function() {
-                console.log("Field created or updated: " + fieldName);
-
-                if (fieldName === "uidNo") {
-                    var field = fields.getByInternalNameOrTitle(internalName);
-                    field.set_validationFormula('=AND(LEN([uidNo])>=5,LEN([uidNo])<=10)');
-                    field.set_validationMessage('UID must be between 5 and 10 digits');
-                    field.update();
-                    ctx.executeQueryAsync(
-                        function() {
-                            console.log("Validation set successfully");
-                            $("#listFieldMsg").html("Field " + fieldName + " created/updated successfully with validation.").removeClass("text-danger").addClass("text-success");
-                            lc();
-                        },
-                        function(s, e) {
-                            console.error("Validation setting error: " + e.get_message());
-                            $("#listFieldMsg").html("Validation setting failed: " + e.get_message()).removeClass("text-success").addClass("text-danger");
-                            lc();
-                        }
-                    );
-                } else {
+            ctx.executeQueryAsync(
+                function() {
+                    console.log("Field created: " + internalName);
                     $("#listFieldMsg").html("Field " + fieldName + " created successfully.").removeClass("text-danger").addClass("text-success");
                     lc();
+                },
+                function(sender, args) {
+                    console.error("Failed to create field: " + args.get_message());
+                    $("#listFieldMsg").html("Field creation failed: " + args.get_message()).removeClass("text-success").addClass("text-danger");
+                    lc();
                 }
-            },
-            function(s, e) {
-                console.error("Field creation error: " + e.get_message());
-                $("#listFieldMsg").html("Field creation failed: " + e.get_message()).removeClass("text-success").addClass("text-danger");
-                lc();
-            }
-        );
-    }
+            );
+        }
+    );
 }
+
 
 
 
