@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create SharePoint List/Library/Survey</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script type="text/javascript" src="/_layouts/15/SP.Runtime.js"></script>
+    <script type="text/javascript" src="/_layouts/15/SP.js"></script>
+</head>
+
+<body class="bg-light">
+    <div class="container">
+        <h2 class="text-success mb-4">Basic list Provision</h2>
+        <h4 class="text-success mb-4">Create List -> define fields -> add fields to content type(CT), made Title field unrequired -> Attach the CT to list(additionally enabling content type, versioning) ->Assign permission & create Group</h4>
+        
+        <button onclick="Provisioneverything()" type="button" id="createBtn" class="btn btn-success">
+            Provision all
+        </button>
+
+        <!-- getting result displayed for each function-->
+        <div id="listCreateMsg" class="mt-3"></div>
+        <div id="listFieldMsg" class="mt-3"></div>
+        <div id="listCtMsg" class="mt-3"></div>
+        <div id="ctFieldAddMsg" class="mt-3"></div>
+        <div id="attachCTMsg" class="mt-3"></div>
+        <div id="verifygrpMsg" class="mt-3"></div>
+        <div id="createGrpMsg" class="mt-3"></div>
+        <div id="viewMsg" class="mt-3"></div>
+        <div id="titleMsg" class="mt-3"></div>
+
+        <!--final status-->
+        <div id="resultMsg" class="mt-3"></div>
+    </div>
+
+    <script>
+        var firstFieldValidated = false;
+
+        function Provisioneverything() {
+            createList("JSOMListProvision", function() {
+                defineFields("studName", "Text", function() {
+                    defineFields("uidNo", "Number", function() {
+                        createContentType("JSOMcontentType13", function() {
+                            addFieldsToCT("JSOMcontentType13", "studName", function() {
+                                addFieldsToCT("JSOMcontentType13", "uidNo", function() {
+                                    attachCT("JSOMListProvision", "JSOMcontentType13", function() {
+                                        verfifyGroup("JSOMprovisionKishore10", function() {
+                                            assignPermissions("JSOMListProvision", "JSOMprovisionKishore10", SP.RoleType.editor, function() {
+                                                createViews("JSOMListProvision", "Provision_view_nw", function() {
+                                                    makeTitleAsOptional("JSOMListProvision", function() {
+                                                        document.getElementById("resultMsg").innerText = "Provision done :)";
+                                                    });
+                                                });
+                                            });
+                                        });
+                                    });
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+        }
+
+        function addFieldToDefaultView(listname, intFieldName) {
+            var ctx = SP.ClientContext.get_current();
+            var web = ctx.get_web();
+            var list = web.get_lists().getByTitle(listname);
+            var view = list.get_defaultView();
+            var viewFields = view.get_viewFields();
+            viewFields.add(intFieldName);
+            view.update();
+            ctx.load(view);
+            
+            // JSOM notes:
+            // -loading mult items in a single request and executing it all together:
+            // -allows multiple list item fetchs in one batch using excecutequerysyn
+            // NOTE: no direct direct alter for executeQueryacsyn, 1 way is to work on queryasync only in trusted environmets
+            ctx.executeQueryAsync(
+                function() {
+                    $("#listCreateMsg").html("view added successfully.").removeClass("text-success").addClass("text-danger");
+                },
+                function(sender, args) {
+                    $("#listCreateMsg").html("List add failed" + args.get_message()).removeClass("text-success").addClass("text-danger");
+                }
+            );
+        }
+
+        function createList(listname, lc) {
+            var ctx = SP.ClientContext.get_current(); //Retrieves the JSOM context for the current SharePoint site.
+            var web = ctx.get_web(); //SP.Web object representing that site
+            var list_cre = new SP.ListCreationInformation(); //Creates a metadata container for our new list.
+            list_cre.set_title(listname);
+            list_cre.set_templateType(SP.ListTemplateType.genericList); //generic
+            
+            var lst = web.get_lists().add(list_cre); //Enqueues a request to add the list to the site's collection of lists.
+            ctx.load(lst); //telling JSOM to fetch data before use
+            
+            ctx.executeQueryAsync( //commits the changes
+                function() {
+                    $("#listCreateMsg").html("List added successfully.").removeClass("text-danger").addClass("text-success");
+                    lc();
+                }, 
+                function(sender, args) {
+                    $("#listCreateMsg").html("List add failed" + args.get_message()).removeClass("text-success").addClass("text-danger");
+                    lc();
+                }
+            );
+        }
+
+        //to remove all double-quotes and trim whitespace
+        function sanitizeName(raw) {
+            return raw.replace(/"/g, '').trim(); //replace function is used double ("") replaced with then trimed to remove the trailing
+        }
+
+        function defineFields(fieldName, fieldType, lc) {
+            var internalName = sanitizeName(fieldName);
+            
+            // ensure it starts with a letter or underscore
+            if (!/[A-Za-z_]/.test(fieldName)) {
+                fieldName = 'F' + fieldName;
+            }
+            
+            var maxLen, minLen;
+            if(fieldName == "uidNo") {
+                maxLen = 10;
+                minLen = 5;
+                
+                if (maxLen < minLen) {
+                    alert("character exceeding more than 10 chars");
+                    return;
+                }
+            }
+            
+            var ctx = SP.ClientContext.get_current(),
+                web = ctx.get_web(),
+                fields = web.get_fields(),
+                field = fields.getByInternalNameOrTitle(fieldName);
+                
+            ctx.load(field);
+            
+            var id = SP.Guid.newGuid().toString(),
+                xml = '<Field' +
+                    ' ID="{' + id + '}" ' +
+                    ' Name="' + fieldName + '"' +
+                    ' DisplayName="' + fieldName + '"' +
+                    (maxLen ? ' MaxLength="' + maxLen + '"' : '') +
+                    (minLen ? ' MinLength="' + minLen + '"' : '') +
+                    ' Type="' + fieldType + '"' +
+                    ' Group="CustomColumns"' +
+                    '/>';
+            
+            console.log(xml);
+            
+            // Add column validation for uidNo field
+            if(fieldName == "uidNo") {
+                xml = xml.replace('/>', '>');
+                xml += '<Validation Message="UID must be between 5 and 10 digits">=5 &amp;&amp; ' + fieldName + '&lt;=10</Validation></Field>';
+            }
+            
+            fields.addFieldAsXml(xml, true, SP.AddFieldOptions.defaultValue);
+            
+            ctx.executeQueryAsync(
+                function() { 
+                    console.log("Field created"); 
+                    $("#listFieldMsg").html("Field " + fieldName + " created successfully.").removeClass("text-danger").addClass("text-success");
+                    lc(); 
+                },
+                function(s, e) {
+                    console.error("Field error: " + e.get_message());
+                    $("#listFieldMsg").html("Field creation failed: " + e.get_message()).removeClass("text-success").addClass("text-danger");
+                    lc();
+                }
+            );
+        }
+
+        function createContentType(name, lc) {
+            var ctx = SP.ClientContext.get_current(), 
+                web = ctx.get_web(),
+                ctype = web.get_contentTypes(), //to get collection of site lvl content types
+                info = new SP.ContentTypeCreationInformation(); //new CT definition
+                
+            info.set_name(name);
+            info.set_description("JSOM created CT");
+            info.set_group("JSOM CT group");
+            info.set_parentContentType(ctype.get_item(0)); //inherit from item -indexed to ist content type item in site collection
+            
+            ctype.add(info);
+            
+            ctx.executeQueryAsync(
+                function() { 
+                    $("#listCtMsg").html(name + " created successfully.").removeClass("text-danger").addClass("text-success"); 
+                    lc(); 
+                },
+                function(sender, args) {
+                    $("#listCtMsg").html("Creation CT failed." + args.get_message()).removeClass("text-success").addClass("text-danger"); 
+                    lc();
+                }
+            );
+        }
+
+        function findContentTypeByName(ctName, onFound) {
+            var ctx = SP.ClientContext.get_current();
+            var web = ctx.get_web();
+            var cts = web.get_contentTypes();
+            
+            ctx.load(cts, 'Include(Name, Id)'); //load Name and Id for each CT
+            
+            ctx.executeQueryAsync(
+                function() {
+                    var enumCt = cts.getEnumerator();
+                    var found = null;
+                    
+                    while (enumCt.moveNext()) {
+                        var current = enumCt.get_current();
+                        if (current.get_name() == ctName) {
+                            found = current;
+                            break;
+                        }
+                    }
+                    
+                    onFound(found);
+                },
+                function(sender, args) {
+                    console.error('Error loading content types: ' + args.get_message());
+                    onFound(null);
+                }
+            );
+        }
+
+        function addFieldsToCT(ctName, fName, lc) {
+            var ctx = SP.ClientContext.get_current(),
+                web = ctx.get_web(),
+                ctype = web.get_contentTypes(),
+                fields = web.get_fields();
+                
+            // Find content type by name
+            findContentTypeByName(ctName, function(ct) {
+                if (!ct) {
+                    console.error("Content Type not found: " + ctName);
+                    return lc();
+                }
+                
+                // Then load the field object
+                var fld = fields.getByInternalNameOrTitle(fName); 
+                ctx.load(fld);
+                
+                ctx.executeQueryAsync(
+                    function() {
+                        // Now link the field into the found CT
+                        var link = new SP.FieldLinkCreationInformation();
+                        link.set_field(fld); 
+                        ct.get_fieldLinks().add(link); 
+                        ct.update(true);
+                        
+                        ctx.executeQueryAsync(
+                            function() {
+                                $("#ctFieldAddMsg").html("Field " + fName + " added to " + ctName).removeClass("text-danger").addClass("text-success");
+                                console.log('Field ' + fName + ' added to ' + ctName);
+                                addFieldToDefaultView("JSOMListProvision", fName);
+                                lc();
+                            },
+                            function(sender, args) {
+                                $("#ctFieldAddMsg").html("Field add failed." + args.get_message()).removeClass("text-success").addClass("text-danger");
+                                console.error('Error adding field link: ' + args.get_message()); 
+                                lc();
+                            }
+                        );
+                    },
+                    function(s, e) {
+                        console.error("Error loading field: " + e.get_message());
+                        $("#ctFieldAddMsg").html("Error loading field: " + e.get_message()).removeClass("text-success").addClass("text-danger");
+                        lc();
+                    }
+                );
+            });
+        }
+
+        function attachCT(listname, ctName, lc) {
+            // Find the CT object by name
+            findContentTypeByName(ctName, function(ct) {
+                if (!ct) {
+                    console.error('Content Type not found: ' + ctName);
+                    return lc();
+                }
+                
+                // Once CT is found, get the list
+                var ctx = SP.ClientContext.get_current();
+                var web = ctx.get_web();
+                var list = web.get_lists().getByTitle(listname);
+                
+                // Enable content types on the list
+                list.set_contentTypesEnabled(true);
+                list.get_contentTypes().addExistingContentType(ct); 
+                
+                // Enable versioning
+                list.set_enableVersioning(true);
+                list.set_majorVersionLimit(11);
+                list.update(true);
+                
+                // Hide the Title field in the content type
+                var fieldLinks = ct.get_fieldLinks();
+                ctx.load(fieldLinks);
+                
+                ctx.executeQueryAsync(
+                    function() {
+                        var enumerator = fieldLinks.getEnumerator();
+                        while(enumerator.moveNext()) {
+                            var currentLink = enumerator.get_current();
+                            if(currentLink.get_name() === "Title") {
+                                currentLink.set_hidden(true);
+                                currentLink.set_required(false);
+                                ct.update(true);
+                                break;
+                            }
+                        }
+                        
+                        ctx.executeQueryAsync(
+                            function() {
+                                $("#attachCTMsg").html("CT attached to list and Title field hidden").removeClass("text-danger").addClass("text-success"); 
+                                lc();
+                            },
+                            function(sender, args) {
+                                $("#attachCTMsg").html("CT update failed: " + args.get_message()).removeClass("text-success").addClass("text-danger"); 
+                                lc();
+                            }
+                        );
+                    },
+                    function(sender, args) {
+                        $("#attachCTMsg").html("CT attach failed: " + args.get_message()).removeClass("text-success").addClass("text-danger"); 
+                        lc();
+                    }
+                );
+            });
+        }
+
+        function verfifyGroup(name, lc) {
+            var ctx = SP.ClientContext.get_current();
+            var web = ctx.get_web();
+            var groups = web.get_siteGroups();
+            var group;
+            
+            try {
+                group = groups.getByName(name);
+                ctx.load(group);
+                
+                ctx.executeQueryAsync(
+                    function() {
+                        $("#verifygrpMsg").html("Group exists").removeClass("text-danger").addClass("text-success"); 
+                        console.log("Group already exists."); 
+                        lc();
+                    }, 
+                    function() {
+                        createGroup(name, lc); // if not exists
+                    }
+                );
+            } catch (e) {
+                createGroup(name, lc);
+            }
+        }
+
+        function createGroup(name, lc) {
+            var ctx = SP.ClientContext.get_current();
+            var web = ctx.get_web();
+            var groups = web.get_siteGroups();
+            var groupCreationInfo = new SP.GroupCreationInformation();
+            
+            groupCreationInfo.set_title(name);
+            groups.add(groupCreationInfo);
+            
+            ctx.executeQueryAsync(
+                function() { 
+                    $("#createGrpMsg").html("Group created").removeClass("text-danger").addClass("text-success"); 
+                    lc(); 
+                },
+                function(sender, args) {
+                    $("#createGrpMsg").html("Group creation failed: " + args.get_message()).removeClass("text-success").addClass("text-danger"); 
+                    lc();
+                }
+            );
+        }
+
+        function assignPermissions(listTitle, grpName, role, lc) {
+            var ctx = SP.ClientContext.get_current();
+            var web = ctx.get_web();
+            var list = web.get_lists().getByTitle(listTitle);
+            var group = web.get_siteGroups().getByName(grpName);
+            var roleDef = web.get_roleDefinitions().getByType(role);
+            var roleBindings = SP.RoleDefinitionBindingCollection.newObject(ctx);
+            
+            roleBindings.add(roleDef);
+            list.breakRoleInheritance(false);
+            list.get_roleAssignments().add(group, roleBindings);
+            
+            ctx.executeQueryAsync(
+                function() {
+                    $("#createGrpMsg").html("Permission assigned").removeClass("text-danger").addClass("text-success");
+                    lc();
+                },
+                function(sender, args) {
+                    $("#createGrpMsg").html("Failed to assign permission: " + args.get_message()).removeClass("text-success").addClass("text-danger");
+                    lc();
+                }
+            );
+        }
+
+        function createViews(listname, viewName, lc) {
+            var ctx = SP.ClientContext.get_current();
+            var list = ctx.get_web().get_lists().getByTitle(listname);
+            
+            // Enhanced CAML query with filtering and sorting
+            var camlQuery = 
+                "<Query>" +
+                    "<Where>" +
+                        "<And>" +
+                            "<IsNotNull>" +
+                                "<FieldRef Name='studName'/>" +
+                            "</IsNotNull>" +
+                            "<IsNotNull>" +
+                                "<FieldRef Name='uidNo'/>" +
+                            "</IsNotNull>" +
+                        "</And>" +
+                    "</Where>" +
+                    "<OrderBy>" +
+                        "<FieldRef Name='uidNo' Ascending='TRUE' />" +
+                        "<FieldRef Name='studName' Ascending='TRUE' />" +
+                    "</OrderBy>" +
+                "</Query>";
+            
+            var viewCreInfo = new SP.ViewCreationInformation();
+            viewCreInfo.set_title(viewName);
+            viewCreInfo.set_query(camlQuery);
+            viewCreInfo.set_viewFields(['studName', 'uidNo']);
+            viewCreInfo.set_viewTypeKind(SP.ViewType.none); // Keep this unless you need a different type
+            viewCreInfo.set_paged(true);
+            viewCreInfo.set_rowLimit(50);
+            
+            // Add view styling and mobile options
+            viewCreInfo.set_setAsDefaultView(true);
+            viewCreInfo.set_jsLink("clienttemplates.js");
+            viewCreInfo.set_tabularView(true);
+            
+            var views = list.get_views();
+            views.add(viewCreInfo);
+            
+            ctx.load(views);
+            ctx.executeQueryAsync(
+                function() {
+                    $("#viewMsg").html(viewName + ' view Created successfully with sorting and filtering').removeClass("text-danger").addClass("text-success");
+                    lc();
+                },
+                function(sender, args) {
+                    $("#viewMsg").html("Failed to create view: " + args.get_message()).removeClass("text-success").addClass("text-danger");
+                    lc();
+                }
+            );
+        }
+
+        function makeTitleAsOptional(listname, lc) {
+            var ctx = SP.ClientContext.get_current();
+            var web = ctx.get_web();
+            var list = web.get_lists().getByTitle(listname);
+            var titleinfo = list.get_fields().getByInternalNameOrTitle("Title");
+            
+            ctx.load(titleinfo);
+            titleinfo.set_required(false);
+            titleinfo.set_hidden(true);
+            titleinfo.update();
+            
+            ctx.executeQueryAsync(
+                function() {
+                    $("#titleMsg").html("Title made optional and hidden").removeClass("text-danger").addClass("text-success");
+                    lc();
+                },
+                function(sender, args) {
+                    $("#titleMsg").html("Failed to update title field: " + args.get_message()).removeClass("text-success").addClass("text-danger");
+                    lc();
+                }
+            );
+        }
+    </script>
+</body>
+</html>
