@@ -1,3 +1,85 @@
+function defineFields(fieldName, fieldType, lc) {
+    var ctx = SP.ClientContext.get_current();
+    var web = ctx.get_web();
+    
+    var internalName = sanitizeName(fieldName);
+    if (!/[A-Za-z_]/.test(fieldName)) {
+        fieldName = 'F' + fieldName;
+    }
+
+    var fields = web.get_fields();
+    var fieldExists = false;
+
+    ctx.load(fields);
+    ctx.executeQueryAsync(
+        function() {
+            var fieldEnum = fields.getEnumerator();
+            while (fieldEnum.moveNext()) {
+                var field = fieldEnum.get_current();
+                if (field.get_internalName() == fieldName || field.get_title() == fieldName) {
+                    fieldExists = true;
+                    break;
+                }
+            }
+
+            if (fieldExists) {
+                $("#listFieldMsg").html(fieldName + " site column already exists").removeClass("text-danger").addClass("text-warning");
+                lc();
+            } else {
+                var fieldXml = '<Field Type="' + fieldType + '" Name="' + fieldName + '" DisplayName="' + fieldName + '"';
+                if(fieldName == "uidNo") {
+                    fieldXml += ' MaxLength="10" MinLength="5"';
+                }
+                fieldXml += '/>';
+
+                var field = fields.addFieldAsXml(fieldXml, true, SP.AddFieldOptions.defaultValue);
+                ctx.load(field);
+
+                ctx.executeQueryAsync(
+                    function() {
+                        if(fieldName == "uidNo") {
+                            var siteField = fields.getByInternalNameOrTitle(fieldName);
+                            
+                            var validationFormula = "=AND(ISNUMBER([uidNo]),LEN([uidNo])>=5,LEN([uidNo])<=10)";
+                            var validationMessage = "UID must be exactly 5-10 digits";
+
+                            siteField.set_validationFormula(validationFormula);
+                            siteField.set_validationMessage(validationMessage);
+                            siteField.update();
+
+                            ctx.executeQueryAsync(
+                                function() {
+                                    $("#listFieldMsg").html("Site column created with validation").removeClass("text-danger").addClass("text-success");
+                                    lc();
+                                },
+                                function(sender, args) {
+                                    $("#listFieldMsg").html("Created field but validation failed: " + args.get_message()).removeClass("text-success").addClass("text-danger");
+                                    lc();
+                                }
+                            );
+                        } else {
+                            $("#listFieldMsg").html(fieldName + " site column created").removeClass("text-danger").addClass("text-success");
+                            lc();
+                        }
+                    },
+                    function(sender, args) {
+                        $("#listFieldMsg").html("Field creation failed: " + args.get_message()).removeClass("text-success").addClass("text-danger");
+                        lc();
+                    }
+                );
+            }
+        },
+        function(sender, args) {
+            $("#listFieldMsg").html("Failed to load fields: " + args.get_message()).removeClass("text-success").addClass("text-danger");
+            lc();
+        }
+    );
+}
+
+
+
+
+
 function addListItem(listname, studName, uidNo) {
     var ctx = SP.ClientContext.get_current();
     var web = ctx.get_web();
