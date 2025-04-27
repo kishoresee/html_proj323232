@@ -113,65 +113,83 @@
         }
 
         function defineFields(fieldName, fieldType, lc) {
-            var internalName = sanitizeName(fieldName);
-            
-            // ensure it starts with a letter or underscore
-            if (!/[A-Za-z_]/.test(fieldName)) {
-                fieldName = 'F' + fieldName;
-            }
-            
-            var maxLen, minLen;
-            if(fieldName == "uidNo") {
-                maxLen = 10;
-                minLen = 5;
-                
-                if (maxLen < minLen) {
-                    alert("character exceeding more than 10 chars");
-                    return;
-                }
-            }
-            
-            var ctx = SP.ClientContext.get_current(),
-                web = ctx.get_web(),
-                fields = web.get_fields(),
-                field = fields.getByInternalNameOrTitle(fieldName);
-                
-            ctx.load(field);
-            
-            var id = SP.Guid.newGuid().toString(),
-                xml = '<Field' +
-                    ' ID="{' + id + '}" ' +
-                    ' Name="' + fieldName + '"' +
-                    ' DisplayName="' + fieldName + '"' +
-                    (maxLen ? ' MaxLength="' + maxLen + '"' : '') +
-                    (minLen ? ' MinLength="' + minLen + '"' : '') +
-                    ' Type="' + fieldType + '"' +
-                    ' Group="CustomColumns"' +
-                    '/>';
-            
-            console.log(xml);
-            
-            // Add column validation for uidNo field
-            if(fieldName == "uidNo") {
-                xml = xml.replace('/>', '>');
-                xml += '<Validation Message="UID must be between 5 and 10 digits">=5 &amp;&amp; ' + fieldName + '&lt;=10</Validation></Field>';
-            }
-            
-            fields.addFieldAsXml(xml, true, SP.AddFieldOptions.defaultValue);
-            
-            ctx.executeQueryAsync(
-                function() { 
-                    console.log("Field created"); 
-                    $("#listFieldMsg").html("Field " + fieldName + " created successfully.").removeClass("text-danger").addClass("text-success");
-                    lc(); 
-                },
-                function(s, e) {
-                    console.error("Field error: " + e.get_message());
-                    $("#listFieldMsg").html("Field creation failed: " + e.get_message()).removeClass("text-success").addClass("text-danger");
-                    lc();
-                }
-            );
+    var internalName = sanitizeName(fieldName);
+    
+    // Ensure field name starts with a letter or underscore
+    if (!/[A-Za-z_]/.test(fieldName)) {
+        fieldName = 'F' + fieldName;
+    }
+    
+    var maxLen, minLen;
+    if(fieldName == "uidNo") {
+        maxLen = 10;
+        minLen = 5;
+        
+        if (maxLen < minLen) {
+            alert("Maximum length cannot be less than minimum length");
+            return;
         }
+    }
+    
+    var ctx = SP.ClientContext.get_current();
+    var web = ctx.get_web();
+    var list = web.get_lists().getByTitle("JSOMListProvision"); // Reference the list we created
+    var fields = web.get_fields();
+    var field = fields.getByInternalNameOrTitle(fieldName);
+    
+    ctx.load(field);
+    
+    var id = SP.Guid.newGuid().toString();
+    var xml = '<Field' +
+        ' ID="{' + id + '}" ' +
+        ' Name="' + fieldName + '"' +
+        ' DisplayName="' + fieldName + '"' +
+        (maxLen ? ' MaxLength="' + maxLen + '"' : '') +
+        (minLen ? ' MinLength="' + minLen + '"' : '') +
+        ' Type="' + fieldType + '"' +
+        ' Group="CustomColumns"' +
+        '/>';
+    
+    // Add the field to the site columns
+    var newField = fields.addFieldAsXml(xml, true, SP.AddFieldOptions.defaultValue);
+    ctx.load(newField);
+    
+    ctx.executeQueryAsync(
+        function() { 
+            console.log("Field created");
+            
+            // Add UI-visible validation for uidNo field
+            if(fieldName == "uidNo") {
+                // First ensure the field is added to the list
+                var listField = list.get_fields().getByInternalNameOrTitle(fieldName);
+                
+                // Set the validation formula and message
+                listField.set_validationFormula("=AND(ISNUMBER([uidNo]), LEN([uidNo])>=5, LEN([uidNo])<=10)");
+                listField.set_validationMessage("UID must be a numeric value between 5-10 digits");
+                listField.update();
+                
+                ctx.executeQueryAsync(
+                    function() {
+                        $("#listFieldMsg").html(fieldName + " created with validation").removeClass("text-danger").addClass("text-success");
+                        lc();
+                    },
+                    function(sender, args) {
+                        $("#listFieldMsg").html("Validation failed: " + args.get_message()).removeClass("text-success").addClass("text-danger");
+                        lc();
+                    }
+                );
+            } else {
+                $("#listFieldMsg").html(fieldName + " created successfully").removeClass("text-danger").addClass("text-success");
+                lc();
+            }
+        },
+        function(sender, args) {
+            console.error("Field creation error: " + args.get_message());
+            $("#listFieldMsg").html("Field creation failed: " + args.get_message()).removeClass("text-success").addClass("text-danger");
+            lc();
+        }
+    );
+}
 
         function createContentType(name, lc) {
             var ctx = SP.ClientContext.get_current(), 
