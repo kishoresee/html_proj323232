@@ -1,3 +1,28 @@
+function addListItem(listname, studName, uidNo) {
+    var ctx = SP.ClientContext.get_current();
+    var web = ctx.get_web();
+    var list = web.get_lists().getByTitle(listname);
+
+    var itemCreateInfo = new SP.ListItemCreationInformation();
+    var newItem = list.addItem(itemCreateInfo);
+
+    newItem.set_item('Title', 'Sample Title'); // Title is mandatory unless you made it optional
+    newItem.set_item('studName', studName);     // Field you created
+    newItem.set_item('uidNo', uidNo);            // Field with validation
+
+    newItem.update();
+
+    ctx.executeQueryAsync(
+        function() {
+            $("#resultMsg").html("List item added successfully!").removeClass("text-danger").addClass("text-success");
+        },
+        function(sender, args) {
+            $("#resultMsg").html("Failed to add list item: " + args.get_message()).removeClass("text-success").addClass("text-danger");
+        }
+    );
+}
+
+
 function defineFields(fieldName, fieldType, lc) {
     var ctx = SP.ClientContext.get_current();
     var web = ctx.get_web();
