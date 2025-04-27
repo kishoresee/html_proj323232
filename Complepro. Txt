@@ -118,77 +118,77 @@
     var ctx = SP.ClientContext.get_current(),
         web = ctx.get_web(),
         fields = web.get_fields();
-        
-    var exists = false;
-    
+
     try {
         var field = fields.getByInternalNameOrTitle(internalName);
         ctx.load(field);
-        
         ctx.executeQueryAsync(
             function() {
                 // Field exists
-                console.log("Field already exists: " + fieldName);
-                $("#listFieldMsg").html("Field " + fieldName + " already exists. Skipping creation.").removeClass("text-danger").addClass("text-warning");
-                lc(); 
+                console.log("Field already exists: " + fieldName + " - Updating validation if needed");
+                createFieldNow(); // ⚡ FORCE create/update even if exists
             },
             function(s, e) {
-                // Field does not exist, so create it
+                // Field does not exist, create it
+                console.log("Field does not exist: " + fieldName + " - Creating now");
                 createFieldNow();
             }
         );
     } catch (e) {
+        console.log("Exception in field loading, creating field now");
         createFieldNow();
     }
 
     function createFieldNow() {
-    var id = SP.Guid.newGuid().toString(),
-        xml = '<Field' +
-            ' ID="{' + id + '}" ' +
-            ' Name="' + fieldName + '"' +
-            ' DisplayName="' + fieldName + '"' +
-            ' Type="' + fieldType + '"' +
-            ' Group="CustomColumns"' +
-            '/>';
-    
-    console.log(xml);
+        var id = SP.Guid.newGuid().toString(),
+            xml = '<Field' +
+                ' ID="{' + id + '}" ' +
+                ' Name="' + internalName + '"' +
+                ' DisplayName="' + fieldName + '"' +
+                ' Type="' + fieldType + '"' +
+                ' Group="CustomColumns"' +
+                '/>';
 
-    fields.addFieldAsXml(xml, true, SP.AddFieldOptions.defaultValue);
-    ctx.load(fields);
+        console.log("Creating field with XML:", xml);
 
-    ctx.executeQueryAsync(
-        function() {
-            console.log("Field created");
+        fields.addFieldAsXml(xml, true, SP.AddFieldOptions.AddToDefaultContentType);
+        ctx.load(fields);
 
-            if (fieldName == "uidNo") {
-                var field = fields.getByInternalNameOrTitle(fieldName);
-                field.set_validationFormula('=AND(LEN([uidNo])>=5,LEN([uidNo])<=10)');
-                field.set_validationMessage('UID must be between 5 and 10 digits');
-                field.update();
-                ctx.executeQueryAsync(
-                    function() {
-                        console.log("Validation set successfully");
-                        $("#listFieldMsg").html("Field " + fieldName + " created successfully with validation.").removeClass("text-danger").addClass("text-success");
-                        lc();
-                    },
-                    function(s, e) {
-                        console.error("Validation error: " + e.get_message());
-                        $("#listFieldMsg").html("Validation setting failed: " + e.get_message()).removeClass("text-success").addClass("text-danger");
-                        lc();
-                    }
-                );
-            } else {
-                $("#listFieldMsg").html("Field " + fieldName + " created successfully.").removeClass("text-danger").addClass("text-success");
+        ctx.executeQueryAsync(
+            function() {
+                console.log("Field created or updated: " + fieldName);
+
+                if (fieldName === "uidNo") {
+                    var field = fields.getByInternalNameOrTitle(internalName);
+                    field.set_validationFormula('=AND(LEN([uidNo])>=5,LEN([uidNo])<=10)');
+                    field.set_validationMessage('UID must be between 5 and 10 digits');
+                    field.update();
+                    ctx.executeQueryAsync(
+                        function() {
+                            console.log("Validation set successfully");
+                            $("#listFieldMsg").html("Field " + fieldName + " created/updated successfully with validation.").removeClass("text-danger").addClass("text-success");
+                            lc();
+                        },
+                        function(s, e) {
+                            console.error("Validation setting error: " + e.get_message());
+                            $("#listFieldMsg").html("Validation setting failed: " + e.get_message()).removeClass("text-success").addClass("text-danger");
+                            lc();
+                        }
+                    );
+                } else {
+                    $("#listFieldMsg").html("Field " + fieldName + " created successfully.").removeClass("text-danger").addClass("text-success");
+                    lc();
+                }
+            },
+            function(s, e) {
+                console.error("Field creation error: " + e.get_message());
+                $("#listFieldMsg").html("Field creation failed: " + e.get_message()).removeClass("text-success").addClass("text-danger");
                 lc();
             }
-        },
-        function(s, e) {
-            console.error("Field error: " + e.get_message());
-            $("#listFieldMsg").html("Field creation failed: " + e.get_message()).removeClass("text-success").addClass("text-danger");
-            lc();
-        }
-    );
+        );
+    }
 }
+
 
 
 
