@@ -403,57 +403,73 @@
             );
         }
 
-        function createViews(listname, viewName, lc) {
-            var ctx = SP.ClientContext.get_current();
-            var list = ctx.get_web().get_lists().getByTitle(listname);
+       function createViews(listname, viewName, lc) {
+    var ctx = SP.ClientContext.get_current();
+    var list = ctx.get_web().get_lists().getByTitle(listname);
+    
+    // Create CAML query with filtering and sorting
+    var camlQuery = 
+        "<Query>" +
+            "<Where>" +
+                "<And>" +
+                    "<IsNotNull>" +
+                        "<FieldRef Name='studName'/>" +
+                    "</IsNotNull>" +
+                    "<IsNotNull>" +
+                        "<FieldRef Name='uidNo'/>" +
+                    "</IsNotNull>" +
+                "</And>" +
+            "</Where>" +
+            "<OrderBy>" +
+                "<FieldRef Name='uidNo' Ascending='TRUE' />" +
+                "<FieldRef Name='studName' Ascending='TRUE' />" +
+            "</OrderBy>" +
+        "</Query>";
+    
+    var viewCreInfo = new SP.ViewCreationInformation();
+    viewCreInfo.set_title(viewName);
+    viewCreInfo.set_query(camlQuery);
+    
+    // Set view fields
+    viewCreInfo.set_viewFields(['studName', 'uidNo']);
+    
+    // Set view properties
+    viewCreInfo.set_viewTypeKind(SP.ViewType.none);
+    viewCreInfo.set_paged(true);
+    viewCreInfo.set_rowLimit(50);
+    viewCreInfo.set_setAsDefaultView(true);
+    viewCreInfo.set_tabularView(true);
+    
+    // Create the view
+    var views = list.get_views();
+    var newView = views.add(viewCreInfo);
+    
+    // Load and execute
+    ctx.load(newView);
+    ctx.executeQueryAsync(
+        function() {
+            // After view is created, we can add additional settings if needed
+            var viewToUpdate = list.get_views().getByTitle(viewName);
+            ctx.load(viewToUpdate);
             
-            // Enhanced CAML query with filtering and sorting
-            var camlQuery = 
-                "<Query>" +
-                    "<Where>" +
-                        "<And>" +
-                            "<IsNotNull>" +
-                                "<FieldRef Name='studName'/>" +
-                            "</IsNotNull>" +
-                            "<IsNotNull>" +
-                                "<FieldRef Name='uidNo'/>" +
-                            "</IsNotNull>" +
-                        "</And>" +
-                    "</Where>" +
-                    "<OrderBy>" +
-                        "<FieldRef Name='uidNo' Ascending='TRUE' />" +
-                        "<FieldRef Name='studName' Ascending='TRUE' />" +
-                    "</OrderBy>" +
-                "</Query>";
-            
-            var viewCreInfo = new SP.ViewCreationInformation();
-            viewCreInfo.set_title(viewName);
-            viewCreInfo.set_query(camlQuery);
-            viewCreInfo.set_viewFields(['studName', 'uidNo']);
-            viewCreInfo.set_viewTypeKind(SP.ViewType.none); // Keep this unless you need a different type
-            viewCreInfo.set_paged(true);
-            viewCreInfo.set_rowLimit(50);
-            
-            // Add view styling and mobile options
-            viewCreInfo.set_setAsDefaultView(true);
-            viewCreInfo.set_jsLink("clienttemplates.js");
-            viewCreInfo.set_tabularView(true);
-            
-            var views = list.get_views();
-            views.add(viewCreInfo);
-            
-            ctx.load(views);
             ctx.executeQueryAsync(
                 function() {
-                    $("#viewMsg").html(viewName + ' view Created successfully with sorting and filtering').removeClass("text-danger").addClass("text-success");
+                    // Here you could modify additional view properties if needed
+                    $("#viewMsg").html(viewName + ' view created successfully with sorting and filtering').removeClass("text-danger").addClass("text-success");
                     lc();
                 },
                 function(sender, args) {
-                    $("#viewMsg").html("Failed to create view: " + args.get_message()).removeClass("text-success").addClass("text-danger");
+                    $("#viewMsg").html("View created but additional settings failed: " + args.get_message()).removeClass("text-success").addClass("text-danger");
                     lc();
                 }
             );
+        },
+        function(sender, args) {
+            $("#viewMsg").html("Failed to create view: " + args.get_message()).removeClass("text-success").addClass("text-danger");
+            lc();
         }
+    );
+}
 
         function makeTitleAsOptional(listname, lc) {
             var ctx = SP.ClientContext.get_current();
