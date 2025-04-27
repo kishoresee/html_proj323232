@@ -112,7 +112,7 @@
             return raw.replace(/"/g, '').trim(); //replace function is used double ("") replaced with then trimed to remove the trailing
         }
 
-     function defineFields(fieldName, fieldType, lc) {
+    function defineFields(fieldName, fieldType, lc) {
     var ctx = SP.ClientContext.get_current();
     var web = ctx.get_web();
     
@@ -122,12 +122,19 @@
         fieldName = 'F' + fieldName;
     }
 
-    // Create field at SITE level (not list level)
-    var fieldXml = '<Field Type="' + fieldType + '" Name="' + fieldName + '" DisplayName="' + fieldName + '"';
+    // Create field at site level
+    var fieldXml = '<Field Type="' + fieldType + '" ' +
+                   'Name="' + fieldName + '" ' +
+                   'DisplayName="' + fieldName + '" ' +
+                   'Group="Custom Columns">';
+    
     if(fieldName == "uidNo") {
-        fieldXml += ' MaxLength="10" MinLength="5"';
+        fieldXml += '<Validation Message="UID must be 5-10 digits">' +
+                    'LEN([uidNo])&gt;=5 AND LEN([uidNo])&lt;=10' +
+                    '</Validation>';
     }
-    fieldXml += '/>';
+    
+    fieldXml += '</Field>';
 
     // Add field to site columns
     var field = web.get_fields().addFieldAsXml(fieldXml, true, SP.AddFieldOptions.defaultValue);
@@ -135,31 +142,8 @@
     
     ctx.executeQueryAsync(
         function() {
-            // Now add validation to the SITE column
-            if(fieldName == "uidNo") {
-                var siteField = web.get_fields().getByInternalNameOrTitle(fieldName);
-                
-                var validationFormula = "=AND(ISNUMBER([uidNo]),LEN([uidNo])>=5,LEN([uidNo])<=10)";
-                var validationMessage = "UID must be exactly 5-10 digits";
-                
-                siteField.set_validationFormula(validationFormula);
-                siteField.set_validationMessage(validationMessage);
-                siteField.update();
-                
-                ctx.executeQueryAsync(
-                    function() {
-                        $("#listFieldMsg").html("Site column created with validation").removeClass("text-danger").addClass("text-success");
-                        lc();
-                    },
-                    function(sender, args) {
-                        $("#listFieldMsg").html("Created field but validation failed: " + args.get_message()).removeClass("text-success").addClass("text-danger");
-                        lc();
-                    }
-                );
-            } else {
-                $("#listFieldMsg").html(fieldName + " site column created").removeClass("text-danger").addClass("text-success");
-                lc();
-            }
+            $("#listFieldMsg").html(fieldName + " site column created").removeClass("text-danger").addClass("text-success");
+            lc();
         },
         function(sender, args) {
             $("#listFieldMsg").html("Field creation failed: " + args.get_message()).removeClass("text-success").addClass("text-danger");
@@ -264,64 +248,69 @@
         );
     });
 }
-        function attachCT(listname, ctName, lc) {
-            // Find the CT object by name
-            findContentTypeByName(ctName, function(ct) {
-                if (!ct) {
-                    console.error('Content Type not found: ' + ctName);
-                    return lc();
-                }
-                
-                // Once CT is found, get the list
-                var ctx = SP.ClientContext.get_current();
-                var web = ctx.get_web();
-                var list = web.get_lists().getByTitle(listname);
-                
-                // Enable content types on the list
-                list.set_contentTypesEnabled(true);
-                list.get_contentTypes().addExistingContentType(ct); 
-                
-                // Enable versioning
-                list.set_enableVersioning(true);
-                list.set_majorVersionLimit(11);
-                list.update(true);
-                
-                // Hide the Title field in the content type
-                var fieldLinks = ct.get_fieldLinks();
-                ctx.load(fieldLinks);
-                
-                ctx.executeQueryAsync(
-                    function() {
-                        var enumerator = fieldLinks.getEnumerator();
-                        while(enumerator.moveNext()) {
-                            var currentLink = enumerator.get_current();
-                            if(currentLink.get_name() === "Title") {
-                                currentLink.set_hidden(true);
-                                currentLink.set_required(false);
-                                ct.update(true);
-                                break;
-                            }
-                        }
-                        
-                        ctx.executeQueryAsync(
-                            function() {
-                                $("#attachCTMsg").html("CT attached to list and Title field hidden").removeClass("text-danger").addClass("text-success"); 
-                                lc();
-                            },
-                            function(sender, args) {
-                                $("#attachCTMsg").html("CT update failed: " + args.get_message()).removeClass("text-success").addClass("text-danger"); 
-                                lc();
-                            }
-                        );
-                    },
-                    function(sender, args) {
-                        $("#attachCTMsg").html("CT attach failed: " + args.get_message()).removeClass("text-success").addClass("text-danger"); 
-                        lc();
-                    }
-                );
+       function attachCT(listname, ctName, lc) {
+    findContentTypeByName(ctName, function(ct) {
+        if (!ct) return lc();
+
+        var ctx = SP.ClientContext.get_current();
+        var web = ctx.get_web();
+        var list = web.get_lists().getByTitle(listname);
+
+        // Remove any existing list columns that conflict with our content type
+        try {
+            var fields = list.get_fields();
+            ctx.load(fields);
+            ctx.executeQueryAsync(function() {
+                // Remove if fields exist directly on list
+                removeFieldIfExists(list, "uidNo", function() {
+                    removeFieldIfExists(list, "studName", function() {
+                        proceedWithCTAttach();
+                    });
+                });
             });
+        } catch(e) {
+            proceedWithCTAttach();
         }
 
+        function proceedWithCTAttach() {
+            // Enable content types
+            list.set_contentTypesEnabled(true);
+            list.update();
+
+            // Add content type to list
+            list.get_contentTypes().addExistingContentType(ct);
+            
+            // Set as default
+            var ctCol = list.get_contentTypes();
+            ctx.load(ctCol);
+            
+            ctx.executeQueryAsync(
+                function() {
+                    $("#attachCTMsg").html("CT attached successfully").removeClass("text-danger").addClass("text-success");
+                    lc();
+                },
+                function(sender, args) {
+                    $("#attachCTMsg").html("CT attach failed: " + args.get_message()).removeClass("text-success").addClass("text-danger");
+                    lc();
+                }
+            );
+        }
+    });
+}
+
+function removeFieldIfExists(list, fieldName, callback) {
+    var ctx = SP.ClientContext.get_current();
+    try {
+        var field = list.get_fields().getByInternalNameOrTitle(fieldName);
+        field.deleteObject();
+        ctx.executeQueryAsync(
+            function() { callback(); },
+            function() { callback(); } // Continue even if delete fails
+        );
+    } catch(e) {
+        callback();
+    }
+}
         function verfifyGroup(name, lc) {
             var ctx = SP.ClientContext.get_current();
             var web = ctx.get_web();
@@ -399,23 +388,26 @@
     var viewCreInfo = new SP.ViewCreationInformation();
     viewCreInfo.set_title(viewName);
     
-    // Just set the fields - nothing else
-    viewCreInfo.set_viewFields(['studName', 'uidNo']);
+    // Use the content type field references
+    viewCreInfo.set_viewFields([
+        "LinkTitle", // This is the Title field from content type
+        "studName",
+        "uidNo"
+    ]);
     
     list.get_views().add(viewCreInfo);
     
     ctx.executeQueryAsync(
         function() {
-            $("#viewMsg").html('Basic view created - configure sorting manually').removeClass("text-danger").addClass("text-success");
+            $("#viewMsg").html(viewName + ' view created').removeClass("text-danger").addClass("text-success");
             lc();
         },
         function(sender, args) {
-            $("#viewMsg").html("Failed to create basic view: " + args.get_message()).removeClass("text-success").addClass("text-danger");
+            $("#viewMsg").html("View creation failed: " + args.get_message()).removeClass("text-success").addClass("text-danger");
             lc();
         }
     );
 }
-
         function makeTitleAsOptional(listname, lc) {
             var ctx = SP.ClientContext.get_current();
             var web = ctx.get_web();
