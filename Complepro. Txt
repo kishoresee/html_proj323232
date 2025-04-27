@@ -112,10 +112,9 @@
             return raw.replace(/"/g, '').trim(); //replace function is used double ("") replaced with then trimed to remove the trailing
         }
 
-      function defineFields(fieldName, fieldType, lc) {
+     function defineFields(fieldName, fieldType, lc) {
     var ctx = SP.ClientContext.get_current();
     var web = ctx.get_web();
-    var list = web.get_lists().getByTitle("JSOMListProvision");
     
     // Clean field name
     var internalName = sanitizeName(fieldName);
@@ -123,34 +122,33 @@
         fieldName = 'F' + fieldName;
     }
 
-    // Field properties
+    // Create field at SITE level (not list level)
     var fieldXml = '<Field Type="' + fieldType + '" Name="' + fieldName + '" DisplayName="' + fieldName + '"';
     if(fieldName == "uidNo") {
         fieldXml += ' MaxLength="10" MinLength="5"';
     }
     fieldXml += '/>';
 
-    // Add field to list (not site columns)
-    var field = list.get_fields().addFieldAsXml(fieldXml, true, SP.AddFieldOptions.addToDefaultContentType);
+    // Add field to site columns
+    var field = web.get_fields().addFieldAsXml(fieldXml, true, SP.AddFieldOptions.defaultValue);
     ctx.load(field);
     
     ctx.executeQueryAsync(
         function() {
-            // For uidNo field, add validation
+            // Now add validation to the SITE column
             if(fieldName == "uidNo") {
-                var listField = list.get_fields().getByInternalNameOrTitle(fieldName);
+                var siteField = web.get_fields().getByInternalNameOrTitle(fieldName);
                 
-                // Use proper SharePoint validation formula syntax
                 var validationFormula = "=AND(ISNUMBER([uidNo]),LEN([uidNo])>=5,LEN([uidNo])<=10)";
                 var validationMessage = "UID must be exactly 5-10 digits";
                 
-                listField.set_validationFormula(validationFormula);
-                listField.set_validationMessage(validationMessage);
-                listField.update();
+                siteField.set_validationFormula(validationFormula);
+                siteField.set_validationMessage(validationMessage);
+                siteField.update();
                 
                 ctx.executeQueryAsync(
                     function() {
-                        $("#listFieldMsg").html("uidNo field created with validation").removeClass("text-danger").addClass("text-success");
+                        $("#listFieldMsg").html("Site column created with validation").removeClass("text-danger").addClass("text-success");
                         lc();
                     },
                     function(sender, args) {
@@ -159,7 +157,7 @@
                     }
                 );
             } else {
-                $("#listFieldMsg").html(fieldName + " created successfully").removeClass("text-danger").addClass("text-success");
+                $("#listFieldMsg").html(fieldName + " site column created").removeClass("text-danger").addClass("text-success");
                 lc();
             }
         },
@@ -169,7 +167,6 @@
         }
     );
 }
-
 
 
 
@@ -229,53 +226,44 @@
         }
 
         function addFieldsToCT(ctName, fName, lc) {
-            var ctx = SP.ClientContext.get_current(),
-                web = ctx.get_web(),
-                ctype = web.get_contentTypes(),
-                fields = web.get_fields();
-                
-            // Find content type by name
-            findContentTypeByName(ctName, function(ct) {
-                if (!ct) {
-                    console.error("Content Type not found: " + ctName);
-                    return lc();
-                }
-                
-                // Then load the field object
-                var fld = fields.getByInternalNameOrTitle(fName); 
-                ctx.load(fld);
+    var ctx = SP.ClientContext.get_current();
+    var web = ctx.get_web();
+    
+    findContentTypeByName(ctName, function(ct) {
+        if (!ct) {
+            console.error("Content Type not found: " + ctName);
+            return lc();
+        }
+        
+        // Get the SITE column (not list column)
+        var field = web.get_fields().getByInternalNameOrTitle(fName); 
+        ctx.load(field);
+        
+        ctx.executeQueryAsync(
+            function() {
+                var link = new SP.FieldLinkCreationInformation();
+                link.set_field(field); 
+                ct.get_fieldLinks().add(link); 
+                ct.update(true);
                 
                 ctx.executeQueryAsync(
                     function() {
-                        // Now link the field into the found CT
-                        var link = new SP.FieldLinkCreationInformation();
-                        link.set_field(fld); 
-                        ct.get_fieldLinks().add(link); 
-                        ct.update(true);
-                        
-                        ctx.executeQueryAsync(
-                            function() {
-                                $("#ctFieldAddMsg").html("Field " + fName + " added to " + ctName).removeClass("text-danger").addClass("text-success");
-                                console.log('Field ' + fName + ' added to ' + ctName);
-                                addFieldToDefaultView("JSOMListProvision", fName);
-                                lc();
-                            },
-                            function(sender, args) {
-                                $("#ctFieldAddMsg").html("Field add failed." + args.get_message()).removeClass("text-success").addClass("text-danger");
-                                console.error('Error adding field link: ' + args.get_message()); 
-                                lc();
-                            }
-                        );
+                        $("#ctFieldAddMsg").html("Field " + fName + " added to CT").removeClass("text-danger").addClass("text-success");
+                        lc();
                     },
-                    function(s, e) {
-                        console.error("Error loading field: " + e.get_message());
-                        $("#ctFieldAddMsg").html("Error loading field: " + e.get_message()).removeClass("text-success").addClass("text-danger");
+                    function(sender, args) {
+                        $("#ctFieldAddMsg").html("Failed to add field to CT: " + args.get_message()).removeClass("text-success").addClass("text-danger");
                         lc();
                     }
                 );
-            });
-        }
-
+            },
+            function(sender, args) {
+                $("#ctFieldAddMsg").html("Failed to load field: " + args.get_message()).removeClass("text-success").addClass("text-danger");
+                lc();
+            }
+        );
+    });
+}
         function attachCT(listname, ctName, lc) {
             // Find the CT object by name
             findContentTypeByName(ctName, function(ct) {
