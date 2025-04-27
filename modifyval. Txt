@@ -1,3 +1,43 @@
+if (fieldExists) {
+    if(fieldName == "uidNo") {
+        var siteField = fields.getByInternalNameOrTitle(fieldName);
+
+        ctx.load(siteField);
+        ctx.executeQueryAsync(
+            function() {
+                var validationFormula = "=AND(ISNUMBER([uidNo]),LEN([uidNo])>=5,LEN([uidNo])<=10)";
+                var validationMessage = "UID must be exactly 5-10 digits";
+
+                siteField.set_validationFormula(validationFormula);
+                siteField.set_validationMessage(validationMessage);
+                siteField.update();
+
+                ctx.executeQueryAsync(
+                    function() {
+                        $("#listFieldMsg").html(fieldName + " already existed but validation updated").removeClass("text-danger").addClass("text-success");
+                        lc();
+                    },
+                    function(sender, args) {
+                        $("#listFieldMsg").html("Failed to update validation for existing field: " + args.get_message()).removeClass("text-success").addClass("text-danger");
+                        lc();
+                    }
+                );
+            },
+            function(sender, args) {
+                $("#listFieldMsg").html("Failed to load existing field: " + args.get_message()).removeClass("text-success").addClass("text-danger");
+                lc();
+            }
+        );
+    } else {
+        $("#listFieldMsg").html(fieldName + " site column already exists").removeClass("text-danger").addClass("text-warning");
+        lc();
+    }
+}
+
+
+
+
+
 function defineFields(fieldName, fieldType, lc) {
     var ctx = SP.ClientContext.get_current();
     var web = ctx.get_web();
