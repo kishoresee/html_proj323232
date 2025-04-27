@@ -425,51 +425,21 @@
     var ctx = SP.ClientContext.get_current();
     var list = ctx.get_web().get_lists().getByTitle(listname);
     
-    // 1. First create the view with just a title
     var viewCreInfo = new SP.ViewCreationInformation();
     viewCreInfo.set_title(viewName);
     
-    // 2. Create the view first without any fancy settings
-    var newView = list.get_views().add(viewCreInfo);
-    ctx.load(newView);
+    // Just set the fields - nothing else
+    viewCreInfo.set_viewFields(['studName', 'uidNo']);
+    
+    list.get_views().add(viewCreInfo);
     
     ctx.executeQueryAsync(
         function() {
-            // 3. After view is created, update it with our settings
-            var viewToUpdate = list.get_views().getByTitle(viewName);
-            
-            // Set the view fields
-            viewToUpdate.get_viewFields().removeAll();
-            viewToUpdate.get_viewFields().add('studName');
-            viewToUpdate.get_viewFields().add('uidNo');
-            
-            // Set a simple sort order
-            var query = new SP.CamlQuery();
-            query.set_viewXml(
-                "<View>" +
-                    "<Query>" +
-                        "<OrderBy>" +
-                            "<FieldRef Name='uidNo' Ascending='TRUE' />" +
-                        "</OrderBy>" +
-                    "</Query>" +
-                "</View>"
-            );
-            viewToUpdate.set_viewQuery(query.get_viewXml());
-            
-            viewToUpdate.update();
-            ctx.executeQueryAsync(
-                function() {
-                    $("#viewMsg").html(viewName + ' view created successfully').removeClass("text-danger").addClass("text-success");
-                    lc();
-                },
-                function(sender, args) {
-                    $("#viewMsg").html("View created but settings failed: " + args.get_message()).removeClass("text-success").addClass("text-danger");
-                    lc();
-                }
-            );
+            $("#viewMsg").html('Basic view created - configure sorting manually').removeClass("text-danger").addClass("text-success");
+            lc();
         },
         function(sender, args) {
-            $("#viewMsg").html("Failed to create view: " + args.get_message()).removeClass("text-success").addClass("text-danger");
+            $("#viewMsg").html("Failed to create basic view: " + args.get_message()).removeClass("text-success").addClass("text-danger");
             lc();
         }
     );
