@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subsite Creation</title>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/sp.js/16.1.0/sp.min.js"></script>
+    <script type="text/javascript">
+        // Function to create a subsite
+        var createTeamSite = function(siteName, success, error) {
+            var ctx = SP.ClientContext.get_current();
+            var parentWeb = ctx.get_web();
+
+            var info = new SP.WebCreationInformation();
+            info.set_title(siteName);
+            info.set_description(siteName);
+            info.set_language(1033); // English
+            info.set_url(siteName); // Site URL relative to parent
+            info.set_useSamePermissionsAsParentSite(false); // Unique permissions
+            info.set_webTemplate('STS'); // Team site template
+
+            var newWeb = parentWeb.get_webs().add(info);
+            parentWeb.update();
+
+            ctx.executeQueryAsync(
+                function() {
+                    success(newWeb); // Return the new web object
+                },
+                error
+            );
+        };
+
+        // Function to log errors
+        function logError(sender, args) {
+            console.log("Error: " + args.get_message());
+        }
+
+        // Function to handle the button click and trigger subsite creation
+        function onCreateSubsiteClick() {
+            var siteName = document.getElementById("siteNameInput").value;
+
+            if (!siteName) {
+                alert("Please enter a valid site name.");
+                return;
+            }
+
+            createTeamSite(siteName,
+                function(web) {
+                    // Create new context for the newly created subsite
+                    var ctx = new SP.ClientContext(web.get_serverRelativeUrl());
+
+                    // Get root web and its permission groups
+                    var site = ctx.get_site();
+                    var rootWeb = site.get_rootWeb();
+
+                    var ownerGroup = rootWeb.get_associatedOwnerGroup();
+                    var memberGroup = rootWeb.get_associatedMemberGroup();
+                    var visitorGroup = rootWeb.get_associatedVisitorGroup();
+
+                    // Assign groups to new web
+                    web.set_associatedOwnerGroup(ownerGroup);
+                    web.set_associatedMemberGroup(memberGroup);
+                    web.set_associatedVisitorGroup(visitorGroup);
+                    web.update();
+
+                    ctx.load(web);
+                    ctx.executeQueryAsync(
+                        function() {
+                            console.log(web.get_title() + " site has been created.");
+
+                            // Here you can call your provisioning function like:
+                            // provisionAllFunc(ctx, web);
+                        },
+                        logError
+                    );
+                },
+                logError
+            );
+        }
+    </script>
+</head>
+<body>
+    <h1>Create a New Subsite</h1>
+
+    <!-- Input field for the site name -->
+    <label for="siteNameInput">Site Name: </label>
+    <input type="text" id="siteNameInput" placeholder="Enter subsite name" />
+
+    <!-- Button to trigger the subsite creation -->
+    <button onclick="onCreateSubsiteClick()">Create Subsite</button>
+
+</body>
+</html>
