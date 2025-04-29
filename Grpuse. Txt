@@ -1,0 +1,51 @@
+function addUserToGroup(userLoginName, groupName) {
+    var context = SP.ClientContext.get_current();
+    var web = context.get_web();
+    
+    // Retrieve the group by name
+    var group = web.get_siteGroups().getByName(groupName);
+    var users = group.get_users();
+    
+    // Load the group users to check if the user is already in the group
+    context.load(users);
+    
+    context.executeQueryAsync(
+        function() {
+            var userExists = false;
+            
+            // Loop through the group members to see if the user already exists
+            var enumerator = users.getEnumerator();
+            while (enumerator.moveNext()) {
+                var currentUser = enumerator.get_current();
+                if (currentUser.get_loginName() === userLoginName) {
+                    userExists = true;
+                    break;
+                }
+            }
+
+            if (!userExists) {
+                // Get the user by login name
+                var user = web.get_siteUsers().getByLoginName(userLoginName);
+                group.get_users().addUser(user);  // Add the user to the group
+                
+                context.executeQueryAsync(
+                    function() {
+                        console.log("User added to group successfully.");
+                    },
+                    function(sender, args) {
+                        console.error("Error adding user to group: " + args.get_message());
+                    }
+                );
+            } else {
+                console.log("User is already a member of the group.");
+            }
+        },
+        function(sender, args) {
+            // Log the error if group loading fails
+            console.error("Error loading group users: " + args.get_message());
+        }
+    );
+}
+
+// Example usage
+addUserToGroup("i:0#.f|membership|user@example.com", "Your Group Name");
