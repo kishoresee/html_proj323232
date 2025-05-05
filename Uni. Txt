@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>University Management System</title>
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #73eca5;
+      color: #003300;
+    }
+    .card {
+      margin-bottom: 20px;
+    }
+    .btn-custom {
+      background-color: #004d00;
+      color: white;
+    }
+    .btn-custom:hover {
+      background-color: #006600;
+    }
+  </style>
+</head>
+<body>
+  <div class="container py-4">
+    <h2 class="text-center mb-4">University Management System</h2>
+    <div class="row">
+
+      <!-- Student Management -->
+      <div class="col-md-6">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title">Student Management</h5>
+            <p class="card-text">Manage the student records and personal details.</p>
+            <button class="btn btn-custom" onclick="createList('Students', 'List of students', 100)">Create Student List</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Faculty Management -->
+      <div class="col-md-6">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title">Faculty Management</h5>
+            <p class="card-text">Manage faculty members and their assignments.</p>
+            <button class="btn btn-custom" onclick="createList('Faculty', 'List of faculty members', 100)">Create Faculty List</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Course Management -->
+      <div class="col-md-6">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title">Course Management</h5>
+            <p class="card-text">Create and manage academic courses.</p>
+            <button class="btn btn-custom" onclick="createList('Courses', 'Courses offered', 100)">Create Course List</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Department Management -->
+      <div class="col-md-6">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title">Department Management</h5>
+            <p class="card-text">List and manage academic departments.</p>
+            <button class="btn btn-custom" onclick="createList('Departments', 'University departments', 100)">Create Department List</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Enrollment Management -->
+      <div class="col-md-12">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title">Enrollment Management</h5>
+            <p class="card-text">Enroll students into courses with records.</p>
+            <button class="btn btn-custom" onclick="createList('Enrollments', 'Enrollment records', 100)">Create Enrollment List</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Book Stock Management -->
+      <div class="col-md-12">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title">Library Book Stock</h5>
+            <p class="card-text">Track books available for learning, issued and remaining stock.</p>
+            <button class="btn btn-custom" onclick="createList('BookStock', 'Library book stock', 100)">Create Book Stock List</button>
+            <button class="btn btn-custom mt-2" onclick="calculateBookStock()">Show Book Summary</button>
+            <p id="bookSummary" class="mt-2"></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Attendance Management -->
+      <div class="col-md-12">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title">Attendance Management</h5>
+            <p class="card-text">Track student and faculty leaves for attendance analysis.</p>
+            <button class="btn btn-custom" onclick="createAttendanceList()">Create Attendance List with Fields & Permissions</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <hr class="my-4">
+
+    <div class="text-center">
+      <h4>Advanced Settings</h4>
+      <button class="btn btn-custom m-1" onclick="createGroup('Faculty Members', 'Group for all faculty')">Create Faculty Group</button>
+      <button class="btn btn-custom m-1" onclick="createGroup('Students', 'Group for all students')">Create Student Group</button>
+      <button class="btn btn-custom m-1" onclick="createContentType('Student Record', '0x01', 'University Content Types')">Create Content Type</button>
+    </div>
+  </div>
+
+  <!-- SharePoint JSOM Scripts -->
+  <script type="text/javascript" src="/_layouts/15/SP.Runtime.js"></script>
+  <script type="text/javascript" src="/_layouts/15/SP.js"></script>
+
+  <!-- JSOM Functions -->
+  <script>
+    function createList(title, description, template) {
+      var ctx = new SP.ClientContext.get_current();
+      var web = ctx.get_web();
+      var listInfo = new SP.ListCreationInformation();
+      listInfo.set_title(title);
+      listInfo.set_description(description);
+      listInfo.set_templateType(template);
+      var list = web.get_lists().add(listInfo);
+      ctx.load(list);
+      ctx.executeQueryAsync(
+        function () { alert(title + " list created."); },
+        function (sender, args) { alert("Error: " + args.get_message()); }
+      );
+    }
+
+    function createGroup(name, description) {
+      var ctx = new SP.ClientContext.get_current();
+      var web = ctx.get_web();
+      var groupInfo = new SP.GroupCreationInformation();
+      groupInfo.set_title(name);
+      groupInfo.set_description(description);
+      var group = web.get_siteGroups().add(groupInfo);
+      ctx.load(group);
+      ctx.executeQueryAsync(
+        function () { alert("Group " + name + " created."); },
+        function (sender, args) { alert("Error: " + args.get_message()); }
+      );
+    }
+
+    function createContentType(name, parentId, group) {
+      var ctx = new SP.ClientContext.get_current();
+      var web = ctx.get_web();
+      var contentTypes = web.get_contentTypes();
+      var parentCT = contentTypes.getById(parentId);
+      var info = new SP.ContentTypeCreationInformation();
+      info.set_name(name);
+      info.set_parentContentType(parentCT);
+      info.set_group(group);
+      var newCT = contentTypes.add(info);
+      ctx.load(newCT);
+      ctx.executeQueryAsync(
+        function () { alert("Content type " + name + " created."); },
+        function (sender, args) { alert("Error: " + args.get_message()); }
+      );
+    }
+
+    function calculateBookStock() {
+      var ctx = new SP.ClientContext.get_current();
+      var list = ctx.get_web().get_lists().getByTitle('BookStock');
+      var query = new SP.CamlQuery();
+      query.set_viewXml('<View><RowLimit>500</RowLimit></View>');
+      var items = list.getItems(query);
+      ctx.load(items);
+      ctx.executeQueryAsync(
+        function () {
+          var total = 0, issued = 0;
+          var enumerator = items.getEnumerator();
+          while (enumerator.moveNext()) {
+            var item = enumerator.get_current();
+            total += item.get_item('TotalBooks');
+            issued += item.get_item('IssuedBooks');
+          }
+          var remaining = total - issued;
+          document.getElementById("bookSummary").innerHTML =
+            `Total Books: ${total}, Issued: ${issued}, Remaining: ${remaining}`;
+        },
+        function (sender, args) {
+          alert("Error: " + args.get_message());
+        }
+      );
+    }
+
+    function createAttendanceList() {
+      var ctx = new SP.ClientContext.get_current();
+      var web = ctx.get_web();
+
+      // Step 1: Create the list
+      var listInfo = new SP.ListCreationInformation();
+      listInfo.set_title('Attendance');
+      listInfo.set_templateType(100);
+      var attendanceList = web.get_lists().add(listInfo);
+
+      ctx.load(attendanceList);
+
+      ctx.executeQueryAsync(function () {
+        alert("Attendance list created.");
+
+        // Step 2: Add Fields
+        var fields = attendanceList.get_fields();
+        fields.addFieldAsXml('<Field DisplayName="Name" Type="Text" />', true, SP.AddFieldOptions.defaultValue);
+        fields.addFieldAsXml('<Field DisplayName="Type" Type="Choice"><CHOICES><CHOICE>Student</CHOICE><CHOICE>Faculty</CHOICE></CHOICES></Field>', true, SP.AddFieldOptions.defaultValue);
+        fields.addFieldAsXml('<Field DisplayName="Date" Type="DateTime" Format="DateOnly" />', true, SP.AddFieldOptions.defaultValue);
+        fields.addFieldAsXml('<Field DisplayName="LeaveReason" Type="Note" />', true, SP.AddFieldOptions.defaultValue);
+
+        ctx.executeQueryAsync(function () {
+          alert("Fields added to Attendance list.");
+
+          // Step 3: Set Permissions
+          attendanceList.breakRoleInheritance(true, false);
+          var studentsGroup = web.get_siteGroups().getByName("Students");
+          var facultyGroup = web.get_siteGroups().getByName("Faculty Members");
+
+          attendanceList.get_roleAssignments().add(studentsGroup, SP.RoleDefinitionBindingCollection.newObject(ctx).add(web.get_roleDefinitions().getByName("Read")));
+          attendanceList.get_roleAssignments().add(facultyGroup, SP.RoleDefinitionBindingCollection.newObject(ctx).add(web.get_roleDefinitions().getByName("Contribute")));
+
+          ctx.executeQueryAsync(
+            function () { alert("Permissions applied: Students=Read, Faculty=Contribute."); },
+            function (sender, args) { alert("Error applying permissions: " + args.get_message()); }
+          );
+        }, function (sender, args) {
+          alert("Error adding fields: " + args.get_message());
+        });
+
+      }, function (sender, args) {
+        alert("Error creating Attendance list: " + args.get_message());
+      });
+    }
+  </script>
+</body>
+</html>
