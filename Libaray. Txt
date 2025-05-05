@@ -1,0 +1,104 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Library Management Dashboard</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    body {
+      background-color: #f0f4f8;
+    }
+    .dashboard-header {
+      background-color: #343a40;
+      color: white;
+      padding: 20px;
+      margin-bottom: 30px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .card {
+      margin-bottom: 20px;
+    }
+    .btn-custom {
+      background-color: #007bff;
+      color: white;
+    }
+    .btn-custom:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container py-5">
+  <div class="dashboard-header">
+    <h2>Library Management Dashboard</h2>
+    <p>Monitor and manage library operations</p>
+  </div>
+
+  <div class="row">
+
+    <!-- Book Management -->
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">Book Management</div>
+        <div class="card-body">
+          <button class="btn btn-custom btn-block mb-2">Add New Book</button>
+          <button class="btn btn-custom btn-block mb-2">Update Book Details</button>
+          <button class="btn btn-custom btn-block mb-2">Remove Book</button>
+          <button class="btn btn-custom btn-block">Search Book</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Member Management -->
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">Member Management</div>
+        <div class="card-body">
+          <button class="btn btn-custom btn-block mb-2">Add Member</button>
+          <button class="btn btn-custom btn-block mb-2">Update Member Info</button>
+          <button class="btn btn-custom btn-block mb-2">Delete Member</button>
+          <button class="btn btn-custom btn-block">Search Member</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Book Issuance & Return -->
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">Book Issuance & Return</div>
+        <div class="card-body">
+          <button class="btn btn-custom mr-2">Issue Book</button>
+          <button class="btn btn-custom mr-2">Return Book</button>
+          <button class="btn btn-custom">Check Overdue Books</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dashboard Summary -->
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">Dashboard Summary</div>
+        <div class="card-body">
+          <button class="btn btn-custom mb-3">Display All Books</button>
+          <div class="row text-center">
+            <div class="col-md-6">
+              <h5>Total Borrowed Books:</h5>
+              <p id="borrowedCount">--</p>
+            </div>
+            <div class="col-md-6">
+              <h5>Total Available Books:</h5>
+              <p id="availableCount">--</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>
