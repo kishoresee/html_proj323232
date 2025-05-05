@@ -3,6 +3,129 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <title>Library Management System</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      background-color: #f0f4f8;
+    }
+    .sidebar {
+      height: 100vh;
+      background-color: #343a40;
+      color: white;
+      padding-top: 20px;
+      position: fixed;
+      width: 250px;
+    }
+    .sidebar a {
+      color: white;
+      display: block;
+      padding: 10px 20px;
+      text-decoration: none;
+    }
+    .sidebar a:hover {
+      background-color: #495057;
+    }
+    .submenu {
+      padding-left: 30px;
+      background-color: #3e454d;
+    }
+    .content {
+      margin-left: 260px;
+      padding: 20px;
+    }
+    .footer-stats {
+      background-color: white;
+      padding: 20px;
+      border-top: 2px solid #007bff;
+      text-align: center;
+      position: fixed;
+      bottom: 0;
+      width: calc(100% - 260px);
+      margin-left: 260px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Sidebar Menu -->
+<div class="sidebar">
+  <h4 class="text-center mb-4">Library Menu</h4>
+
+  <a data-toggle="collapse" href="#bookMenu" role="button">
+    <i class="fas fa-book"></i> Book Management
+  </a>
+  <div class="collapse submenu" id="bookMenu">
+    <a href="#">Add New Book</a>
+    <a href="#">Update Book</a>
+    <a href="#">Remove Book</a>
+    <a href="#">Search Book</a>
+  </div>
+
+  <a data-toggle="collapse" href="#memberMenu" role="button">
+    <i class="fas fa-users"></i> Member Management
+  </a>
+  <div class="collapse submenu" id="memberMenu">
+    <a href="#">Add Member</a>
+    <a href="#">Update Member</a>
+    <a href="#">Delete Member</a>
+    <a href="#">Search Member</a>
+  </div>
+
+  <a data-toggle="collapse" href="#issueMenu" role="button">
+    <i class="fas fa-book-reader"></i> Book Issuance
+  </a>
+  <div class="collapse submenu" id="issueMenu">
+    <a href="#">Issue Book</a>
+    <a href="#">Return Book</a>
+    <a href="#">Check Overdue</a>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="content">
+  <div class="dashboard-header d-flex justify-content-between align-items-center mb-4">
+    <h2>Library Dashboard</h2>
+    <i class="fas fa-bell fa-2x text-primary"></i>
+  </div>
+
+  <!-- You can use this area to show available books or charts -->
+  <div class="card">
+    <div class="card-body text-center text-muted">
+      <h5>This area displays available books or dashboard content</h5>
+    </div>
+  </div>
+</div>
+
+<!-- Footer Stats -->
+<div class="footer-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h5>Total Borrowed Books:</h5>
+      <p id="borrowedCount">--</p>
+    </div>
+    <div class="col-md-6">
+      <h5>Total Available Books:</h5>
+      <p id="availableCount">--</p>
+    </div>
+  </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
   <title>Library Management Dashboard</title>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
