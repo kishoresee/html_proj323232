@@ -1,0 +1,73 @@
+<script type="text/javascript">
+  SP.SOD.executeFunc('sp.js', 'SP.ClientContext', function () {
+    checkAndCreateListThenAddItem("MyCustomList", "Item added via JSOM");
+  });
+
+  function checkAndCreateListThenAddItem(listTitle, itemTitle) {
+    var context = SP.ClientContext.get_current();
+    var web = context.get_web();
+    var lists = web.get_lists();
+    var list;
+
+    try {
+      list = lists.getByTitle(listTitle);
+      context.load(list);
+    } catch (e) {
+      console.log("Error loading list: " + e.message);
+    }
+
+    context.executeQueryAsync(
+      function () {
+        // List exists
+        console.log("List exists. Adding item...");
+        addItemToList(list, itemTitle);
+      },
+      function (sender, args) {
+        // List does not exist, so create it
+        console.log("List not found. Creating list...");
+        createList(listTitle, itemTitle);
+      }
+    );
+  }
+
+  function createList(listTitle, itemTitle) {
+    var context = SP.ClientContext.get_current();
+    var web = context.get_web();
+    var listCreationInfo = new SP.ListCreationInformation();
+
+    listCreationInfo.set_title(listTitle);
+    listCreationInfo.set_templateType(SP.ListTemplateType.genericList);
+
+    var newList = web.get_lists().add(listCreationInfo);
+
+    context.load(newList);
+    context.executeQueryAsync(
+      function () {
+        console.log("List created successfully.");
+        addItemToList(newList, itemTitle);
+      },
+      function (sender, args) {
+        alert("Failed to create list: " + args.get_message());
+      }
+    );
+  }
+
+  function addItemToList(list, itemTitle) {
+    var context = SP.ClientContext.get_current();
+    var itemCreateInfo = new SP.ListItemCreationInformation();
+    var listItem = list.addItem(itemCreateInfo);
+
+    listItem.set_item("Title", itemTitle);
+    listItem.update();
+
+    context.load(listItem);
+    context.executeQueryAsync(
+      function () {
+        alert("Item added to list successfully!");
+      },
+      function (sender, args) {
+        alert("Failed to add item: " + args.get_message());
+      }
+    );
+  }
+</script>
