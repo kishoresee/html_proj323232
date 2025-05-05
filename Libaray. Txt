@@ -32,10 +32,15 @@
 <body>
 
 <div class="container py-5">
-  <div class="dashboard-header">
-    <h2>Library Management Dashboard</h2>
-    <p>Monitor and manage library operations</p>
+  <div class="dashboard-header d-flex justify-content-between align-items-center">
+  <div>
+    <h2 class="mb-0">Library Management Dashboard</h2>
+    <p class="mb-0">Monitor and manage library operations</p>
   </div>
+  <div>
+    <i class="fas fa-bell fa-2x"></i>
+  </div>
+</div>
 
   <div class="row">
 
