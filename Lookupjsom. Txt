@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>JSOM Lookup Example</title>
+  <script type="text/javascript" src="/_layouts/15/SP.Runtime.js"></script>
+  <script type="text/javascript" src="/_layouts/15/SP.js"></script>
+</head>
+<body>
+  <h2>Create Task with Lookup to Project</h2>
+
+  <label for="taskTitle">Task Title:</label>
+  <input type="text" id="taskTitle" />
+
+  <label for="projectTitle">Project Title (from Projects list):</label>
+  <input type="text" id="projectTitle" />
+
+  <button onclick="createTaskWithLookup()">Create Task</button>
+
+  <div id="result"></div>
+
+  <script type="text/javascript">
+    function createTaskWithLookup() {
+      var taskTitle = document.getElementById("taskTitle").value;
+      var projectTitle = document.getElementById("projectTitle").value;
+
+      var clientContext = new SP.ClientContext.get_current();
+      var projectsList = clientContext.get_web().get_lists().getByTitle("Projects");
+
+      // CAML query to get project item
+      var camlQuery = new SP.CamlQuery();
+      camlQuery.set_viewXml(
+        '<View><Query><Where><Eq><FieldRef Name="Title" /><Value Type="Text">' + projectTitle + '</Value></Eq></Where></Query><RowLimit>1</RowLimit></View>'
+      );
+
+      var projectItems = projectsList.getItems(camlQuery);
+      clientContext.load(projectItems);
+
+      clientContext.executeQueryAsync(
+        function () {
+          var listEnumerator = projectItems.getEnumerator();
+          if (listEnumerator.moveNext()) {
+            var projectItem = listEnumerator.get_current();
+            var projectId = projectItem.get_id();
+
+            // Now create task item with lookup
+            var tasksList = clientContext.get_web().get_lists().getByTitle("Tasks");
+            var taskItemCreateInfo = new SP.ListItemCreationInformation();
+            var newTaskItem = tasksList.addItem(taskItemCreateInfo);
+
+            newTaskItem.set_item("Title", taskTitle);
+            newTaskItem.set_item("ProjectName", projectId); // Lookup column expects ID
+
+            newTaskItem.update();
+            clientContext.executeQueryAsync(
+              function () {
+                document.getElementById("result").innerText = "Task created with lookup to project.";
+              },
+              function (sender, args) {
+                document.getElementById("result").innerText = "Error creating task: " + args.get_message();
+              }
+            );
+          } else {
+            document.getElementById("result").innerText = "Project not found.";
+          }
+        },
+        function (sender, args) {
+          document.getElementById("result").innerText = "Error fetching project: " + args.get_message();
+        }
+      );
+    }
+  </script>
+</body>
+</html>
