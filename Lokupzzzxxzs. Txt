@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>JSOM Dynamic Lookup Creator</title>
+  <script type="text/javascript" src="/_layouts/15/SP.Runtime.js"></script>
+  <script type="text/javascript" src="/_layouts/15/SP.js"></script>
+</head>
+<body>
+  <h2>Create Item with Lookup in SharePoint</h2>
+
+  <label for="sourceList">Source List Name (e.g. Projects):</label>
+  <input type="text" id="sourceList" placeholder="Projects" /><br><br>
+
+  <label for="targetList">Target List Name (e.g. Tasks):</label>
+  <input type="text" id="targetList" placeholder="Tasks" /><br><br>
+
+  <label for="lookupField">Lookup Field Internal Name (e.g. ProjectName):</label>
+  <input type="text" id="lookupField" placeholder="ProjectName" /><br><br>
+
+  <label for="newItemTitle">New Item Title:</label>
+  <input type="text" id="newItemTitle" placeholder="Task Title" /><br><br>
+
+  <label for="lookupItemTitle">Lookup Item Title (in Source List):</label>
+  <input type="text" id="lookupItemTitle" placeholder="Project ABC" /><br><br>
+
+  <button onclick="createItemWithLookup()">Create Item</button>
+
+  <div id="result" style="margin-top:20px; font-weight:bold;"></div>
+
+  <script type="text/javascript">
+    function createItemWithLookup() {
+      var sourceList = document.getElementById("sourceList").value.trim();
+      var targetList = document.getElementById("targetList").value.trim();
+      var lookupField = document.getElementById("lookupField").value.trim();
+      var newItemTitle = document.getElementById("newItemTitle").value.trim();
+      var lookupItemTitle = document.getElementById("lookupItemTitle").value.trim();
+
+      if (!sourceList || !targetList || !lookupField || !newItemTitle || !lookupItemTitle) {
+        document.getElementById("result").innerText = "Please fill in all fields.";
+        return;
+      }
+
+      var clientContext = new SP.ClientContext.get_current();
+      var srcList = clientContext.get_web().get_lists().getByTitle(sourceList);
+
+      var camlQuery = new SP.CamlQuery();
+      camlQuery.set_viewXml(
+        '<View><Query><Where><Eq><FieldRef Name="Title" /><Value Type="Text">' + lookupItemTitle + '</Value></Eq></Where></Query><RowLimit>1</RowLimit></View>'
+      );
+
+      var lookupItems = srcList.getItems(camlQuery);
+      clientContext.load(lookupItems);
+
+      clientContext.executeQueryAsync(
+        function () {
+          var enumerator = lookupItems.getEnumerator();
+          if (enumerator.moveNext()) {
+            var lookupItem = enumerator.get_current();
+            var lookupId = lookupItem.get_id();
+
+            var lookupValue = new SP.FieldLookupValue();
+            lookupValue.set_lookupId(lookupId);
+
+            var tgtList = clientContext.get_web().get_lists().getByTitle(targetList);
+            var itemCreateInfo = new SP.ListItemCreationInformation();
+            var newItem = tgtList.addItem(itemCreateInfo);
+
+            newItem.set_item("Title", newItemTitle);
+            newItem.set_item(lookupField, lookupValue);
+            newItem.update();
+
+            clientContext.executeQueryAsync(
+              function () {
+                document.getElementById("result").innerText = "Item created with lookup successfully.";
+              },
+              function (sender, args) {
+                document.getElementById("result").innerText = "Error creating item: " + args.get_message();
+              }
+            );
+          } else {
+            document.getElementById("result").innerText = "Lookup item not found in source list.";
+          }
+        },
+        function (sender, args) {
+          document.getElementById("result").innerText = "Error fetching lookup item: " + args.get_message();
+        }
+      );
+    }
+  </script>
+</body>
+</html>
