@@ -1,0 +1,122 @@
+Library Management System Functional
+Document
+May 2025
+1 System Objectives
+The Library Management System aims to:
+• Streamline the process of managing books and members in a library using Share-
+• Streamline the process of managing books and members in a library using Share-
+Point.
+Point.
+• Automate book issuance, return, and tracking of overdue books to reduce man-
+• Automate book issuance, return, and tracking of overdue books to reduce man-
+ual effort.
+ual effort.
+• Provide a user-friendly dashboard to display book availability and borrowing sta-
+• Provide a user-friendly dashboard to display book availability and borrowing sta-
+tus.
+tus.
+• Ensure secure access through role-based permissions for different user groups.
+• Ensure secure access through role-based permissions for different user groups.
+2 Introduction
+This document outlines the structure and permissions for a Library Management Sys-
+tem to be implemented in SharePoint using the JavaScript Object Model (JSOM). The
+system automates book management, member management, book issuance/return,
+and dashboard functionalities.
+3 SharePoint List Structure
+3.1 Book Management List
+Table 1: Book Management List Columns
+Column Name Data Type Description
+Book Name Single line Title of the book
+Author Single line Author’s name
+Publication
+Date
+Date Date of publication
+ISBN Single line International Standard Book No.
+1
+3.2 Member Management List
+Table 2: Member Management List Columns
+Column Name Data Type Description
+Full Name Single line Name of the member
+Member ID
+(MID)
+Single line Unique ID for each member
+Contact Details Multiple lines Phone number or email
+Membership
+Status
+Choice e.g., Active, Inactive
+3.3 Book Issuance and Return List
+Table 3: Book Issuance and Return List Columns
+Column Name Data Type Description
+Book Name Lookup From Book Management list
+Issued To Lookup From Member Management list
+Status Choice e.g., Issued, Returned
+Overdue Yes/No Mark if the book is overdue
+Issue Date Date Date the book was issued
+Return Date Date Expected or actual return date
+4 SharePoint Permission Groups
+Table 4: Permission Groups for Library Management System
+Group
+Name
+Permission
+Level
+Access Description
+Admin Full Control Can create/edit/delete all lists and
+manage permissions
+Teacher Contribute Can add/edit items but cannot
+manage site settings
+Student Read Can only view items
+Librarian Edit Can add/edit/delete items but not
+manage site settings
+Guest View Only Can view but cannot download or
+print
+5 JSOM Automation Considerations
+To automate the tasks using SharePoint JSOM, consider the following:
+2
+• Book Management: Use SP.ListItemCreationInformation to add new books,
+SP.List.getItems with CAML queries to search/remove books, and SP.ListItem.update
+for updates.
+• Member Management: Similar to Book Management, use SP.ListItem opera-
+tions for adding, updating, and deleting members. Use CAML queries to search
+by Member ID or name.
+• Book Issuance and Return: Leverage Lookup fields to link books and mem-
+bers. Use SP.ListItem to record issue/return dates and SP.FieldYesNo for over-
+due status.
+• Dashboard: Use SP.List.getItems to fetch and display book counts and bor-
+rowed book details. Implement client-side rendering with JSOM for real-time
+updates.
+6 Workflows
+The following automated workflows will be implemented using JSOM and SharePoint
+features:
+• Book Issuance Workflow: When a book is issued, the system updates the Book
+Issuance and Return list, sets the Status to "Issued," and calculates the Return
+Date (e.g., 14 days from Issue Date).
+• Book Return Workflow: On return, the system updates the Status to "Re-
+turned" and clears the Overdue flag if applicable.
+• Overdue Notification Workflow: A scheduled script checks the Return Date
+against the current date. If overdue, the Overdue flag is set to "Yes," and a
+notification is logged (e.g., via a custom list or email if integrated).
+7 Error Handling and Validation
+To ensure data integrity and smooth operation:
+• Input Validation: Validate ISBN format (e.g., 13 digits) and ensure Member IDs
+are unique using JSOM queries before adding new items.
+• Error Handling: Use onQueryFailed callbacks in JSOM to handle errors (e.g.,
+permission issues, list not found) and display user-friendly messages.
+• Duplicate Checks: Before adding a book or member, query the list to prevent
+duplicates (e.g., check ISBN or Member ID).
+8 User Interface Considerations
+To enhance usability within SharePoint:
+3
+• Custom Views: Create views in each list to filter data (e.g., "Overdue Books,"
+"Active Members").
+• Forms: Customize forms using JSOM to prefill fields (e.g., auto-generate Mem-
+ber IDs) and add client-side validation.
+• Dashboard: Use a SharePoint web part to display the dashboard, leveraging
+JSOM to dynamically render book counts and borrowed book details.
+9 Assumptions and Dependencies
+• Assumptions:
+– SharePoint 2013 or later is used, supporting JSOM.
+– Users have access to a modern browser for JSOM scripts.
+• Dependencies:
+– SharePoint JSOM library (sp.js) must be available.
+– Proper permissions must be configured as per the permission groups.
+4
