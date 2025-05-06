@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Create Lookup Column in SharePoint List</title>
+  <script type="text/javascript" src="/_layouts/15/SP.Runtime.js"></script>
+  <script type="text/javascript" src="/_layouts/15/SP.js"></script>
+</head>
+<body>
+  <h2>Create Lookup Column in Target List</h2>
+
+  <label for="sourceList">Source List Name:</label>
+  <input type="text" id="sourceList" placeholder="Projects" /><br><br>
+
+  <label for="targetList">Target List Name:</label>
+  <input type="text" id="targetList" placeholder="Tasks" /><br><br>
+
+  <label for="lookupColumnName">New Lookup Column Name:</label>
+  <input type="text" id="lookupColumnName" placeholder="ProjectName" /><br><br>
+
+  <button onclick="createLookupColumn()">Create Lookup Column</button>
+
+  <div id="result" style="margin-top: 20px; font-weight: bold;"></div>
+
+  <script type="text/javascript">
+    function createLookupColumn() {
+      var sourceListTitle = document.getElementById("sourceList").value.trim();
+      var targetListTitle = document.getElementById("targetList").value.trim();
+      var lookupColumnName = document.getElementById("lookupColumnName").value.trim();
+
+      if (!sourceListTitle || !targetListTitle || !lookupColumnName) {
+        document.getElementById("result").innerText = "Please fill in all fields.";
+        return;
+      }
+
+      var clientContext = new SP.ClientContext.get_current();
+      var web = clientContext.get_web();
+
+      var sourceList = web.get_lists().getByTitle(sourceListTitle);
+      var targetList = web.get_lists().getByTitle(targetListTitle);
+
+      clientContext.load(sourceList, 'Id');
+      clientContext.load(targetList);
+
+      clientContext.executeQueryAsync(
+        function () {
+          var sourceListId = sourceList.get_id().toString();
+
+          var fieldSchema = `<Field Type='Lookup' 
+                                  DisplayName='${lookupColumnName}' 
+                                  Required='FALSE' 
+                                  List='${sourceListId}' 
+                                  ShowField='Title' 
+                                  EnforceUniqueValues='FALSE' 
+                                  StaticName='${lookupColumnName}' 
+                                  Name='${lookupColumnName}' />`;
+
+          targetList.get_fields().addFieldAsXml(fieldSchema, true, SP.AddFieldOptions.defaultValue);
+          clientContext.executeQueryAsync(
+            function () {
+              document.getElementById("result").innerText = "Lookup column created successfully.";
+            },
+            function (sender, args) {
+              document.getElementById("result").innerText = "Error creating column: " + args.get_message();
+            }
+          );
+        },
+        function (sender, args) {
+          document.getElementById("result").innerText = "Error fetching lists: " + args.get_message();
+        }
+      );
+    }
+  </script>
+</body>
+</html>
