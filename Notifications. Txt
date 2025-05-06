@@ -1,0 +1,17 @@
+Here’s a short version you can include in your documentation:
+
+⸻
+
+Overdue Book Notification System (HTML + SharePoint REST API)
+
+A custom notification panel is implemented in the web page using HTML, CSS, and JavaScript. The system connects to the ‘Books_Issued’ SharePoint list and displays a red badge with the count of overdue books. Clicking the bell icon toggles a dropdown showing member names, book titles, and due dates.
+
+Key Features:
+	•	Uses SharePoint REST API to fetch books where DueDate < today and ReturnStatus == 'Pending'
+	•	Notification badge (#notifCount) updates in real-time
+	•	Dropdown panel (#notifBox) displays overdue entries neatly
+	•	Fully built using HTML, jQuery, and CSS
+
+Tip: Ensure SharePoint list columns include BookTitle, MemberName, DueDate, and ReturnStatus for this to work.
+
+Let me know if you want a screenshot or downloadable file for your docs.
