@@ -43,7 +43,7 @@
                 <h2>Library Management System Provisioning</h2>
             </div>
             <div class="card-body">
-                <button onclick="provisionAll()" class="btn btn-success btn-lg">
+                <button type="button" onclick="provisionAll()" class="btn btn-success btn-lg">
                     Provision All Components
                 </button>
                 
@@ -95,7 +95,11 @@
                 if (typeof SP !== 'undefined' && SP.ClientContext) {
                     resolve();
                 } else {
-                    SP.SOD.executeFunc('sp.js', 'SP.ClientContext', resolve, reject);
+                    SP.SOD.executeFunc('sp.js', 'SP.ClientContext', function() {
+                        resolve();
+                    }, function() {
+                        reject('Failed to load SP.js');
+                    });
                 }
             });
         }
@@ -107,8 +111,7 @@
             
             ensureSPLoaded()
                 .then(() => {
-                    return Promise.resolve()
-                        .then(() => createBookManagementList())
+                    return createBookManagementList()
                         .then(() => createMemberManagementList())
                         .then(() => createIssuanceReturnsList())
                         .then(() => configurePermissions())
@@ -382,312 +385,359 @@
         // Create a SharePoint list
         function createList(listName) {
             return new Promise((resolve, reject) => {
-                const ctx = SP.ClientContext.get_current();
-                const web = ctx.get_web();
-                const listCreationInfo = new SP.ListCreationInformation();
-                
-                listCreationInfo.set_title(listName);
-                listCreationInfo.set_templateType(SP.ListTemplateType.genericList);
-                
-                const list = web.get_lists().add(listCreationInfo);
-                
-                ctx.executeQueryAsync(
-                    function() {
-                        addStatusMessage(`List "${listName}" created successfully`);
-                        resolve();
-                    },
-                    function(sender, args) {
-                        if (args.get_message().indexOf("already exists") !== -1) {
-                            addStatusMessage(`List "${listName}" already exists`, "warning");
+                try {
+                    const ctx = new SP.ClientContext.get_current();
+                    const web = ctx.get_web();
+                    const listCreationInfo = new SP.ListCreationInformation();
+                    
+                    listCreationInfo.set_title(listName);
+                    listCreationInfo.set_templateType(SP.ListTemplateType.genericList);
+                    
+                    const list = web.get_lists().add(listCreationInfo);
+                    
+                    ctx.executeQueryAsync(
+                        function() {
+                            addStatusMessage(`List "${listName}" created successfully`);
                             resolve();
-                        } else {
-                            const error = `Failed to create list "${listName}": ${args.get_message()}`;
-                            addStatusMessage(error, "error");
-                            reject(error);
+                        },
+                        function(sender, args) {
+                            if (args.get_message().indexOf("already exists") !== -1) {
+                                addStatusMessage(`List "${listName}" already exists`, "warning");
+                                resolve();
+                            } else {
+                                const error = `Failed to create list "${listName}": ${args.get_message()}`;
+                                addStatusMessage(error, "error");
+                                reject(error);
+                            }
                         }
-                    }
-                );
+                    );
+                } catch (e) {
+                    const error = `Error creating list: ${e.message}`;
+                    addStatusMessage(error, "error");
+                    reject(error);
+                }
             });
         }
 
         // Create a field in a list
         function createField(listName, fieldName, fieldType, displayName, choices, isRequired) {
             return new Promise((resolve, reject) => {
-                const ctx = SP.ClientContext.get_current();
-                const web = ctx.get_web();
-                const list = web.get_lists().getByTitle(listName);
-                const fields = list.get_fields();
-                
-                let fieldXml;
-                const requiredAttr = isRequired ? 'Required="TRUE"' : 'Required="FALSE"';
-                
-                if (fieldType === "Choice") {
-                    const choicesXml = choices.map(choice => `<CHOICE>${choice}</CHOICE>`).join('');
-                    const defaultChoice = choices[0] ? `<Default>${choices[0]}</Default>` : '';
-                    fieldXml = `<Field Type="${fieldType}" Name="${fieldName}" DisplayName="${displayName}" ${requiredAttr}>
-                                  <CHOICES>${choicesXml}</CHOICES>
-                                  ${defaultChoice}
-                               </Field>`;
-                } else {
-                    fieldXml = `<Field Type="${fieldType}" Name="${fieldName}" DisplayName="${displayName}" ${requiredAttr} />`;
-                }
-                
-                fields.addFieldAsXml(fieldXml, true, SP.AddFieldOptions.defaultValue);
-                
-                ctx.executeQueryAsync(
-                    function() {
-                        addStatusMessage(`Field "${displayName}" created successfully`);
-                        resolve();
-                    },
-                    function(sender, args) {
-                        if (args.get_message().indexOf("already exists") !== -1) {
-                            addStatusMessage(`Field "${displayName}" already exists`, "warning");
-                            resolve();
-                        } else {
-                            const error = `Failed to create field "${displayName}": ${args.get_message()}`;
-                            addStatusMessage(error, "error");
-                            reject(error);
-                        }
+                try {
+                    const ctx = new SP.ClientContext.get_current();
+                    const web = ctx.get_web();
+                    const list = web.get_lists().getByTitle(listName);
+                    const fields = list.get_fields();
+                    
+                    let fieldXml;
+                    const requiredAttr = isRequired ? 'Required="TRUE"' : 'Required="FALSE"';
+                    
+                    if (fieldType === "Choice") {
+                        const choicesXml = choices.map(choice => `<CHOICE>${choice}</CHOICE>`).join('');
+                        const defaultChoice = choices[0] ? `<Default>${choices[0]}</Default>` : '';
+                        fieldXml = `<Field Type="${fieldType}" Name="${fieldName}" DisplayName="${displayName}" ${requiredAttr}>
+                                      <CHOICES>${choicesXml}</CHOICES>
+                                      ${defaultChoice}
+                                   </Field>`;
+                    } else {
+                        fieldXml = `<Field Type="${fieldType}" Name="${fieldName}" DisplayName="${displayName}" ${requiredAttr} />`;
                     }
-                );
+                    
+                    fields.addFieldAsXml(fieldXml, true, SP.AddFieldOptions.defaultValue);
+                    
+                    ctx.executeQueryAsync(
+                        function() {
+                            addStatusMessage(`Field "${displayName}" created successfully`);
+                            resolve();
+                        },
+                        function(sender, args) {
+                            if (args.get_message().indexOf("already exists") !== -1) {
+                                addStatusMessage(`Field "${displayName}" already exists`, "warning");
+                                resolve();
+                            } else {
+                                const error = `Failed to create field "${displayName}": ${args.get_message()}`;
+                                addStatusMessage(error, "error");
+                                reject(error);
+                            }
+                        }
+                    );
+                } catch (e) {
+                    const error = `Error creating field: ${e.message}`;
+                    addStatusMessage(error, "error");
+                    reject(error);
+                }
             });
         }
 
         // Create a lookup field
         function createLookupField(sourceListName, targetListName, lookupFieldName, sourceFieldName) {
             return new Promise((resolve, reject) => {
-                const ctx = SP.ClientContext.get_current();
-                const web = ctx.get_web();
-                
-                const sourceList = web.get_lists().getByTitle(sourceListName);
-                ctx.load(sourceList, 'Id');
-                
-                const targetList = web.get_lists().getByTitle(targetListName);
-                ctx.load(targetList);
-                
-                ctx.executeQueryAsync(
-                    function() {
-                        const sourceListId = sourceList.get_id().toString();
-                        
-                        const fieldSchema = `<Field Type="Lookup" 
-                                                DisplayName="${lookupFieldName}" 
-                                                Required="TRUE" 
-                                                List="${sourceListId}" 
-                                                ShowField="${sourceFieldName}" 
-                                                EnforceUniqueValues="FALSE" 
-                                                StaticName="${lookupFieldName}" 
-                                                Name="${lookupFieldName}" />`;
-                        
-                        targetList.get_fields().addFieldAsXml(fieldSchema, true, SP.AddFieldOptions.defaultValue);
-                        
-                        ctx.executeQueryAsync(
-                            function() {
-                                addStatusMessage(`Lookup field "${lookupFieldName}" created successfully`);
-                                resolve();
-                            },
-                            function(sender, args) {
-                                if (args.get_message().indexOf("already exists") !== -1) {
-                                    addStatusMessage(`Lookup field "${lookupFieldName}" already exists`, "warning");
+                try {
+                    const ctx = new SP.ClientContext.get_current();
+                    const web = ctx.get_web();
+                    
+                    const sourceList = web.get_lists().getByTitle(sourceListName);
+                    ctx.load(sourceList, 'Id');
+                    
+                    const targetList = web.get_lists().getByTitle(targetListName);
+                    ctx.load(targetList);
+                    
+                    ctx.executeQueryAsync(
+                        function() {
+                            const sourceListId = sourceList.get_id().toString();
+                            
+                            const fieldSchema = `<Field Type="Lookup" 
+                                                    DisplayName="${lookupFieldName}" 
+                                                    Required="TRUE" 
+                                                    List="${sourceListId}" 
+                                                    ShowField="${sourceFieldName}" 
+                                                    EnforceUniqueValues="FALSE" 
+                                                    StaticName="${lookupFieldName}" 
+                                                    Name="${lookupFieldName}" />`;
+                            
+                            targetList.get_fields().addFieldAsXml(fieldSchema, true, SP.AddFieldOptions.defaultValue);
+                            
+                            ctx.executeQueryAsync(
+                                function() {
+                                    addStatusMessage(`Lookup field "${lookupFieldName}" created successfully`);
                                     resolve();
-                                } else {
-                                    const error = `Failed to create lookup field "${lookupFieldName}": ${args.get_message()}`;
-                                    addStatusMessage(error, "error");
-                                    reject(error);
+                                },
+                                function(sender, args) {
+                                    if (args.get_message().indexOf("already exists") !== -1) {
+                                        addStatusMessage(`Lookup field "${lookupFieldName}" already exists`, "warning");
+                                        resolve();
+                                    } else {
+                                        const error = `Failed to create lookup field "${lookupFieldName}": ${args.get_message()}`;
+                                        addStatusMessage(error, "error");
+                                        reject(error);
+                                    }
                                 }
-                            }
-                        );
-                    },
-                    function(sender, args) {
-                        const error = `Failed to get list information for lookup field: ${args.get_message()}`;
-                        addStatusMessage(error, "error");
-                        reject(error);
-                    }
-                );
+                            );
+                        },
+                        function(sender, args) {
+                            const error = `Failed to get list information for lookup field: ${args.get_message()}`;
+                            addStatusMessage(error, "error");
+                            reject(error);
+                        }
+                    );
+                } catch (e) {
+                    const error = `Error creating lookup field: ${e.message}`;
+                    addStatusMessage(error, "error");
+                    reject(error);
+                }
             });
         }
 
         // Create a content type
         function createContentType(contentTypeName) {
             return new Promise((resolve, reject) => {
-                const ctx = SP.ClientContext.get_current();
-                const web = ctx.get_web();
-                const contentTypes = web.get_contentTypes();
-                const contentTypeCreationInfo = new SP.ContentTypeCreationInformation();
-                
-                contentTypeCreationInfo.set_name(contentTypeName);
-                contentTypeCreationInfo.set_description("Created by Library Management System");
-                contentTypeCreationInfo.set_group("Library Content Types");
-                contentTypeCreationInfo.set_parentContentType(contentTypes.getById("0x01"));
-                
-                contentTypes.add(contentTypeCreationInfo);
-                
-                ctx.executeQueryAsync(
-                    function() {
-                        addStatusMessage(`Content type "${contentTypeName}" created successfully`);
-                        resolve();
-                    },
-                    function(sender, args) {
-                        if (args.get_message().indexOf("already exists") !== -1) {
-                            addStatusMessage(`Content type "${contentTypeName}" already exists`, "warning");
+                try {
+                    const ctx = new SP.ClientContext.get_current();
+                    const web = ctx.get_web();
+                    const contentTypes = web.get_contentTypes();
+                    const contentTypeCreationInfo = new SP.ContentTypeCreationInformation();
+                    
+                    contentTypeCreationInfo.set_name(contentTypeName);
+                    contentTypeCreationInfo.set_description("Created by Library Management System");
+                    contentTypeCreationInfo.set_group("Library Content Types");
+                    contentTypeCreationInfo.set_parentContentType(contentTypes.getById("0x01"));
+                    
+                    contentTypes.add(contentTypeCreationInfo);
+                    
+                    ctx.executeQueryAsync(
+                        function() {
+                            addStatusMessage(`Content type "${contentTypeName}" created successfully`);
                             resolve();
-                        } else {
-                            const error = `Failed to create content type "${contentTypeName}": ${args.get_message()}`;
-                            addStatusMessage(error, "error");
-                            reject(error);
+                        },
+                        function(sender, args) {
+                            if (args.get_message().indexOf("already exists") !== -1) {
+                                addStatusMessage(`Content type "${contentTypeName}" already exists`, "warning");
+                                resolve();
+                            } else {
+                                const error = `Failed to create content type "${contentTypeName}": ${args.get_message()}`;
+                                addStatusMessage(error, "error");
+                                reject(error);
+                            }
                         }
-                    }
-                );
+                    );
+                } catch (e) {
+                    const error = `Error creating content type: ${e.message}`;
+                    addStatusMessage(error, "error");
+                    reject(error);
+                }
             });
         }
 
         // Add a field to a content type
         function addFieldToContentType(contentTypeName, fieldName) {
             return new Promise((resolve, reject) => {
-                const ctx = SP.ClientContext.get_current();
-                const web = ctx.get_web();
-                
-                const contentType = web.get_contentTypes().getByName(contentTypeName);
-                ctx.load(contentType);
-                
-                const field = web.get_fields().getByInternalNameOrTitle(fieldName);
-                ctx.load(field);
-                
-                ctx.executeQueryAsync(
-                    function() {
-                        const fieldLinkCreationInfo = new SP.FieldLinkCreationInformation();
-                        fieldLinkCreationInfo.set_field(field);
-                        
-                        contentType.get_fieldLinks().add(fieldLinkCreationInfo);
-                        contentType.update(true);
-                        
-                        ctx.executeQueryAsync(
-                            function() {
-                                addStatusMessage(`Field "${fieldName}" added to content type "${contentTypeName}"`);
-                                resolve();
-                            },
-                            function(sender, args) {
-                                if (args.get_message().indexOf("already exists") !== -1) {
-                                    addStatusMessage(`Field "${fieldName}" already in content type "${contentTypeName}"`, "warning");
+                try {
+                    const ctx = new SP.ClientContext.get_current();
+                    const web = ctx.get_web();
+                    
+                    const contentType = web.get_contentTypes().getByName(contentTypeName);
+                    ctx.load(contentType);
+                    
+                    const field = web.get_fields().getByInternalNameOrTitle(fieldName);
+                    ctx.load(field);
+                    
+                    ctx.executeQueryAsync(
+                        function() {
+                            const fieldLinkCreationInfo = new SP.FieldLinkCreationInformation();
+                            fieldLinkCreationInfo.set_field(field);
+                            
+                            contentType.get_fieldLinks().add(fieldLinkCreationInfo);
+                            contentType.update(true);
+                            
+                            ctx.executeQueryAsync(
+                                function() {
+                                    addStatusMessage(`Field "${fieldName}" added to content type "${contentTypeName}"`);
                                     resolve();
-                                } else {
-                                    const error = `Failed to add field "${fieldName}" to content type "${contentTypeName}": ${args.get_message()}`;
-                                    addStatusMessage(error, "error");
-                                    reject(error);
+                                },
+                                function(sender, args) {
+                                    if (args.get_message().indexOf("already exists") !== -1) {
+                                        addStatusMessage(`Field "${fieldName}" already in content type "${contentTypeName}"`, "warning");
+                                        resolve();
+                                    } else {
+                                        const error = `Failed to add field "${fieldName}" to content type "${contentTypeName}": ${args.get_message()}`;
+                                        addStatusMessage(error, "error");
+                                        reject(error);
+                                    }
                                 }
-                            }
-                        );
-                    },
-                    function(sender, args) {
-                        const error = `Failed to load content type or field: ${args.get_message()}`;
-                        addStatusMessage(error, "error");
-                        reject(error);
-                    }
-                );
+                            );
+                        },
+                        function(sender, args) {
+                            const error = `Failed to load content type or field: ${args.get_message()}`;
+                            addStatusMessage(error, "error");
+                            reject(error);
+                        }
+                    );
+                } catch (e) {
+                    const error = `Error adding field to content type: ${e.message}`;
+                    addStatusMessage(error, "error");
+                    reject(error);
+                }
             });
         }
 
         // Attach content type to list
         function attachContentTypeToList(listName, contentTypeName) {
             return new Promise((resolve, reject) => {
-                const ctx = SP.ClientContext.get_current();
-                const web = ctx.get_web();
-                
-                const list = web.get_lists().getByTitle(listName);
-                list.set_contentTypesEnabled(true);
-                
-                const contentType = web.get_contentTypes().getByName(contentTypeName);
-                list.get_contentTypes().addExistingContentType(contentType);
-                
-                ctx.executeQueryAsync(
-                    function() {
-                        addStatusMessage(`Content type "${contentTypeName}" attached to list "${listName}"`);
-                        resolve();
-                    },
-                    function(sender, args) {
-                        const error = `Failed to attach content type "${contentTypeName}" to list "${listName}": ${args.get_message()}`;
-                        addStatusMessage(error, "error");
-                        reject(error);
-                    }
-                );
+                try {
+                    const ctx = new SP.ClientContext.get_current();
+                    const web = ctx.get_web();
+                    
+                    const list = web.get_lists().getByTitle(listName);
+                    list.set_contentTypesEnabled(true);
+                    
+                    const contentType = web.get_contentTypes().getByName(contentTypeName);
+                    list.get_contentTypes().addExistingContentType(contentType);
+                    
+                    ctx.executeQueryAsync(
+                        function() {
+                            addStatusMessage(`Content type "${contentTypeName}" attached to list "${listName}"`);
+                            resolve();
+                        },
+                        function(sender, args) {
+                            const error = `Failed to attach content type "${contentTypeName}" to list "${listName}": ${args.get_message()}`;
+                            addStatusMessage(error, "error");
+                            reject(error);
+                        }
+                    );
+                } catch (e) {
+                    const error = `Error attaching content type: ${e.message}`;
+                    addStatusMessage(error, "error");
+                    reject(error);
+                }
             });
         }
 
         // Make the Title field optional
         function makeTitleOptional(listName) {
             return new Promise((resolve, reject) => {
-                const ctx = SP.ClientContext.get_current();
-                const web = ctx.get_web();
-                const list = web.get_lists().getByTitle(listName);
-                const titleField = list.get_fields().getByInternalNameOrTitle("Title");
-                
-                ctx.load(titleField);
-                
-                ctx.executeQueryAsync(
-                    function() {
-                        titleField.set_required(false);
-                        titleField.update();
-                        
-                        ctx.executeQueryAsync(
-                            function() {
-                                addStatusMessage(`Title field made optional in list "${listName}"`);
-                                resolve();
-                            },
-                            function(sender, args) {
-                                const error = `Failed to make Title field optional: ${args.get_message()}`;
-                                addStatusMessage(error, "error");
-                                reject(error);
-                            }
-                        );
-                    },
-                    function(sender, args) {
-                        const error = `Failed to load Title field: ${args.get_message()}`;
-                        addStatusMessage(error, "error");
-                        reject(error);
-                    }
-                );
+                try {
+                    const ctx = new SP.ClientContext.get_current();
+                    const web = ctx.get_web();
+                    const list = web.get_lists().getByTitle(listName);
+                    const titleField = list.get_fields().getByInternalNameOrTitle("Title");
+                    
+                    ctx.load(titleField);
+                    
+                    ctx.executeQueryAsync(
+                        function() {
+                            titleField.set_required(false);
+                            titleField.update();
+                            
+                            ctx.executeQueryAsync(
+                                function() {
+                                    addStatusMessage(`Title field made optional in list "${listName}"`);
+                                    resolve();
+                                },
+                                function(sender, args) {
+                                    const error = `Failed to make Title field optional: ${args.get_message()}`;
+                                    addStatusMessage(error, "error");
+                                    reject(error);
+                                }
+                            );
+                        },
+                        function(sender, args) {
+                            const error = `Failed to load Title field: ${args.get_message()}`;
+                            addStatusMessage(error, "error");
+                            reject(error);
+                        }
+                    );
+                } catch (e) {
+                    const error = `Error making title optional: ${e.message}`;
+                    addStatusMessage(error, "error");
+                    reject(error);
+                }
             });
         }
 
         // Configure list views
         function configureListViews(listName, viewFields) {
             return new Promise((resolve, reject) => {
-                const ctx = SP.ClientContext.get_current();
-                const web = ctx.get_web();
-                const list = web.get_lists().getByTitle(listName);
-                
-                const viewCreationInfo = new SP.ViewCreationInformation();
-                viewCreationInfo.set_title("Default View");
-                viewCreationInfo.set_viewFields(viewFields);
-                viewCreationInfo.set_rowLimit(50);
-                viewCreationInfo.set_personalView(false);
-                viewCreationInfo.set_setAsDefaultView(true);
-                
-                list.get_views().add(viewCreationInfo);
-                
-                ctx.executeQueryAsync(
-                    function() {
-                        addStatusMessage(`Default view created for list "${listName}"`);
-                        resolve();
-                    },
-                    function(sender, args) {
-                        const error = `Failed to create view for list "${listName}": ${args.get_message()}`;
-                        addStatusMessage(error, "error");
-                        reject(error);
-                    }
-                );
+                try {
+                    const ctx = new SP.ClientContext.get_current();
+                    const web = ctx.get_web();
+                    const list = web.get_lists().getByTitle(listName);
+                    
+                    const viewCreationInfo = new SP.ViewCreationInformation();
+                    viewCreationInfo.set_title("Default View");
+                    viewCreationInfo.set_viewFields(viewFields);
+                    viewCreationInfo.set_rowLimit(50);
+                    viewCreationInfo.set_personalView(false);
+                    viewCreationInfo.set_setAsDefaultView(true);
+                    
+                    list.get_views().add(viewCreationInfo);
+                    
+                    ctx.executeQueryAsync(
+                        function() {
+                            addStatusMessage(`Default view created for list "${listName}"`);
+                            resolve();
+                        },
+                        function(sender, args) {
+                            const error = `Failed to create view for list "${listName}": ${args.get_message()}`;
+                            addStatusMessage(error, "error");
+                            reject(error);
+                        }
+                    );
+                } catch (e) {
+                    const error = `Error configuring list views: ${e.message}`;
+                    addStatusMessage(error, "error");
+                    reject(error);
+                }
             });
         }
 
         // Verify if a group exists, create if it doesn't
         function verifyGroup(groupName) {
             return new Promise((resolve, reject) => {
-                const ctx = SP.ClientContext.get_current();
-                const web = ctx.get_web();
-                const groups = web.get_siteGroups();
-                
-                let group;
                 try {
-                    group = groups.getByName(groupName);
+                    const ctx = new SP.ClientContext.get_current();
+                    const web = ctx.get_web();
+                    const groups = web.get_siteGroups();
+                    
+                    let group = groups.getByName(groupName);
                     ctx.load(group);
                     
                     ctx.executeQueryAsync(
@@ -711,35 +761,41 @@
         // Create a SharePoint group
         function createGroup(groupName) {
             return new Promise((resolve, reject) => {
-                const ctx = SP.ClientContext.get_current();
-                const web = ctx.get_web();
-                const groups = web.get_siteGroups();
-                const groupCreationInfo = new SP.GroupCreationInformation();
-                
-                groupCreationInfo.set_title(groupName);
-                groups.add(groupCreationInfo);
-                
-                ctx.executeQueryAsync(
-                    function() {
-                        addStatusMessage(`Group "${groupName}" created successfully`);
-                        resolve(true);
-                    },
-                    function(sender, args) {
-                        const error = `Failed to create group "${groupName}": ${args.get_message()}`;
-                        addStatusMessage(error, "error");
-                        reject(error);
-                    }
-                );
+                try {
+                    const ctx = new SP.ClientContext.get_current();
+                    const web = ctx.get_web();
+                    const groups = web.get_siteGroups();
+                    const groupCreationInfo = new SP.GroupCreationInformation();
+                    
+                    groupCreationInfo.set_title(groupName);
+                    groups.add(groupCreationInfo);
+                    
+                    ctx.executeQueryAsync(
+                        function() {
+                            addStatusMessage(`Group "${groupName}" created successfully`);
+                            resolve(true);
+                        },
+                        function(sender, args) {
+                            const error = `Failed to create group "${groupName}": ${args.get_message()}`;
+                            addStatusMessage(error, "error");
+                            reject(error);
+                        }
+                    );
+                } catch (e) {
+                    const error = `Error creating group: ${e.message}`;
+                    addStatusMessage(error, "error");
+                    reject(error);
+                }
             });
         }
 
         // Assign permissions to a list
         function assignPermissions(listName, groupName, permissionLevel) {
             return new Promise((resolve, reject) => {
-                const ctx = SP.ClientContext.get_current();
-                const web = ctx.get_web();
-                
                 try {
+                    const ctx = new SP.ClientContext.get_current();
+                    const web = ctx.get_web();
+                    
                     const list = web.get_lists().getByTitle(listName);
                     const group = web.get_siteGroups().getByName(groupName);
                     const roleDefinition = web.get_roleDefinitions().getByType(permissionLevel);
