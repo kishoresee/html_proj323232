@@ -29,10 +29,10 @@
             background-color: #f8f9fa;
         }
         .card-body {
-            padding-left: 5px; /* Reduced left padding */
+            padding-left: 5px;
         }
         .container {
-            padding-left: 10px; /* Reduced container padding */
+            padding-left: 10px;
         }
     </style>
 </head>
@@ -47,7 +47,6 @@
                     Provision All Components
                 </button>
                 
-                <!-- Workflow Modal -->
                 <button type="button" class="btn btn-success rounded-pill mt-3" data-bs-toggle="modal" data-bs-target="#workflowModal">
                     View Workflow
                 </button>
@@ -90,21 +89,36 @@
     </div>
 
     <script>
-        // Main provisioning function using promises
+        // Ensure SP.js is loaded before any operations
+        function ensureSPLoaded() {
+            return new Promise((resolve, reject) => {
+                if (typeof SP !== 'undefined' && SP.ClientContext) {
+                    resolve();
+                } else {
+                    SP.SOD.executeFunc('sp.js', 'SP.ClientContext', resolve, reject);
+                }
+            });
+        }
+
+        // Main provisioning function
         function provisionAll() {
             clearStatusMessages();
             addStatusMessage("Starting provisioning process...");
             
-            // Create a promise chain for all provisioning steps
-            createBookManagementList()
-                .then(() => createMemberManagementList())
-                .then(() => createIssuanceReturnsList())
-                .then(() => configurePermissions())
+            ensureSPLoaded()
                 .then(() => {
-                    addStatusMessage("✅ All components provisioned successfully!", "success");
+                    return Promise.resolve()
+                        .then(() => createBookManagementList())
+                        .then(() => createMemberManagementList())
+                        .then(() => createIssuanceReturnsList())
+                        .then(() => configurePermissions())
+                        .then(() => {
+                            addStatusMessage("✅ All components provisioned successfully!", "success");
+                        });
                 })
                 .catch(error => {
                     addStatusMessage(`❌ Provisioning failed: ${error}`, "error");
+                    console.error("Provisioning error:", error);
                 });
         }
 
@@ -129,7 +143,7 @@
             $("#statusMessages").scrollTop($("#statusMessages")[0].scrollHeight);
         }
 
-        // Create Book Management List with Promise
+        // Create Book Management List
         function createBookManagementList() {
             return new Promise((resolve, reject) => {
                 addStatusMessage("Starting Book Management list provisioning...");
@@ -158,15 +172,9 @@
                         addStatusMessage("Content type created for Book Management");
                         return addFieldsToContentTypeSequentially(contentTypeName, fields);
                     })
-                    .then(() => {
-                        return attachContentTypeToList(listName, contentTypeName);
-                    })
-                    .then(() => {
-                        return makeTitleOptional(listName);
-                    })
-                    .then(() => {
-                        return configureListViews(listName, ["BookName", "Author", "Status", "ISBN"]);
-                    })
+                    .then(() => attachContentTypeToList(listName, contentTypeName))
+                    .then(() => makeTitleOptional(listName))
+                    .then(() => configureListViews(listName, ["BookName", "Author", "Status", "ISBN"]))
                     .then(() => {
                         addStatusMessage("Book Management list fully configured");
                         resolve();
@@ -178,7 +186,7 @@
             });
         }
 
-        // Create Member Management List with Promise
+        // Create Member Management List
         function createMemberManagementList() {
             return new Promise((resolve, reject) => {
                 addStatusMessage("Starting Member Management list provisioning...");
@@ -207,15 +215,9 @@
                         addStatusMessage("Content type created for Member Management");
                         return addFieldsToContentTypeSequentially(contentTypeName, fields);
                     })
-                    .then(() => {
-                        return attachContentTypeToList(listName, contentTypeName);
-                    })
-                    .then(() => {
-                        return makeTitleOptional(listName);
-                    })
-                    .then(() => {
-                        return configureListViews(listName, ["MemberName", "MemberID", "MembershipStatus"]);
-                    })
+                    .then(() => attachContentTypeToList(listName, contentTypeName))
+                    .then(() => makeTitleOptional(listName))
+                    .then(() => configureListViews(listName, ["MemberName", "MemberID", "MembershipStatus"]))
                     .then(() => {
                         addStatusMessage("Member Management list fully configured");
                         resolve();
@@ -227,7 +229,7 @@
             });
         }
 
-        // Create Issuance & Returns List with Promise
+        // Create Issuance & Returns List
         function createIssuanceReturnsList() {
             return new Promise((resolve, reject) => {
                 addStatusMessage("Starting Issuance & Returns list provisioning...");
@@ -263,7 +265,6 @@
                     .then(() => {
                         addStatusMessage("Content type created for Issuance & Returns");
                         
-                        // Combine base fields and lookup fields
                         const allFields = fields.concat([
                             { name: "BookLookup", type: "Lookup", displayName: "Book", required: true },
                             { name: "MemberLookup", type: "Lookup", displayName: "Member", required: true }
@@ -271,15 +272,9 @@
                         
                         return addFieldsToContentTypeSequentially(contentTypeName, allFields);
                     })
-                    .then(() => {
-                        return attachContentTypeToList(listName, contentTypeName);
-                    })
-                    .then(() => {
-                        return makeTitleOptional(listName);
-                    })
-                    .then(() => {
-                        return configureListViews(listName, ["BookLookup", "MemberLookup", "IssueDate", "DueDate", "Status"]);
-                    })
+                    .then(() => attachContentTypeToList(listName, contentTypeName))
+                    .then(() => makeTitleOptional(listName))
+                    .then(() => configureListViews(listName, ["BookLookup", "MemberLookup", "IssueDate", "DueDate", "Status"]))
                     .then(() => {
                         addStatusMessage("Issuance & Returns list fully configured");
                         resolve();
@@ -291,18 +286,16 @@
             });
         }
 
-        // Configure permissions with Promise
+        // Configure permissions
         function configurePermissions() {
             return new Promise((resolve, reject) => {
                 addStatusMessage("Configuring permissions...");
                 
-                // Define permission groups
                 const groups = [
                     { name: "Librarians", permission: SP.RoleType.administrator },
                     { name: "Members", permission: SP.RoleType.reader }
                 ];
                 
-                // Configure permissions for each list
                 const lists = [
                     { name: "Book Management", group: "Librarians", permission: SP.RoleType.editor },
                     { name: "Member Management", group: "Librarians", permission: SP.RoleType.editor },
@@ -328,7 +321,7 @@
             });
         }
 
-        // Helper function to create fields sequentially with Promise
+        // Helper function to create fields sequentially
         function createFieldsSequentially(listName, fields) {
             return new Promise((resolve, reject) => {
                 let index = 0;
@@ -357,7 +350,7 @@
             });
         }
 
-        // Helper function to add fields to content type sequentially with Promise
+        // Helper function to add fields to content type sequentially
         function addFieldsToContentTypeSequentially(contentTypeName, fields) {
             return new Promise((resolve, reject) => {
                 let index = 0;
@@ -386,7 +379,7 @@
             });
         }
 
-        // Create a SharePoint list with Promise
+        // Create a SharePoint list
         function createList(listName) {
             return new Promise((resolve, reject) => {
                 const ctx = SP.ClientContext.get_current();
@@ -417,7 +410,7 @@
             });
         }
 
-        // Create a field in a list with Promise
+        // Create a field in a list
         function createField(listName, fieldName, fieldType, displayName, choices, isRequired) {
             return new Promise((resolve, reject) => {
                 const ctx = SP.ClientContext.get_current();
@@ -429,7 +422,6 @@
                 const requiredAttr = isRequired ? 'Required="TRUE"' : 'Required="FALSE"';
                 
                 if (fieldType === "Choice") {
-                    // Create choice field
                     const choicesXml = choices.map(choice => `<CHOICE>${choice}</CHOICE>`).join('');
                     const defaultChoice = choices[0] ? `<Default>${choices[0]}</Default>` : '';
                     fieldXml = `<Field Type="${fieldType}" Name="${fieldName}" DisplayName="${displayName}" ${requiredAttr}>
@@ -437,7 +429,6 @@
                                   ${defaultChoice}
                                </Field>`;
                 } else {
-                    // Create regular field
                     fieldXml = `<Field Type="${fieldType}" Name="${fieldName}" DisplayName="${displayName}" ${requiredAttr} />`;
                 }
                 
@@ -462,17 +453,15 @@
             });
         }
 
-        // Create a lookup field with Promise
+        // Create a lookup field
         function createLookupField(sourceListName, targetListName, lookupFieldName, sourceFieldName) {
             return new Promise((resolve, reject) => {
                 const ctx = SP.ClientContext.get_current();
                 const web = ctx.get_web();
                 
-                // Get source list
                 const sourceList = web.get_lists().getByTitle(sourceListName);
                 ctx.load(sourceList, 'Id');
                 
-                // Get target list
                 const targetList = web.get_lists().getByTitle(targetListName);
                 ctx.load(targetList);
                 
@@ -480,7 +469,6 @@
                     function() {
                         const sourceListId = sourceList.get_id().toString();
                         
-                        // Create the lookup field
                         const fieldSchema = `<Field Type="Lookup" 
                                                 DisplayName="${lookupFieldName}" 
                                                 Required="TRUE" 
@@ -518,7 +506,7 @@
             });
         }
 
-        // Create a content type with Promise
+        // Create a content type
         function createContentType(contentTypeName) {
             return new Promise((resolve, reject) => {
                 const ctx = SP.ClientContext.get_current();
@@ -529,7 +517,7 @@
                 contentTypeCreationInfo.set_name(contentTypeName);
                 contentTypeCreationInfo.set_description("Created by Library Management System");
                 contentTypeCreationInfo.set_group("Library Content Types");
-                contentTypeCreationInfo.set_parentContentType(contentTypes.getById("0x01")); // Item content type
+                contentTypeCreationInfo.set_parentContentType(contentTypes.getById("0x01"));
                 
                 contentTypes.add(contentTypeCreationInfo);
                 
@@ -552,27 +540,23 @@
             });
         }
 
-        // Add a field to a content type with Promise
+        // Add a field to a content type
         function addFieldToContentType(contentTypeName, fieldName) {
             return new Promise((resolve, reject) => {
                 const ctx = SP.ClientContext.get_current();
                 const web = ctx.get_web();
                 
-                // Get the content type
                 const contentType = web.get_contentTypes().getByName(contentTypeName);
                 ctx.load(contentType);
                 
-                // Get the field
                 const field = web.get_fields().getByInternalNameOrTitle(fieldName);
                 ctx.load(field);
                 
                 ctx.executeQueryAsync(
                     function() {
-                        // Create field link
                         const fieldLinkCreationInfo = new SP.FieldLinkCreationInformation();
                         fieldLinkCreationInfo.set_field(field);
                         
-                        // Add to content type
                         contentType.get_fieldLinks().add(fieldLinkCreationInfo);
                         contentType.update(true);
                         
@@ -602,22 +586,16 @@
             });
         }
 
-        // Attach content type to list with Promise
+        // Attach content type to list
         function attachContentTypeToList(listName, contentTypeName) {
             return new Promise((resolve, reject) => {
                 const ctx = SP.ClientContext.get_current();
                 const web = ctx.get_web();
                 
-                // Get the list
                 const list = web.get_lists().getByTitle(listName);
-                
-                // Enable content types on the list
                 list.set_contentTypesEnabled(true);
                 
-                // Get the content type
                 const contentType = web.get_contentTypes().getByName(contentTypeName);
-                
-                // Add content type to list
                 list.get_contentTypes().addExistingContentType(contentType);
                 
                 ctx.executeQueryAsync(
@@ -634,7 +612,7 @@
             });
         }
 
-        // Make the Title field optional with Promise
+        // Make the Title field optional
         function makeTitleOptional(listName) {
             return new Promise((resolve, reject) => {
                 const ctx = SP.ClientContext.get_current();
@@ -670,14 +648,13 @@
             });
         }
 
-        // Configure list views with Promise
+        // Configure list views
         function configureListViews(listName, viewFields) {
             return new Promise((resolve, reject) => {
                 const ctx = SP.ClientContext.get_current();
                 const web = ctx.get_web();
                 const list = web.get_lists().getByTitle(listName);
                 
-                // Create view creation information
                 const viewCreationInfo = new SP.ViewCreationInformation();
                 viewCreationInfo.set_title("Default View");
                 viewCreationInfo.set_viewFields(viewFields);
@@ -685,7 +662,6 @@
                 viewCreationInfo.set_personalView(false);
                 viewCreationInfo.set_setAsDefaultView(true);
                 
-                // Add the view
                 list.get_views().add(viewCreationInfo);
                 
                 ctx.executeQueryAsync(
@@ -702,7 +678,7 @@
             });
         }
 
-        // Verify if a group exists, create if it doesn't (with Promise)
+        // Verify if a group exists, create if it doesn't
         function verifyGroup(groupName) {
             return new Promise((resolve, reject) => {
                 const ctx = SP.ClientContext.get_current();
@@ -720,7 +696,6 @@
                             resolve(true);
                         },
                         function(sender, args) {
-                            // Group doesn't exist, create it
                             createGroup(groupName)
                                 .then(resolve)
                                 .catch(reject);
@@ -733,7 +708,7 @@
             });
         }
 
-        // Create a SharePoint group with Promise
+        // Create a SharePoint group
         function createGroup(groupName) {
             return new Promise((resolve, reject) => {
                 const ctx = SP.ClientContext.get_current();
@@ -758,30 +733,21 @@
             });
         }
 
-        // Assign permissions to a list with Promise
+        // Assign permissions to a list
         function assignPermissions(listName, groupName, permissionLevel) {
             return new Promise((resolve, reject) => {
                 const ctx = SP.ClientContext.get_current();
                 const web = ctx.get_web();
                 
                 try {
-                    // Get the list
                     const list = web.get_lists().getByTitle(listName);
-                    
-                    // Get the group
                     const group = web.get_siteGroups().getByName(groupName);
-                    
-                    // Get the role definition
                     const roleDefinition = web.get_roleDefinitions().getByType(permissionLevel);
                     
-                    // Create role assignment
                     const roleAssignment = new SP.RoleDefinitionBindingCollection(ctx);
                     roleAssignment.add(roleDefinition);
                     
-                    // Break role inheritance if needed
                     list.breakRoleInheritance(true);
-                    
-                    // Add the role assignment
                     list.get_roleAssignments().add(group, roleAssignment);
                     
                     ctx.executeQueryAsync(
