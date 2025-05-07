@@ -1,0 +1,66 @@
+<table border="1" cellpadding="10" cellspacing="0">
+    <thead>
+        <tr>
+            <th>Button Label</th>
+            <th>Feature Description</th>
+            <th>Expected Behavior on Click</th>
+            <th>JSOM Concept Used</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Add Book</td>
+            <td>Add a new book to catalog</td>
+            <td>Opens book form modal</td>
+            <td>getElementById, addEventListener</td>
+        </tr>
+        <tr>
+            <td>Edit Book</td>
+            <td>Update existing book info</td>
+            <td>Prefills form with selected book data</td>
+            <td>querySelectorAll, dataset, value</td>
+        </tr>
+        <tr>
+            <td>Delete Book</td>
+            <td>Remove book from catalog</td>
+            <td>Deletes the book entry from DOM</td>
+            <td>remove(), closest()</td>
+        </tr>
+        <tr>
+            <td>Add Member</td>
+            <td>Register a new member</td>
+            <td>Opens member registration form</td>
+            <td>addEventListener, modal display toggling</td>
+        </tr>
+        <tr>
+            <td>Edit Member</td>
+            <td>Modify existing member details</td>
+            <td>Displays prefilled editable member info</td>
+            <td>dataset, innerText, form value setting</td>
+        </tr>
+        <tr>
+            <td>Delete Member</td>
+            <td>Delete member record</td>
+            <td>Removes the member element from DOM</td>
+            <td>remove(), closest()</td>
+        </tr>
+        <tr>
+            <td>Issue Book</td>
+            <td>Issue a book to a member</td>
+            <td>Opens book-member mapping form</td>
+            <td>addEventListener, style.display</td>
+        </tr>
+        <tr>
+            <td>Return Book</td>
+            <td>Mark issued book as returned</td>
+            <td>Updates book status to “Available”</td>
+            <td>innerText, dataset, DOM update</td>
+        </tr>
+        <tr>
+            <td>Dashboard (Auto-load)</td>
+            <td>Overview of library stats</td>
+            <td>Auto-updates available/borrowed counts</td>
+            <td>window.onload, querySelectorAll()</td>
+        </tr>
+    </tbody>
+</table>
