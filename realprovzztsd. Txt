@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Library Management System Provisioning</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript" src="/_layouts/15/SP.Runtime.js"></script>
+    <script type="text/javascript" src="/_layouts/15/SP.js"></script>
+    <style>
+        .progress-container {
+            margin-top: 20px;
+        }
+        .status-message {
+            padding: 5px;
+            margin-bottom: 5px;
+            border-radius: 4px;
+        }
+        .text-success {
+            color: #28a745;
+        }
+        .text-danger {
+            color: #dc3545;
+        }
+        .text-warning {
+            color: #ffc107;
+        }
+        .modal-content {
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container mt-4">
+        <div class="card border-success">
+            <div class="card-header bg-success text-white">
+                <h2>Library Management System Provisioning</h2>
+            </div>
+            <div class="card-body">
+                <button onclick="provisionAll()" class="btn btn-success btn-lg">
+                    Provision All Components
+                </button>
+                
+                <!-- Workflow Modal -->
+                <button type="button" class="btn btn-success rounded-pill mt-3" data-bs-toggle="modal" data-bs-target="#workflowModal">
+                    View Workflow
+                </button>
+                
+                <div class="modal fade" id="workflowModal" tabindex="-1" aria-labelledby="workflowModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="workflowModalLabel">Provisioning Workflow</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <ol>
+                                    <li><strong>Provision with a click</strong></li>
+                                    <li>Creating Lists (Book, Member, Issuance)</li>
+                                    <li>Define fields for each list</li>
+                                    <li>Creating Content Types</li>
+                                    <li>Adding fields to Content Types</li>
+                                    <li>Attaching Content Types to lists</li>
+                                    <li>Group existence check</li>
+                                    <li>Create Groups</li>
+                                    <li>Assign permissions</li>
+                                    <li>Making Title field optional</li>
+                                    <li>Creating default views</li>
+                                </ol>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <h5 class="text-primary">Provisioning Progress:</h5>
+                    <div id="statusMessages" class="progress-container"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Main provisioning function
+        function provisionAll() {
+            clearStatusMessages();
+            
+            // Start the provisioning chain
+            createBookManagementList(function() {
+                createMemberManagementList(function() {
+                    createIssuanceReturnsList(function() {
+                        configurePermissions(function() {
+                            addStatusMessage("✅ All components provisioned successfully!", "success");
+                        });
+                    });
+                });
+            });
+        }
+
+        // Clear previous status messages
+        function clearStatusMessages() {
+            $("#statusMessages").empty();
+        }
+
+        // Add a status message
+        function addStatusMessage(message, type) {
+            const element = $('<div class="status-message"></div>').text(message);
+            
+            if (type === "success") {
+                element.addClass("text-success");
+            } else if (type === "error") {
+                element.addClass("text-danger");
+            } else if (type === "warning") {
+                element.addClass("text-warning");
+            }
+            
+            $("#statusMessages").append(element);
+        }
+
+        // Create Book Management List
+        function createBookManagementList(callback) {
+            addStatusMessage("Starting Book Management list provisioning...");
+            
+            const listName = "Book Management";
+            const fields = [
+                { name: "BookName", type: "Text", displayName: "Book Name", required: true },
+                { name: "Author", type: "Text", displayName: "Author", required: true },
+                { name: "PublicationDate", type: "DateTime", displayName: "Publication Date" },
+                { name: "ISBN", type: "Text", displayName: "ISBN", required: true },
+                { name: "Status", type: "Choice", displayName: "Status", choices: ["Available", "Checked Out"], defaultValue: "Available" }
+            ];
+            
+            const contentTypeName = "BookContentType";
+            
+            createList(listName, function() {
+                addStatusMessage("Book Management list created");
+                
+                // Create fields sequentially
+                createFieldsSequentially(listName, fields, 0, function() {
+                    addStatusMessage("All fields created for Book Management");
+                    
+                    createContentType(contentTypeName, function() {
+                        addStatusMessage("Content type created for Book Management");
+                        
+                        // Add fields to content type
+                        addFieldsToContentTypeSequentially(contentTypeName, fields, 0, function() {
+                            attachContentTypeToList(listName, contentTypeName, function() {
+                                makeTitleOptional(listName, function() {
+                                    configureListViews(listName, ["BookName", "Author", "Status", "ISBN"], function() {
+                                        addStatusMessage("Book Management list fully configured");
+                                        callback();
+                                    });
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+        }
+
+        // Create Member Management List
+        function createMemberManagementList(callback) {
+            addStatusMessage("Starting Member Management list provisioning...");
+            
+            const listName = "Member Management";
+            const fields = [
+                { name: "MemberName", type: "Text", displayName: "Member Name", required: true },
+                { name: "MemberID", type: "Text", displayName: "Member ID", required: true },
+                { name: "ContactDetails", type: "Note", displayName: "Contact Details" },
+                { name: "MembershipStatus", type: "Choice", displayName: "Membership Status", 
+                  choices: ["Active", "Inactive", "Suspended"], defaultValue: "Active" }
+            ];
+            
+            const contentTypeName = "MemberContentType";
+            
+            createList(listName, function() {
+                addStatusMessage("Member Management list created");
+                
+                // Create fields sequentially
+                createFieldsSequentially(listName, fields, 0, function() {
+                    addStatusMessage("All fields created for Member Management");
+                    
+                    createContentType(contentTypeName, function() {
+                        addStatusMessage("Content type created for Member Management");
+                        
+                        // Add fields to content type
+                        addFieldsToContentTypeSequentially(contentTypeName, fields, 0, function() {
+                            attachContentTypeToList(listName, contentTypeName, function() {
+                                makeTitleOptional(listName, function() {
+                                    configureListViews(listName, ["MemberName", "MemberID", "MembershipStatus"], function() {
+                                        addStatusMessage("Member Management list fully configured");
+                                        callback();
+                                    });
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+        }
+
+        // Create Issuance & Returns List
+        function createIssuanceReturnsList(callback) {
+            addStatusMessage("Starting Issuance & Returns list provisioning...");
+            
+            const listName = "Issuance and Returns";
+            const fields = [
+                { name: "Status", type: "Choice", displayName: "Status", 
+                  choices: ["Active", "Returned", "Overdue"], defaultValue: "Active" },
+                { name: "OverdueDays", type: "Number", displayName: "Overdue Days" },
+                { name: "IssueDate", type: "DateTime", displayName: "Issue Date", required: true },
+                { name: "DueDate", type: "DateTime", displayName: "Due Date", required: true },
+                { name: "ReturnDate", type: "DateTime", displayName: "Return Date" }
+            ];
+            
+            const contentTypeName = "IssuanceContentType";
+            
+            createList(listName, function() {
+                addStatusMessage("Issuance & Returns list created");
+                
+                // Create fields sequentially
+                createFieldsSequentially(listName, fields, 0, function() {
+                    addStatusMessage("All base fields created for Issuance & Returns");
+                    
+                    // Create lookup fields after base fields are created
+                    createLookupField("Book Management", listName, "BookLookup", "BookName", function() {
+                        createLookupField("Member Management", listName, "MemberLookup", "MemberName", function() {
+                            addStatusMessage("Lookup fields created for Issuance & Returns");
+                            
+                            createContentType(contentTypeName, function() {
+                                addStatusMessage("Content type created for Issuance & Returns");
+                                
+                                // Combine base fields and lookup fields
+                                const allFields = fields.concat([
+                                    { name: "BookLookup", type: "Lookup", displayName: "Book", required: true },
+                                    { name: "MemberLookup", type: "Lookup", displayName: "Member", required: true }
+                                ]);
+                                
+                                // Add fields to content type
+                                addFieldsToContentTypeSequentially(contentTypeName, allFields, 0, function() {
+                                    attachContentTypeToList(listName, contentTypeName, function() {
+                                        makeTitleOptional(listName, function() {
+                                            configureListViews(listName, 
+                                                ["BookLookup", "MemberLookup", "IssueDate", "DueDate", "Status"], 
+                                                function() {
+                                                addStatusMessage("Issuance & Returns list fully configured");
+                                                callback();
+                                            });
+                                        });
+                                    });
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+        }
+
+        // Configure permissions for all lists
+        function configurePermissions(callback) {
+            addStatusMessage("Configuring permissions...");
+            
+            // Define permission groups
+            const groups = [
+                { name: "Librarians", permission: SP.RoleType.administrator },
+                { name: "Members", permission: SP.RoleType.reader }
+            ];
+            
+            // Configure permissions for each list
+            const lists = [
+                { name: "Book Management", group: "Librarians", permission: SP.RoleType.editor },
+                { name: "Member Management", group: "Librarians", permission: SP.RoleType.editor },
+                { name: "Issuance and Returns", group: "Librarians", permission: SP.RoleType.editor }
+            ];
+            
+            // Create groups and assign permissions
+            createGroupsAndAssignPermissions(groups, lists, 0, function() {
+                addStatusMessage("All permissions configured successfully");
+                callback();
+            });
+        }
+
+        // Helper function to create groups and assign permissions
+        function createGroupsAndAssignPermissions(groups, lists, index, callback) {
+            if (index >= groups.length) {
+                // All groups created, now assign permissions to lists
+                assignPermissionsToLists(lists, 0, callback);
+                return;
+            }
+            
+            const group = groups[index];
+            addStatusMessage(`Creating/verifying group: ${group.name}`);
+            
+            verifyGroup(group.name, function(success) {
+                if (success) {
+                    createGroupsAndAssignPermissions(groups, lists, index + 1, callback);
+                } else {
+                    addStatusMessage(`Failed to create/verify group: ${group.name}`, "error");
+                    callback();
+                }
+            });
+        }
+
+        // Helper function to assign permissions to lists
+        function assignPermissionsToLists(lists, index, callback) {
+            if (index >= lists.length) {
+                callback();
+                return;
+            }
+            
+            const listConfig = lists[index];
+            addStatusMessage(`Assigning permissions for ${listConfig.name}`);
+            
+            assignPermissions(listConfig.name, listConfig.group, listConfig.permission, function(success) {
+                if (success) {
+                    assignPermissionsToLists(lists, index + 1, callback);
+                } else {
+                    addStatusMessage(`Failed to assign permissions for ${listConfig.name}`, "error");
+                    callback();
+                }
+            });
+        }
+
+        // Verify if a group exists, create if it doesn't
+        function verifyGroup(groupName, callback) {
+            const ctx = SP.ClientContext.get_current();
+            const web = ctx.get_web();
+            const groups = web.get_siteGroups();
+            
+            let group;
+            try {
+                group = groups.getByName(groupName);
+                ctx.load(group);
+                
+                ctx.executeQueryAsync(
+                    function() {
+                        addStatusMessage(`Group "${groupName}" already exists`, "warning");
+                        callback(true);
+                    },
+                    function(sender, args) {
+                        // Group doesn't exist, create it
+                        createGroup(groupName, callback);
+                    }
+                );
+            } catch (e) {
+                addStatusMessage(`Error checking group existence: ${e.message}`, "error");
+                callback(false);
+            }
+        }
+
+        // Create a SharePoint group
+        function createGroup(groupName, callback) {
+            const ctx = SP.ClientContext.get_current();
+            const web = ctx.get_web();
+            const groups = web.get_siteGroups();
+            const groupCreationInfo = new SP.GroupCreationInformation();
+            
+            groupCreationInfo.set_title(groupName);
+            groups.add(groupCreationInfo);
+            
+            ctx.executeQueryAsync(
+                function() {
+                    addStatusMessage(`Group "${groupName}" created successfully`);
+                    callback(true);
+                },
+                function(sender, args) {
+                    addStatusMessage(`Failed to create group "${groupName}": ${args.get_message()}`, "error");
+                    callback(false);
+                }
+            );
+        }
+
+        // Assign permissions to a list
+        function assignPermissions(listName, groupName, permissionLevel, callback) {
+            const ctx = SP.ClientContext.get_current();
+            const web = ctx.get_web();
+            
+            try {
+                // Get the list
+                const list = web.get_lists().getByTitle(listName);
+                
+                // Get the group
+                const group = web.get_siteGroups().getByName(groupName);
+                
+                // Get the role definition
+                const roleDefinition = web.get_roleDefinitions().getByType(permissionLevel);
+                
+                // Create role assignment
+                const roleAssignment = new SP.RoleDefinitionBindingCollection(ctx);
+                roleAssignment.add(roleDefinition);
+                
+                // Break role inheritance if needed
+                list.breakRoleInheritance(true);
+                
+                // Add the role assignment
+                list.get_roleAssignments().add(group, roleAssignment);
+                
+                ctx.executeQueryAsync(
+                    function() {
+                        addStatusMessage(`Permissions assigned to "${groupName}" for list "${listName}"`);
+                        callback(true);
+                    },
+                    function(sender, args) {
+                        addStatusMessage(`Failed to assign permissions to "${groupName}" for list "${listName}": ${args.get_message()}`, "error");
+                        callback(false);
+                    }
+                );
+            } catch (e) {
+                addStatusMessage(`Error assigning permissions: ${e.message}`, "error");
+                callback(false);
+            }
+        }
+
+        // Helper function to create fields sequentially
+        function createFieldsSequentially(listName, fields, index, callback) {
+            if (index >= fields.length) {
+                callback();
+                return;
+            }
+            
+            const field = fields[index];
+            addStatusMessage(`Creating field: ${field.displayName}`);
+            
+            createField(listName, field.name, field.type, field.displayName, field.choices, field.required, function(success) {
+                if (success) {
+                    createFieldsSequentially(listName, fields, index + 1, callback);
+                } else {
+                    addStatusMessage(`Failed to create field: ${field.displayName}`, "error");
+                    callback();
+                }
+            });
+        }
+
+        // Helper function to add fields to content type sequentially
+        function addFieldsToContentTypeSequentially(contentTypeName, fields, index, callback) {
+            if (index >= fields.length) {
+                callback();
+                return;
+            }
+            
+            const field = fields[index];
+            addStatusMessage(`Adding field to content type: ${field.displayName}`);
+            
+            addFieldToContentType(contentTypeName, field.name, function(success) {
+                if (success) {
+                    addFieldsToContentTypeSequentially(contentTypeName, fields, index + 1, callback);
+                } else {
+                    addStatusMessage(`Failed to add field to content type: ${field.displayName}`, "error");
+                    callback();
+                }
+            });
+        }
+
+        // Create a SharePoint list
+        function createList(listName, callback) {
+            const ctx = SP.ClientContext.get_current();
+            const web = ctx.get_web();
+            const listCreationInfo = new SP.ListCreationInformation();
+            
+            listCreationInfo.set_title(listName);
+            listCreationInfo.set_templateType(SP.ListTemplateType.genericList);
+            
+            const list = web.get_lists().add(listCreationInfo);
+            
+            ctx.executeQueryAsync(
+                function() {
+                    addStatusMessage(`List "${listName}" created successfully`);
+                    callback();
+                },
+                function(sender, args) {
+                    if (args.get_message().indexOf("already exists") !== -1) {
+                        addStatusMessage(`List "${listName}" already exists`, "warning");
+                        callback();
+                    } else {
+                        addStatusMessage(`Failed to create list "${listName}": ${args.get_message()}`, "error");
+                        callback();
+                    }
+                }
+            );
+        }
+
+        // Create a field in a list
+        function createField(listName, fieldName, fieldType, displayName, choices, isRequired, callback) {
+            const ctx = SP.ClientContext.get_current();
+            const web = ctx.get_web();
+            const list = web.get_lists().getByTitle(listName);
+            const fields = list.get_fields();
+            
+            let fieldXml;
+            const requiredAttr = isRequired ? 'Required="TRUE"' : 'Required="FALSE"';
+            
+            if (fieldType === "Choice") {
+                // Create choice field
+                const choicesXml = choices.map(choice => `<CHOICE>${choice}</CHOICE>`).join('');
+                const defaultChoice = choices[0] ? `<Default>${choices[0]}</Default>` : '';
+                fieldXml = `<Field Type="${fieldType}" Name="${fieldName}" DisplayName="${displayName}" ${requiredAttr}>
+                              <CHOICES>${choicesXml}</CHOICES>
+                              ${defaultChoice}
+                           </Field>`;
+            } else {
+                // Create regular field
+                fieldXml = `<Field Type="${fieldType}" Name="${fieldName}" DisplayName="${displayName}" ${requiredAttr} />`;
+            }
+            
+            fields.addFieldAsXml(fieldXml, true, SP.AddFieldOptions.defaultValue);
+            
+            ctx.executeQueryAsync(
+                function() {
+                    addStatusMessage(`Field "${displayName}" created successfully`);
+                    callback(true);
+                },
+                function(sender, args) {
+                    if (args.get_message().indexOf("already exists") !== -1) {
+                        addStatusMessage(`Field "${displayName}" already exists`, "warning");
+                        callback(true);
+                    } else {
+                        addStatusMessage(`Failed to create field "${displayName}": ${args.get_message()}`, "error");
+                        callback(false);
+                    }
+                }
+            );
+        }
+
+        // Create a lookup field
+        function createLookupField(sourceListName, targetListName, lookupFieldName, sourceFieldName, callback) {
+            const ctx = SP.ClientContext.get_current();
+            const web = ctx.get_web();
+            
+            // Get source list
+            const sourceList = web.get_lists().getByTitle(sourceListName);
+            ctx.load(sourceList, 'Id');
+            
+            // Get target list
+            const targetList = web.get_lists().getByTitle(targetListName);
+            ctx.load(targetList);
+            
+            ctx.executeQueryAsync(
+                function() {
+                    const sourceListId = sourceList.get_id().toString();
+                    
+                    // Create the lookup field
+                    const fieldSchema = `<Field Type="Lookup" 
+                                            DisplayName="${lookupFieldName}" 
+                                            Required="TRUE" 
+                                            List="${sourceListId}" 
+                                            ShowField="${sourceFieldName}" 
+                                            EnforceUniqueValues="FALSE" 
+                                            StaticName="${lookupFieldName}" 
+                                            Name="${lookupFieldName}" />`;
+                    
+                    targetList.get_fields().addFieldAsXml(fieldSchema, true, SP.AddFieldOptions.defaultValue);
+                    
+                    ctx.executeQueryAsync(
+                        function() {
+                            addStatusMessage(`Lookup field "${lookupFieldName}" created successfully`);
+                            callback(true);
+                        },
+                        function(sender, args) {
+                            if (args.get_message().indexOf("already exists") !== -1) {
+                                addStatusMessage(`Lookup field "${lookupFieldName}" already exists`, "warning");
+                                callback(true);
+                            } else {
+                                addStatusMessage(`Failed to create lookup field "${lookupFieldName}": ${args.get_message()}`, "error");
+                                callback(false);
+                            }
+                        }
+                    );
+                },
+                function(sender, args) {
+                    addStatusMessage(`Failed to get list information for lookup field: ${args.get_message()}`, "error");
+                    callback(false);
+                }
+            );
+        }
+
+        // Create a content type
+        function createContentType(contentTypeName, callback) {
+            const ctx = SP.ClientContext.get_current();
+            const web = ctx.get_web();
+            const contentTypes = web.get_contentTypes();
+            const contentTypeCreationInfo = new SP.ContentTypeCreationInformation();
+            
+            contentTypeCreationInfo.set_name(contentTypeName);
+            contentTypeCreationInfo.set_description("Created by Library Management System");
+            contentTypeCreationInfo.set_group("Library Content Types");
+            contentTypeCreationInfo.set_parentContentType(contentTypes.getById("0x01")); // Item content type
+            
+            contentTypes.add(contentTypeCreationInfo);
+            
+            ctx.executeQueryAsync(
+                function() {
+                    addStatusMessage(`Content type "${contentTypeName}" created successfully`);
+                    callback();
+                },
+                function(sender, args) {
+                    if (args.get_message().indexOf("already exists") !== -1) {
+                        addStatusMessage(`Content type "${contentTypeName}" already exists`, "warning");
+                        callback();
+                    } else {
+                        addStatusMessage(`Failed to create content type "${contentTypeName}": ${args.get_message()}`, "error");
+                        callback();
+                    }
+                }
+            );
+        }
+
+        // Add a field to a content type
+        function addFieldToContentType(contentTypeName, fieldName, callback) {
+            const ctx = SP.ClientContext.get_current();
+            const web = ctx.get_web();
+            
+            // Get the content type
+            const contentType = web.get_contentTypes().getByName(contentTypeName);
+            ctx.load(contentType);
+            
+            // Get the field
+            const field = web.get_fields().getByInternalNameOrTitle(fieldName);
+            ctx.load(field);
+            
+            ctx.executeQueryAsync(
+                function() {
+                    // Create field link
+                    const fieldLinkCreationInfo = new SP.FieldLinkCreationInformation();
+                    fieldLinkCreationInfo.set_field(field);
+                    
+                    // Add to content type
+                    contentType.get_fieldLinks().add(fieldLinkCreationInfo);
+                    contentType.update(true);
+                    
+                    ctx.executeQueryAsync(
+                        function() {
+                            addStatusMessage(`Field "${fieldName}" added to content type "${contentTypeName}"`);
+                            callback(true);
+                        },
+                        function(sender, args) {
+                            if (args.get_message().indexOf("already exists") !== -1) {
+                                addStatusMessage(`Field "${fieldName}" already in content type "${contentTypeName}"`, "warning");
+                                callback(true);
+                            } else {
+                                addStatusMessage(`Failed to add field "${fieldName}" to content type "${contentTypeName}": ${args.get_message()}`, "error");
+                                callback(false);
+                            }
+                        }
+                    );
+                },
+                function(sender, args) {
+                    addStatusMessage(`Failed to load content type or field: ${args.get_message()}`, "error");
+                    callback(false);
+                }
+            );
+        }
+
+        // Attach content type to list
+        function attachContentTypeToList(listName, contentTypeName, callback) {
+            const ctx = SP.ClientContext.get_current();
+            const web = ctx.get_web();
+            
+            // Get the list
+            const list = web.get_lists().getByTitle(listName);
+            
+            // Enable content types on the list
+            list.set_contentTypesEnabled(true);
+            
+            // Get the content type
+            const contentType = web.get_contentTypes().getByName(contentTypeName);
+            
+            // Add content type to list
+            list.get_contentTypes().addExistingContentType(contentType);
+            
+            ctx.executeQueryAsync(
+                function() {
+                    addStatusMessage(`Content type "${contentTypeName}" attached to list "${listName}"`);
+                    callback();
+                },
+                function(sender, args) {
+                    addStatusMessage(`Failed to attach content type "${contentTypeName}" to list "${listName}": ${args.get_message()}`, "error");
+                    callback();
+                }
+            );
+        }
+
+        // Make the Title field optional
+        function makeTitleOptional(listName, callback) {
+            const ctx = SP.ClientContext.get_current();
+            const web = ctx.get_web();
+            const list = web.get_lists().getByTitle(listName);
+            const titleField = list.get_fields().getByInternalNameOrTitle("Title");
+            
+            ctx.load(titleField);
+            
+            ctx.executeQueryAsync(
+                function() {
+                    titleField.set_required(false);
+                    titleField.update();
+                    
+                    ctx.executeQueryAsync(
+                        function() {
+                            addStatusMessage(`Title field made optional in list "${listName}"`);
+                            callback();
+                        },
+                        function(sender, args) {
+                            addStatusMessage(`Failed to make Title field optional: ${args.get_message()}`, "error");
+                            callback();
+                        }
+                    );
+                },
+                function(sender, args) {
+                    addStatusMessage(`Failed to load Title field: ${args.get_message()}`, "error");
+                    callback();
+                }
+            );
+        }
+
+        // Configure list views
+        function configureListViews(listName, viewFields, callback) {
+            const ctx = SP.ClientContext.get_current();
+            const web = ctx.get_web();
+            const list = web.get_lists().getByTitle(listName);
+            
+            // Create view creation information
+            const viewCreationInfo = new SP.ViewCreationInformation();
+            viewCreationInfo.set_title("Default View");
+            viewCreationInfo.set_viewFields(viewFields);
+            viewCreationInfo.set_rowLimit(50);
+            viewCreationInfo.set_personalView(false);
+            viewCreationInfo.set_setAsDefaultView(true);
+            
+            // Add the view
+            list.get_views().add(viewCreationInfo);
+            
+            ctx.executeQueryAsync(
+                function() {
+                    addStatusMessage(`Default view created for list "${listName}"`);
+                    callback();
+                },
+                function(sender, args) {
+                    addStatusMessage(`Failed to create view for list "${listName}": ${args.get_message()}`, "error");
+                    callback();
+                }
+            );
+        }
+    </script>
+</body>
+</html>
