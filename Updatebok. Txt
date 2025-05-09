@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Book Management List - Update Items</title>
+    <!-- Load SharePoint JSOM scripts -->
+    <script type="text/javascript" src="/_layouts/15/sp.runtime.js"></script>
+    <script type="text/javascript" src="/_layouts/15/sp.js"></script>
+</head>
+<body>
+    <h2>Book Management</h2>
+
+    <!-- Table to display the list items -->
+    <table id="bookTable" border="1">
+        <thead>
+            <tr>
+                <th>Select</th>
+                <th>Book Name</th>
+                <th>Publication Date</th>
+                <th>Author Name</th>
+                <th>ISBN</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <hr>
+
+    <!-- Form to update selected item -->
+    <h3>Update Book Details</h3>
+    <form id="updateForm">
+        <label>Book Name: <input type="text" id="bookName" /></label><br><br>
+        <label>Publication Date: <input type="date" id="pubDate" /></label><br><br>
+        <label>Author Name: <input type="text" id="authorName" /></label><br><br>
+        <label>ISBN: <input type="text" id="isbn" /></label><br><br>
+        <input type="hidden" id="itemId" />
+        <button type="button" onclick="updateItem()">Update Book</button>
+    </form>
+
+    <script type="text/javascript">
+        // Load items when the page is ready
+        document.addEventListener("DOMContentLoaded", function () {
+            loadItems();
+        });
+
+        // Load all items from Book Management list
+        function loadItems() {
+            var clientContext = new SP.ClientContext.get_current(); // Get the current SharePoint context
+            var list = clientContext.get_web().get_lists().getByTitle("Book Management"); // Reference to the list
+            var camlQuery = new SP.CamlQuery(); // Empty query loads all items
+            this.listItems = list.getItems(camlQuery); // Get all list items
+            clientContext.load(listItems); // Load items into context
+            clientContext.executeQueryAsync(onLoadSuccess, onQueryFail); // Execute query
+        }
+
+        // Called when list items are successfully loaded
+        function onLoadSuccess() {
+            var tableBody = document.querySelector("#bookTable tbody");
+            tableBody.innerHTML = ""; // Clear existing rows
+
+            var listItemEnumerator = listItems.getEnumerator();
+            while (listItemEnumerator.moveNext()) {
+                var item = listItemEnumerator.get_current();
+                var id = item.get_id(); // Get item ID
+                var bookName = item.get_item("Title"); // 'Title' is used for Book Name
+                var pubDate = item.get_item("PublicationDate");
+                var authorName = item.get_item("AuthorName");
+                var isbn = item.get_item("ISBN");
+
+                // Format publication date
+                var formattedDate = pubDate ? new Date(pubDate).toISOString().split('T')[0] : "";
+
+                // Create table row with a "Select" button
+                var row = "<tr>";
+                row += "<td><button onclick='editItem(" + id + ")'>Select</button></td>";
+                row += "<td>" + bookName + "</td>";
+                row += "<td>" + formattedDate + "</td>";
+                row += "<td>" + authorName + "</td>";
+                row += "<td>" + isbn + "</td>";
+                row += "</tr>";
+
+                tableBody.innerHTML += row;
+            }
+        }
+
+        // Error handler
+        function onQueryFail(sender, args) {
+            alert("Error: " + args.get_message());
+        }
+
+        // Populate the form with selected item's data
+        function editItem(itemId) {
+            var clientContext = new SP.ClientContext.get_current();
+            var list = clientContext.get_web().get_lists().getByTitle("Book Management");
+            var listItem = list.getItemById(itemId);
+            clientContext.load(listItem);
+            clientContext.executeQueryAsync(function () {
+                // Fill form fields with current item data
+                document.getElementById("itemId").value = listItem.get_id();
+                document.getElementById("bookName").value = listItem.get_item("Title");
+                var pubDate = listItem.get_item("PublicationDate");
+                document.getElementById("pubDate").value = pubDate ? new Date(pubDate).toISOString().split('T')[0] : "";
+                document.getElementById("authorName").value = listItem.get_item("AuthorName");
+                document.getElementById("isbn").value = listItem.get_item("ISBN");
+            }, onQueryFail);
+        }
+
+        // Update item with new values from form
+        function updateItem() {
+            var itemId = document.getElementById("itemId").value;
+            var bookName = document.getElementById("bookName").value;
+            var pubDate = document.getElementById("pubDate").value;
+            var authorName = document.getElementById("authorName").value;
+            var isbn = document.getElementById("isbn").value;
+
+            var clientContext = new SP.ClientContext.get_current();
+            var list = clientContext.get_web().get_lists().getByTitle("Book Management");
+            var listItem = list.getItemById(itemId);
+
+            // Set new values
+            listItem.set_item("Title", bookName);
+            listItem.set_item("PublicationDate", new Date(pubDate));
+            listItem.set_item("AuthorName", authorName);
+            listItem.set_item("ISBN", isbn);
+
+            listItem.update(); // Save changes
+            clientContext.executeQueryAsync(function () {
+                alert("Book updated successfully!");
+                loadItems(); // Refresh table
+            }, onQueryFail);
+        }
+    </script>
+</body>
+</html>
