@@ -8,6 +8,256 @@
   <style>
     body {
       background-color: #f0f4f8;
+      margin: 0;
+    }
+
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      background-color: #343a40;
+      color: white;
+      padding-top: 20px;
+      width: 250px;
+      overflow-y: auto;
+    }
+
+    .sidebar a {
+      color: white;
+      display: block;
+      padding: 10px 20px;
+      text-decoration: none;
+    }
+
+    .sidebar a:hover {
+      background-color: #495057;
+    }
+
+    .submenu {
+      padding-left: 30px;
+      background-color: #3e454d;
+    }
+
+    .content {
+      margin-left: 260px;
+      padding: 20px;
+      padding-bottom: 100px; /* space for footer */
+    }
+
+    .footer-stats {
+      background-color: white;
+      padding: 20px;
+      border-top: 2px solid #007bff;
+      text-align: center;
+      position: fixed;
+      bottom: 0;
+      width: calc(100% - 260px);
+      margin-left: 260px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <h4 class="text-center mb-4">Library Menu</h4>
+
+  <a data-toggle="collapse" href="#bookMenu" role="button">
+    <i class="fas fa-book"></i> Book Management
+  </a>
+  <div class="collapse submenu" id="bookMenu">
+    <a href="#">Add New Book</a>
+    <a href="#">Update Book</a>
+    <a href="#">Remove Book</a>
+    <a href="#">Search Book</a>
+  </div>
+
+  <a data-toggle="collapse" href="#memberMenu" role="button">
+    <i class="fas fa-users"></i> Member Management
+  </a>
+  <div class="collapse submenu" id="memberMenu">
+    <a href="#">Add Member</a>
+    <a href="#">Update Member</a>
+    <a href="#">Delete Member</a>
+    <a href="#">Search Member</a>
+  </div>
+
+  <a data-toggle="collapse" href="#issueMenu" role="button">
+    <i class="fas fa-book-reader"></i> Book Issuance
+  </a>
+  <div class="collapse submenu" id="issueMenu">
+    <a href="#">Issue Book</a>
+    <a href="#">Return Book</a>
+    <a href="#">Check Overdue</a>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="content">
+  <div class="dashboard-header d-flex justify-content-between align-items-center mb-4">
+    <h2>Library Dashboard</h2>
+    <i class="fas fa-bell fa-2x text-primary"></i>
+  </div>
+
+  <!-- Search Box -->
+  <div class="input-group mb-3">
+    <input type="text" id="booksearch" placeholder="Search by Book Name, ISBN or Author Name" class="form-control" />
+    <div class="input-group-append">
+      <button class="btn btn-primary" onclick="searchBooks()">
+        <i class="fas fa-search"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Search Results -->
+  <div id="searchResults" class="row row-cols-1 row-cols-md-3 g-4 mt-4"></div>
+
+  <!-- All Books -->
+  <h4 class="mt-5 mb-3">Available Books</h4>
+  <div id="allBooksSection" class="row row-cols-1 row-cols-md-3 g-4"></div>
+</div>
+
+<!-- Footer Stats -->
+<div class="footer-stats">
+  <div class="row">
+    <div class="col-md-6">
+      <h5>Total Borrowed Books:</h5>
+      <p id="borrowedCount">--</p>
+    </div>
+    <div class="col-md-6">
+      <h5>Total Available Books:</h5>
+      <p id="availableCount">--</p>
+    </div>
+  </div>
+</div>
+
+<!-- JS Scripts -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+<script type="text/javascript" src="/_layouts/15/SP.Runtime.js"></script>
+<script type="text/javascript" src="/_layouts/15/SP.js"></script>
+
+<script type="text/javascript">
+  function searchBooks() {
+    var searchTerm = document.getElementById("booksearch").value.trim();
+    if (!searchTerm) {
+      alert("Please enter a search term.");
+      return;
+    }
+
+    var clientContext = new SP.ClientContext.get_current();
+    var list = clientContext.get_web().get_lists().getByTitle("Book Management");
+
+    var camlQuery = new SP.CamlQuery();
+    camlQuery.set_viewXml(`
+      <View>
+        <Query>
+          <Where>
+            <Or>
+              <Or>
+                <Contains><FieldRef Name='BookName' /><Value Type='Text'>${searchTerm}</Value></Contains>
+                <Contains><FieldRef Name='AuthorName' /><Value Type='Text'>${searchTerm}</Value></Contains>
+              </Or>
+              <Contains><FieldRef Name='ISBN' /><Value Type='Text'>${searchTerm}</Value></Contains>
+            </Or>
+          </Where>
+        </Query>
+      </View>
+    `);
+
+    var listItems = list.getItems(camlQuery);
+    clientContext.load(listItems);
+    clientContext.executeQueryAsync(
+      function () {
+        renderBookCards(listItems, "searchResults");
+      },
+      function (sender, args) {
+        alert("Search failed: " + args.get_message());
+      }
+    );
+  }
+
+  function loadAllBooks() {
+    var clientContext = new SP.ClientContext.get_current();
+    var list = clientContext.get_web().get_lists().getByTitle("Book Management");
+    var camlQuery = new SP.CamlQuery();
+    camlQuery.set_viewXml("<View><Query></Query></View>");
+
+    var listItems = list.getItems(camlQuery);
+    clientContext.load(listItems);
+    clientContext.executeQueryAsync(
+      function () {
+        renderBookCards(listItems, "allBooksSection");
+        document.getElementById("availableCount").textContent = listItems.get_count();
+      },
+      function (sender, args) {
+        alert("Failed to load books: " + args.get_message());
+      }
+    );
+  }
+
+  function renderBookCards(listItems, containerId) {
+    var container = document.getElementById(containerId);
+    container.innerHTML = "";
+
+    var enumerator = listItems.getEnumerator();
+    if (!enumerator.moveNext()) {
+      container.innerHTML = "<div class='col-12 alert alert-warning'>No books found.</div>";
+      return;
+    }
+
+    enumerator.reset();
+    while (enumerator.moveNext()) {
+      var item = enumerator.get_current();
+      var bookName = item.get_item("BookName") || "";
+      var author = item.get_item("AuthorName") || "";
+      var isbn = item.get_item("ISBN") || "";
+      var pubDate = item.get_item("Publication_x0020_date");
+      var formattedDate = pubDate ? new Date(pubDate).toISOString().split("T")[0] : "";
+
+      var cardHTML = `
+        <div class="col mb-4">
+          <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+              <i class="fas fa-book fa-2x text-info mb-2"></i>
+              <h5 class="card-title text-primary">${bookName}</h5>
+              <p class="card-text"><strong>Author:</strong> ${author}</p>
+              <p class="card-text"><strong>ISBN:</strong> ${isbn}</p>
+              <p class="card-text"><strong>Published:</strong> ${formattedDate}</p>
+            </div>
+          </div>
+        </div>
+      `;
+      container.innerHTML += cardHTML;
+    }
+  }
+
+  // Auto-load all books on page ready
+  document.addEventListener("DOMContentLoaded", function () {
+    loadAllBooks();
+  });
+</script>
+
+</body>
+</html>
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Library Management System</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      background-color: #f0f4f8;
     }
     .sidebar {
       height: 100vh;
