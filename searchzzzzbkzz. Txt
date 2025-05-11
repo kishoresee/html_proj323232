@@ -1,0 +1,93 @@
+function searchBooks() {
+    var searchTerm = document.getElementById("booksearch").value.trim();
+
+    if (!searchTerm) {
+        alert("Please enter a search term.");
+        return;
+    }
+
+    var clientContext = new SP.ClientContext.get_current();
+    var list = clientContext.get_web().get_lists().getByTitle("Book Management");
+
+    // Build CAML query to search BookName, ISBN, or AuthorName
+    var camlQuery = new SP.CamlQuery();
+    camlQuery.set_viewXml(
+        `<View>
+            <Query>
+                <Where>
+                    <Or>
+                        <Or>
+                            <Contains>
+                                <FieldRef Name='BookName' />
+                                <Value Type='Text'>${searchTerm}</Value>
+                            </Contains>
+                            <Contains>
+                                <FieldRef Name='AuthorName' />
+                                <Value Type='Text'>${searchTerm}</Value>
+                            </Contains>
+                        </Or>
+                        <Contains>
+                            <FieldRef Name='ISBN' />
+                            <Value Type='Text'>${searchTerm}</Value>
+                        </Contains>
+                    </Or>
+                </Where>
+            </Query>
+        </View>`
+    );
+
+    var listItems = list.getItems(camlQuery);
+    clientContext.load(listItems);
+    clientContext.executeQueryAsync(
+        function () {
+            renderSearchResults(listItems);
+        },
+        function (sender, args) {
+            alert("Search failed: " + args.get_message());
+        }
+    );
+}
+
+// Function to render results as cards
+function renderSearchResults(listItems) {
+    var container = document.getElementById("searchResults");
+    if (!container) {
+        container = document.createElement("div");
+        container.id = "searchResults";
+        container.className = "row row-cols-1 row-cols-md-3 g-4 mt-4";
+        document.querySelector(".container").appendChild(container);
+    } else {
+        container.innerHTML = ""; // Clear old results
+    }
+
+    var enumerator = listItems.getEnumerator();
+    if (!enumerator.moveNext()) {
+        container.innerHTML = "<div class='alert alert-warning'>No books found matching your search.</div>";
+        return;
+    }
+
+    enumerator.reset();
+    while (enumerator.moveNext()) {
+        var item = enumerator.get_current();
+        var bookName = item.get_item("BookName") || "";
+        var author = item.get_item("AuthorName") || "";
+        var isbn = item.get_item("ISBN") || "";
+        var pubDate = item.get_item("Publication_x0020_date");
+        var formattedDate = pubDate ? new Date(pubDate).toISOString().split("T")[0] : "";
+
+        var cardHTML = `
+            <div class="col">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="bi bi-book" style="font-size: 2rem;"></i>
+                        <h5 class="card-title mt-3 text-primary">${bookName}</h5>
+                        <p class="card-text"><strong>Author:</strong> ${author}</p>
+                        <p class="card-text"><strong>ISBN:</strong> ${isbn}</p>
+                        <p class="card-text"><strong>Published:</strong> ${formattedDate}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+        container.innerHTML += cardHTML;
+    }
+}
