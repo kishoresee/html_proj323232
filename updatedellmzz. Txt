@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Book Management List - Update & Delete Items</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- SharePoint JSOM scripts -->
+    <script type="text/javascript" src="/_layouts/15/sp.runtime.js"></script>
+    <script type="text/javascript" src="/_layouts/15/sp.js"></script>
+</head>
+<body class="bg-light p-4">
+
+    <div class="container">
+        <h2 class="mb-4 text-center text-primary">Book Management</h2>
+
+        <!-- Table to display list items -->
+        <div class="table-responsive mb-5">
+            <table class="table table-bordered table-striped align-middle text-center" id="bookTable">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Actions</th>
+                        <th>Book Name</th>
+                        <th>Publication Date</th>
+                        <th>Author Name</th>
+                        <th>ISBN</th>
+                    </tr>
+                </thead>
+                <tbody class="table-group-divider"></tbody>
+            </table>
+        </div>
+
+        <!-- Update section -->
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Update Book Details</h4>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="bookName" class="form-label">Book Name</label>
+                        <input type="text" id="bookName" class="form-control" placeholder="Enter Book Name" />
+                    </div>
+                    <div class="col-md-6">
+                        <label for="pubDate" class="form-label">Publication Date</label>
+                        <input type="date" id="pubDate" class="form-control" />
+                    </div>
+                    <div class="col-md-6">
+                        <label for="authorName" class="form-label">Author Name</label>
+                        <input type="text" id="authorName" class="form-control" placeholder="Enter Author Name" />
+                    </div>
+                    <div class="col-md-6">
+                        <label for="isbn" class="form-label">ISBN</label>
+                        <input type="text" id="isbn" class="form-control" placeholder="Enter ISBN" />
+                    </div>
+                </div>
+                <input type="hidden" id="itemId" />
+                <div class="mt-4 text-end">
+                    <button class="btn btn-success" onclick="updateItem()">Update Book</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script type="text/javascript">
+        document.addEventListener("DOMContentLoaded", function () {
+            loadItems();
+        });
+
+        // Load items from SharePoint
+        function loadItems() {
+            var clientContext = new SP.ClientContext.get_current();
+            var list = clientContext.get_web().get_lists().getByTitle("Book Management");
+            var camlQuery = new SP.CamlQuery();
+            this.listItems = list.getItems(camlQuery);
+            clientContext.load(listItems);
+
+            clientContext.executeQueryAsync(onLoadSuccess, function (sender, args) {
+                alert("Failed to load items. Reason: " + args.get_message());
+            });
+        }
+
+        function onLoadSuccess() {
+            var tableBody = document.querySelector("#bookTable tbody");
+            tableBody.innerHTML = "";
+
+            var listItemEnumerator = listItems.getEnumerator();
+            while (listItemEnumerator.moveNext()) {
+                var item = listItemEnumerator.get_current();
+                var id = item.get_id();
+                var bookName = item.get_item("BookName");
+                var pubDate = item.get_item("Publication_x0020_date");
+                var authorName = item.get_item("AuthorName");
+                var isbn = item.get_item("ISBN");
+
+                var formattedDate = pubDate ? new Date(pubDate).toISOString().split('T')[0] : "";
+
+                var row = "<tr>";
+                row += "<td>";
+                row += "<button class='btn btn-sm btn-outline-primary me-1' onclick='editItem(" + id + ")'>Select</button>";
+                row += "<button class='btn btn-sm btn-outline-danger' onclick='deleteItem(" + id + ")'>Delete</button>";
+                row += "</td>";
+                row += "<td>" + (bookName || '') + "</td>";
+                row += "<td>" + formattedDate + "</td>";
+                row += "<td>" + (authorName || '') + "</td>";
+                row += "<td>" + (isbn || '') + "</td>";
+                row += "</tr>";
+
+                tableBody.innerHTML += row;
+            }
+        }
+
+        // Populate fields for editing
+        function editItem(itemId) {
+            var clientContext = new SP.ClientContext.get_current();
+            var list = clientContext.get_web().get_lists().getByTitle("Book Management");
+            var listItem = list.getItemById(itemId);
+
+            clientContext.load(listItem);
+            clientContext.executeQueryAsync(function () {
+                document.getElementById("itemId").value = listItem.get_id();
+                document.getElementById("bookName").value = listItem.get_item("BookName") || "";
+                var pubDate = listItem.get_item("Publication_x0020_date");
+                document.getElementById("pubDate").value = pubDate ? new Date(pubDate).toISOString().split('T')[0] : "";
+                document.getElementById("authorName").value = listItem.get_item("AuthorName") || "";
+                document.getElementById("isbn").value = listItem.get_item("ISBN") || "";
+            }, function (sender, args) {
+                alert("Failed to fetch item details. Reason: " + args.get_message());
+            });
+        }
+
+        // Validate input fields
+        function validateFields(bookName, pubDate, authorName, isbn) {
+            if (!bookName || !pubDate || !authorName || !isbn) {
+                alert("Please fill out all fields before updating.");
+                return false;
+            }
+            return true;
+        }
+
+        // Save updated item
+        function updateItem() {
+            var itemId = document.getElementById("itemId").value;
+            var bookName = document.getElementById("bookName").value.trim();
+            var pubDate = document.getElementById("pubDate").value;
+            var authorName = document.getElementById("authorName").value.trim();
+            var isbn = document.getElementById("isbn").value.trim();
+
+            if (!validateFields(bookName, pubDate, authorName, isbn)) return;
+
+            var clientContext = new SP.ClientContext.get_current();
+            var list = clientContext.get_web().get_lists().getByTitle("Book Management");
+            var listItem = list.getItemById(itemId);
+
+            try {
+                listItem.set_item("BookName", bookName);
+                listItem.set_item("Publication_x0020_date", new Date(pubDate));
+                listItem.set_item("AuthorName", authorName);
+                listItem.set_item("ISBN", isbn);
+
+                listItem.update();
+
+                clientContext.executeQueryAsync(function () {
+                    alert("Book updated successfully!");
+                    loadItems();
+                    document.getElementById("itemId").value = "";
+                }, function (sender, args) {
+                    alert("Failed to update item. Reason: " + args.get_message());
+                });
+            } catch (e) {
+                alert("Unexpected error: " + e.message);
+            }
+        }
+
+        // Delete selected item
+        function deleteItem(itemId) {
+            if (!confirm("Are you sure you want to delete this book?")) return;
+
+            var clientContext = new SP.ClientContext.get_current();
+            var list = clientContext.get_web().get_lists().getByTitle("Book Management");
+            var listItem = list.getItemById(itemId);
+
+            try {
+                listItem.deleteObject();
+
+                clientContext.executeQueryAsync(function () {
+                    alert("Book deleted successfully!");
+                    loadItems();
+                }, function (sender, args) {
+                    alert("Failed to delete item. Reason: " + args.get_message());
+                });
+            } catch (e) {
+                alert("Unexpected error: " + e.message);
+            }
+        }
+    </script>
+</body>
+</html>
