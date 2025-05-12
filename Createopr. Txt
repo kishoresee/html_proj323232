@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Book Management System</title>
+    <!-- Load SharePoint People Picker scripts -->
+    <script type="text/javascript" src="/_layouts/15/SP.UI.Controls.js"></script>
+    <script type="text/javascript" src="/_layouts/15/clienttemplates.js"></script>
+    <script type="text/javascript" src="/_layouts/15/clientforms.js"></script>
+    <script type="text/javascript" src="/_layouts/15/clientpeoplepicker.js"></script>
+    <script type="text/javascript" src="/_layouts/15/autofill.js"></script>
+</head>
+<body>
+    <h2>Book Management System</h2>
+    
+    <label>Book Name:</label>
+    <input type="text" id="bookName"><br><br>
+
+    <label>Publication Date:</label>
+    <input type="date" id="publicationDate"><br><br>
+
+    <label>ISBN:</label>
+    <input type="text" id="isbn"><br><br>
+
+    <label>Author Name (Person):</label>
+    <div id="peoplePickerDiv"></div><br>
+
+    <button onclick="addBookItem()">Add Book</button>
+
+    <script type="text/javascript">
+        // Initialize People Picker
+        function initializePeoplePicker() {
+            var schema = {};
+            schema['PrincipalAccountType'] = 'User,DL';
+            schema['SearchPrincipalSource'] = 15;
+            schema['ResolvePrincipalSource'] = 15;
+            schema['AllowMultipleValues'] = false;
+            schema['MaximumEntitySuggestions'] = 50;
+            schema['Width'] = '250px';
+            SPClientPeoplePicker_InitStandaloneControlWrapper('peoplePickerDiv', null, schema);
+        }
+
+        // Wait for SharePoint script and initialize People Picker
+        SP.SOD.executeFunc('sp.js', 'SP.ClientContext', initializePeoplePicker);
+
+        // Main function to add item
+        function addBookItem() {
+            var bookname = document.getElementById("bookName").value.trim();
+            var publDate = document.getElementById("publicationDate").value.trim();
+            var isbn = document.getElementById("isbn").value.trim();
+
+            var peoplePicker = SPClientPeoplePicker.SPClientPeoplePickerDict.peoplePickerDiv_TopSpan;
+            var users = peoplePicker.GetAllUserInfo();
+
+            if (!bookname || !publDate || !isbn || users.length === 0) {
+                alert('Please fill up all the required fields and select a person.');
+                return;
+            }
+
+            var loginName = users[0].Key;
+            var ctx = new SP.ClientContext.get_current();
+            var web = ctx.get_web();
+            var user = web.ensureUser(loginName);
+            ctx.load(user);
+
+            ctx.executeQueryAsync(function () {
+                var list = web.get_lists().getByTitle("Book Management");
+                var itemCreateInfo = new SP.ListItemCreationInformation();
+                var newItem = list.addItem(itemCreateInfo);
+
+                var authorValue = new SP.FieldUserValue();
+                authorValue.set_lookupId(user.get_id());
+
+                newItem.set_item("BookName", bookname);
+                newItem.set_item("Publication_x0020_date", publDate);
+                newItem.set_item("ISBN", isbn);
+                newItem.set_item("AuthorName", authorValue); // Person or Group field
+                newItem.update();
+
+                ctx.executeQueryAsync(function () {
+                    alert(`Book: ${bookname} added successfully!`);
+                }, function (sender, args) {
+                    alert("Failed to add book. Root cause: " + args.get_message());
+                });
+
+            }, function (sender, args) {
+                alert("Error resolving user: " + args.get_message());
+            });
+        }
+    </script>
+</body>
+</html>
