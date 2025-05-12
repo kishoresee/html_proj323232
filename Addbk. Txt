@@ -2,21 +2,22 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Book Management - Update & Delete</title>
+  <title>Book Management – Update & Delete</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
 
-  <!-- SharePoint JSOM + People Picker Scripts -->
-  <script type="text/javascript" src="/_layouts/15/sp.runtime.js"></script>
-  <script type="text/javascript" src="/_layouts/15/sp.js"></script>
-  <script type="text/javascript" src="/_layouts/15/clienttemplates.js"></script>
-  <script type="text/javascript" src="/_layouts/15/clientforms.js"></script>
-  <script type="text/javascript" src="/_layouts/15/clientpeoplepicker.js"></script>
-  <script type="text/javascript" src="/_layouts/15/autofill.js"></script>
+  <!-- SharePoint JSOM + People Picker -->
+  <script src="/_layouts/15/sp.runtime.js" type="text/javascript"></script>
+  <script src="/_layouts/15/sp.js" type="text/javascript"></script>
+  <script src="/_layouts/15/clienttemplates.js" type="text/javascript"></script>
+  <script src="/_layouts/15/clientforms.js" type="text/javascript"></script>
+  <script src="/_layouts/15/clientpeoplepicker.js" type="text/javascript"></script>
+  <script src="/_layouts/15/autofill.js" type="text/javascript"></script>
 </head>
 <body class="bg-light p-4">
   <div class="container">
     <h2 class="mb-4 text-center text-primary">Book Management</h2>
 
+    <!-- table of books -->
     <div class="table-responsive mb-5">
       <table class="table table-bordered table-striped text-center" id="bookTable">
         <thead class="table-dark">
@@ -28,10 +29,11 @@
             <th>ISBN</th>
           </tr>
         </thead>
-        <tbody class="table-group-divider"></tbody>
+        <tbody></tbody>
       </table>
     </div>
 
+    <!-- update card -->
     <div class="card shadow">
       <div class="card-header bg-primary text-white">
         <h4 class="mb-0">Update Book Details</h4>
@@ -39,20 +41,20 @@
       <div class="card-body">
         <div class="row g-3">
           <div class="col-md-6">
-            <label for="bookName" class="form-label">Book Name</label>
-            <input type="text" id="bookName" class="form-control" />
+            <label class="form-label">Book Name</label>
+            <input id="bookName" class="form-control" />
           </div>
           <div class="col-md-6">
-            <label for="pubDate" class="form-label">Publication Date</label>
-            <input type="date" id="pubDate" class="form-control" />
+            <label class="form-label">Publication Date</label>
+            <input id="pubDate" type="date" class="form-control" />
           </div>
           <div class="col-md-6">
-            <label for="peoplePickerAuthor" class="form-label">Author (People Picker)</label>
+            <label class="form-label">Author (People Picker)</label>
             <div id="peoplePickerAuthor"></div>
           </div>
           <div class="col-md-6">
-            <label for="isbn" class="form-label">ISBN</label>
-            <input type="text" id="isbn" class="form-control" />
+            <label class="form-label">ISBN</label>
+            <input id="isbn" class="form-control" />
           </div>
         </div>
         <input type="hidden" id="itemId" />
@@ -64,160 +66,145 @@
   </div>
 
   <script type="text/javascript">
-    ExecuteOrDelayUntilScriptLoaded(function () {
-      initializePeoplePicker("peoplePickerAuthor");
+    // Initialize People Picker & then load items
+    ExecuteOrDelayUntilScriptLoaded(function() {
+      initPeoplePicker("peoplePickerAuthor");
       loadItems();
     }, "sp.js");
 
-    function initializePeoplePicker(peoplePickerElementId) {
-      var schema = {};
-      schema['PrincipalAccountType'] = 'User,DL,SecGroup,SPGroup';
-      schema['SearchPrincipalSource'] = 15;
-      schema['ResolvePrincipalSource'] = 15;
-      schema['AllowMultipleValues'] = false;
-      schema['MaximumEntitySuggestions'] = 50;
-      schema['Width'] = '100%';
-      SPClientPeoplePicker_InitStandaloneControlWrapper(peoplePickerElementId, null, schema);
+    function initPeoplePicker(domId) {
+      var schema = {
+        PrincipalAccountType: 'User,DL,SecGroup,SPGroup',
+        SearchPrincipalSource: 15,
+        ResolvePrincipalSource: 15,
+        AllowMultipleValues: false,
+        MaximumEntitySuggestions: 50,
+        Width: '100%'
+      };
+      SPClientPeoplePicker_InitStandaloneControlWrapper(domId, null, schema);
     }
 
-    function getUserLoginFromPeoplePicker() {
-      var peoplePicker = SPClientPeoplePicker.SPClientPeoplePickerDict.peoplePickerAuthor_TopSpan;
-      if (!peoplePicker || peoplePicker.GetAllUserInfo().length === 0) return null;
-      return peoplePicker.GetAllUserInfo()[0].Key;
+    function getSelectedUserKey() {
+      var pp = SPClientPeoplePicker.SPClientPeoplePickerDict.peoplePickerAuthor_TopSpan;
+      var users = pp.GetAllUserInfo();
+      return (users.length>0)? users[0].Key : null;
     }
 
     function loadItems() {
       var ctx = SP.ClientContext.get_current();
       var list = ctx.get_web().get_lists().getByTitle("Book Management");
-      var query = new SP.CamlQuery();
-      var items = list.getItems(query);
-
-      ctx.load(items, 'Include(Id, BookName, ISBN, PublicationDate, AuthorName)');
-      ctx.executeQueryAsync(function () {
+      var items = list.getItems(new SP.CamlQuery());
+      // include only the exact internal names
+      ctx.load(items, 'Include(Id, BookName, Publication_x0020_date, AuthorName, ISBN)');
+      ctx.executeQueryAsync(function() {
         var tbody = document.querySelector("#bookTable tbody");
-        tbody.innerHTML = "";
-        var enumerator = items.getEnumerator();
-
-        while (enumerator.moveNext()) {
-          var item = enumerator.get_current();
-          var id = item.get_id();
-          var name = item.get_item("BookName");
-          var isbn = item.get_item("ISBN");
-          var pubDate = item.get_item("PublicationDate");
-          var author = item.get_item("AuthorName");
-          var authorName = author ? author.get_lookupValue() : "";
-
-          var formattedDate = pubDate ? new Date(pubDate).toISOString().split("T")[0] : "";
-
-          var row = `
+        tbody.innerHTML = '';
+        var enumItems = items.getEnumerator();
+        while(enumItems.moveNext()) {
+          var it = enumItems.get_current();
+          var authorField = it.get_item("AuthorName");
+          var authorText = authorField? authorField.get_lookupValue() : '';
+          var dateVal = it.get_item("Publication_x0020_date");
+          var dateStr = dateVal? new Date(dateVal).toISOString().split('T')[0] : '';
+          tbody.innerHTML += `
             <tr>
               <td>
-                <button class="btn btn-sm btn-outline-primary" onclick="editItem(${id})">Select</button>
-                <button class="btn btn-sm btn-outline-danger ms-2" onclick="deleteItem(${id})">Delete</button>
+                <button class="btn btn-sm btn-outline-primary" onclick="editItem(${it.get_id()})">Select</button>
+                <button class="btn btn-sm btn-outline-danger ms-2" onclick="deleteItem(${it.get_id()})">Delete</button>
               </td>
-              <td>${name}</td>
-              <td>${formattedDate}</td>
-              <td>${authorName}</td>
-              <td>${isbn}</td>
+              <td>${it.get_item("BookName")||''}</td>
+              <td>${dateStr}</td>
+              <td>${authorText}</td>
+              <td>${it.get_item("ISBN")||''}</td>
             </tr>`;
-          tbody.innerHTML += row;
         }
-      }, onQueryFail);
+      }, function(s,a){
+        alert("Load failed: " + a.get_message());
+      });
     }
 
     function editItem(id) {
-      var ctx = new SP.ClientContext.get_current();
+      var ctx = SP.ClientContext.get_current();
       var list = ctx.get_web().get_lists().getByTitle("Book Management");
-      var item = list.getItemById(id);
-
-      ctx.load(item, 'BookName, ISBN, PublicationDate, AuthorName');
-      ctx.executeQueryAsync(function () {
+      var it = list.getItemById(id);
+      ctx.load(it, 'BookName, Publication_x0020_date, AuthorName, ISBN');
+      ctx.executeQueryAsync(function(){
         document.getElementById("itemId").value = id;
-        document.getElementById("bookName").value = item.get_item("BookName");
-        document.getElementById("isbn").value = item.get_item("ISBN");
-
-        var pubDate = item.get_item("PublicationDate");
-        document.getElementById("pubDate").value = pubDate ? new Date(pubDate).toISOString().split("T")[0] : "";
-
-        document.getElementById("peoplePickerAuthor").innerHTML = "";
-        initializePeoplePicker("peoplePickerAuthor");
-
-        setTimeout(() => {
-          var author = item.get_item("AuthorName");
-          if (author) {
-            var picker = SPClientPeoplePicker.SPClientPeoplePickerDict.peoplePickerAuthor_TopSpan;
-            picker.AddUserKeys(author.get_lookupValue());
+        document.getElementById("bookName").value = it.get_item("BookName")||'';
+        var d = it.get_item("Publication_x0020_date");
+        document.getElementById("pubDate").value = d? new Date(d).toISOString().split('T')[0] : '';
+        document.getElementById("isbn").value = it.get_item("ISBN")||'';
+        // reset people picker
+        document.getElementById("peoplePickerAuthor").innerHTML = '';
+        initPeoplePicker("peoplePickerAuthor");
+        setTimeout(function(){
+          var auth = it.get_item("AuthorName");
+          if(auth) {
+            SPClientPeoplePicker.SPClientPeoplePickerDict.peoplePickerAuthor_TopSpan.AddUserKeys(auth.get_lookupValue());
           }
         }, 500);
-      }, onQueryFail);
+      }, function(s,a){
+        alert("Edit load failed: "+a.get_message());
+      });
     }
 
     function updateItem() {
       var id = document.getElementById("itemId").value;
-      var bookName = document.getElementById("bookName").value.trim();
+      var name = document.getElementById("bookName").value.trim();
       var isbn = document.getElementById("isbn").value.trim();
-      var pubDate = document.getElementById("pubDate").value;
-      var authorLogin = getUserLoginFromPeoplePicker();
-
-      if (!id || !bookName || !isbn || !pubDate || !authorLogin) {
-        alert("All fields are required, including selecting an Author.");
-        return;
+      var date = document.getElementById("pubDate").value;
+      var authKey = getSelectedUserKey();
+      if(!id || !name || !isbn || !date || !authKey) {
+        return alert("All fields including Author are required");
       }
 
-      var ctx = new SP.ClientContext.get_current();
+      var ctx = SP.ClientContext.get_current();
       var web = ctx.get_web();
       var list = web.get_lists().getByTitle("Book Management");
-      var item = list.getItemById(id);
-      var user = web.ensureUser(authorLogin);
+      var it = list.getItemById(id);
 
+      var user = web.ensureUser(authKey);
       ctx.load(user);
-      ctx.executeQueryAsync(function () {
-        var userVal = new SP.FieldUserValue();
-        userVal.set_lookupId(user.get_id());
-
-        item.set_item("BookName", bookName);
-        item.set_item("ISBN", isbn);
-        item.set_item("PublicationDate", new Date(pubDate));
-        item.set_item("AuthorName", userVal);
-
-        item.update();
-        ctx.executeQueryAsync(function () {
-          alert("Book updated successfully.");
+      ctx.executeQueryAsync(function(){
+        var uv = SP.FieldUserValue.fromUser(user.get_loginName());
+        it.set_item("BookName", name);
+        it.set_item("Publication_x0020_date", new Date(date));
+        it.set_item("ISBN", isbn);
+        it.set_item("AuthorName", uv);
+        it.update();
+        ctx.executeQueryAsync(function(){
+          alert("Book updated!");
           loadItems();
-          // Clear form
-          document.getElementById("itemId").value = "";
-          document.getElementById("bookName").value = "";
-          document.getElementById("isbn").value = "";
-          document.getElementById("pubDate").value = "";
-          document.getElementById("peoplePickerAuthor").innerHTML = "";
-          initializePeoplePicker("peoplePickerAuthor");
-        }, onQueryFail);
-      }, onQueryFail);
+          // clear form
+          document.getElementById("itemId").value='';
+          document.getElementById("bookName").value='';
+          document.getElementById("isbn").value='';
+          document.getElementById("pubDate").value='';
+          document.getElementById("peoplePickerAuthor").innerHTML='';
+          initPeoplePicker("peoplePickerAuthor");
+        }, function(s,a){
+          alert("Update failed: "+a.get_message());
+        });
+      }, function(s,a){
+        alert("Author lookup failed: "+a.get_message());
+      });
     }
 
     function deleteItem(id) {
-      if (!confirm("Are you sure you want to delete this book?")) return;
-
-      var ctx = new SP.ClientContext.get_current();
+      if(!confirm("Delete this book?")) return;
+      var ctx = SP.ClientContext.get_current();
       var list = ctx.get_web().get_lists().getByTitle("Book Management");
-      var item = list.getItemById(id);
-
-      item.deleteObject();
-      ctx.executeQueryAsync(function () {
-        alert("Book deleted successfully.");
+      list.getItemById(id).deleteObject();
+      ctx.executeQueryAsync(function(){
+        alert("Deleted.");
         loadItems();
-      }, onQueryFail);
-    }
-
-    function onQueryFail(sender, args) {
-      alert("Error: " + args.get_message());
-      console.error(args.get_message());
-      console.error(args.get_stackTrace());
+      }, function(s,a){
+        alert("Delete failed: "+a.get_message());
+      });
     }
   </script>
 </body>
 </html>
-
 
 
 
