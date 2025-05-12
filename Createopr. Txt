@@ -1,6 +1,75 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <title>Add Book</title>
+  <script type="text/javascript" src="/_layouts/15/SP.Runtime.js"></script>
+  <script type="text/javascript" src="/_layouts/15/SP.js"></script>
+</head>
+<body>
+  <input type="text" id="bookName" placeholder="Book Name" />
+  <input type="date" id="publicationDate" />
+  <input type="text" id="isbn" placeholder="ISBN" />
+  <input type="text" id="authorLogin" placeholder="Author Login Name" />
+  <button onclick="addBookItem()">Add Book</button>
+
+  <script type="text/javascript">
+    function addBookItem() {
+      var bookName = document.getElementById("bookName").value.trim();
+      var publicationDate = document.getElementById("publicationDate").value;
+      var isbn = document.getElementById("isbn").value.trim();
+      var authorLogin = document.getElementById("authorLogin").value.trim();
+
+      if (!bookName || !publicationDate || !isbn || !authorLogin) {
+        alert("Please fill in all fields.");
+        return;
+      }
+
+      var context = new SP.ClientContext.get_current();
+      var web = context.get_web();
+      var user = web.ensureUser(authorLogin);
+      context.load(user);
+
+      context.executeQueryAsync(
+        function() {
+          var list = web.get_lists().getByTitle("Book Management");
+          var itemCreateInfo = new SP.ListItemCreationInformation();
+          var newItem = list.addItem(itemCreateInfo);
+
+          var authorValue = new SP.FieldUserValue();
+          authorValue.set_lookupId(user.get_id());
+
+          newItem.set_item("BookName", bookName);
+          newItem.set_item("Publication_x0020_date", publicationDate);
+          newItem.set_item("ISBN", isbn);
+          newItem.set_item("AuthorName", authorValue);
+          newItem.update();
+
+          context.executeQueryAsync(
+            function() {
+              alert("Book added successfully!");
+            },
+            function(sender, args) {
+              alert("Failed to add book: " + args.get_message());
+            }
+          );
+        },
+        function(sender, args) {
+          alert("User resolution failed: " + args.get_message());
+        }
+      );
+    }
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
     <title>Book Management System</title>
     <!-- Load SharePoint People Picker scripts -->
     <script type="text/javascript" src="/_layouts/15/SP.UI.Controls.js"></script>
