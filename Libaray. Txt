@@ -1,5 +1,278 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Library Management System</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+      body {
+        background-color: #f0f4f8;
+        margin: 0;
+        padding: 0;
+      }
+  
+      .sidebar {
+        height: 100vh;
+        background-color: #343a40;
+        color: white;
+        padding-top: 20px;
+        position: fixed;
+        width: 250px;
+        overflow-y: auto;
+      }
+  
+      .sidebar a {
+        color: white;
+        display: block;
+        padding: 10px 20px;
+        text-decoration: none;
+      }
+  
+      .sidebar a:hover {
+        background-color: #495057;
+      }
+  
+      .submenu {
+        padding-left: 30px;
+        background-color: #3e454d;
+      }
+  
+      .content {
+        margin-left: 260px;
+        padding: 20px;
+      }
+  
+      .footer-stats {
+        background-color: white;
+        padding: 20px;
+        border-top: 2px solid #007bff;
+        text-align: center;
+        position: fixed;
+        bottom: 0;
+        width: calc(100% - 260px);
+        margin-left: 260px;
+      }
+    </style>
+  </head>
+  <body>
+  
+  <!-- Sidebar Menu -->
+  <div class="sidebar">
+    <h4 class="text-center mb-4">Library Menu</h4>
+  
+    <a data-toggle="collapse" href="#bookMenu" role="button">
+      <i class="fas fa-book"></i> Book Management
+    </a>
+    <div class="collapse submenu" id="bookMenu">
+      <a href="#">Add New Book</a>
+      <a href="#">Update Book</a>
+      <a href="#">Remove Book</a>
+      <a href="#">Search Book</a>
+    </div>
+  
+    <a data-toggle="collapse" href="#memberMenu" role="button">
+      <i class="fas fa-users"></i> Member Management
+    </a>
+    <div class="collapse submenu" id="memberMenu">
+      <a href="#">Add Member</a>
+      <a href="#">Update Member</a>
+      <a href="#">Delete Member</a>
+      <a href="#">Search Member</a>
+    </div>
+  
+    <a data-toggle="collapse" href="#issueMenu" role="button">
+      <i class="fas fa-book-reader"></i> Book Issuance
+    </a>
+    <div class="collapse submenu" id="issueMenu">
+      <a href="#">Issue Book</a>
+      <a href="#">Return Book</a>
+      <a href="#">Check Overdue</a>
+    </div>
+  </div>
+  
+  <!-- Main Content -->
+  <div class="content">
+    <div class="dashboard-header d-flex justify-content-between align-items-center mb-4">
+      <h2>Library Dashboard</h2>
+      <i class="fas fa-bell fa-2x text-primary"></i>
+    </div>
+  
+    <!-- Search Box -->
+    <div class="input-group mb-3">
+      <input type="text" id="booksearch" placeholder="Search by Book Name, ISBN or Author Name" class="form-control" />
+      <div class="input-group-append">
+        <button class="btn btn-primary" onclick="searchBooks()">
+          <i class="fas fa-search"></i>
+        </button>
+      </div>
+    </div>
+  
+    <!-- Search Results -->
+    <div id="searchResults" class="row row-cols-1 row-cols-md-3 g-4 mt-4"></div>
+  
+    <!-- Available Books Section -->
+    <div class="mt-5">
+      <h4 class="mb-3">Available Books</h4>
+      <div id="availableBooks" class="row row-cols-1 row-cols-md-3 g-4"></div>
+    </div>
+  </div>
+  
+  <!-- Footer Stats -->
+  <div class="footer-stats">
+    <div class="row">
+      <div class="col-md-6">
+        <h5>Total Borrowed Books:</h5>
+        <p id="borrowedCount">--</p>
+      </div>
+      <div class="col-md-6">
+        <h5>Total Available Books:</h5>
+        <p id="availableCount">--</p>
+      </div>
+    </div>
+  </div>
+
+<script type="text/javascript">
+  document.addEventListener("DOMContentLoaded", function () {
+    loadAvailableBooks();
+  });
+
+  function searchBooks() {
+    var searchTerm = document.getElementById("booksearch").value.trim();
+    if (!searchTerm) {
+      alert("Please enter a search term.");
+      return;
+    }
+
+    var clientContext = new SP.ClientContext.get_current();
+    var list = clientContext.get_web().get_lists().getByTitle("Book Management");
+
+    var camlQuery = new SP.CamlQuery();
+    camlQuery.set_viewXml(`
+      <View>
+        <Query>
+          <Where>
+            <Or>
+              <Or>
+                <Contains><FieldRef Name='BookName' /><Value Type='Text'>${SP.Utilities.HttpUtility.htmlEncode(searchTerm)}</Value></Contains>
+                <Contains><FieldRef Name='AuthorName' LookupValue='True' /><Value Type='Text'>${SP.Utilities.HttpUtility.htmlEncode(searchTerm)}</Value></Contains>
+              </Or>
+              <Eq><FieldRef Name='ISBN' /><Value Type='Number'>${SP.Utilities.HttpUtility.htmlEncode(searchTerm)}</Value></Eq>
+            </Or>
+          </Where>
+        </Query>
+      </View>
+    `);
+
+    var listItems = list.getItems(camlQuery);
+    clientContext.load(listItems);
+    clientContext.executeQueryAsync(
+      function () {
+        renderSearchResults(listItems);
+      },
+      function (sender, args) {
+        alert("Search failed: " + args.get_message());
+      }
+    );
+  }
+
+  function renderSearchResults(listItems) {
+    var container = document.getElementById("searchResults");
+    container.innerHTML = "";
+
+    var enumerator = listItems.getEnumerator();
+    if (!enumerator.moveNext()) {
+      container.innerHTML = "<div class='col-12 alert alert-warning'>No books found matching your search.</div>";
+      return;
+    }
+
+    enumerator.reset();
+    while (enumerator.moveNext()) {
+      var item = enumerator.get_current();
+      container.innerHTML += generateBookCardHTML(item);
+    }
+  }
+
+  function generateBookCardHTML(item) {
+    var bookName = item.get_item("BookName") || "";
+    var authorField = item.get_item("AuthorName");
+    var author = authorField ? authorField.get_lookupValue() : "";
+    var isbn = item.get_item("ISBN") || "";
+    var pubDate = item.get_item("Publication_x0020_date");
+    var formattedDate = pubDate ? new Date(pubDate).toISOString().split("T")[0] : "";
+
+    return `
+      <div class="col mb-4">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body text-center">
+            <i class="fas fa-book fa-2x text-info mb-2"></i>
+            <h5 class="card-title text-primary">${bookName}</h5>
+            <p class="card-text"><strong>Author:</strong> ${author}</p>
+            <p class="card-text"><strong>ISBN:</strong> ${isbn}</p>
+            <p class="card-text"><strong>Published:</strong> ${formattedDate}</p>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  function loadAvailableBooks() {
+    var clientContext = new SP.ClientContext.get_current();
+    var list = clientContext.get_web().get_lists().getByTitle("Book Management");
+    var camlQuery = new SP.CamlQuery(); // Empty query fetches all items
+    var listItems = list.getItems(camlQuery);
+
+    clientContext.load(listItems);
+    clientContext.executeQueryAsync(
+      function () {
+        renderAvailableBooks(listItems);
+      },
+      function (sender, args) {
+        alert("Failed to load available books: " + args.get_message());
+      }
+    );
+  }
+
+  function renderAvailableBooks(listItems) {
+    var container = document.getElementById("availableBooks");
+    container.innerHTML = "";
+
+    var enumerator = listItems.getEnumerator();
+    var count = 0;
+
+    while (enumerator.moveNext()) {
+      var item = enumerator.get_current();
+      container.innerHTML += generateBookCardHTML(item);
+      count++;
+    }
+
+    document.getElementById("availableCount").innerText = count;
+  }
+
+  // Existing loadAvailableBooks and renderAvailableBooks functions remain unchanged
+  // except they should also use the updated generateBookCardHTML function
+</script>
+
+<!-- Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- SharePoint JSOM -->
+<script type="text/javascript" src="/_layouts/15/SP.Runtime.js"></script>
+<script type="text/javascript" src="/_layouts/15/SP.js"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Library Management System</title>
