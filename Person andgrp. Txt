@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Person or Group Field</title>
+    <script type="text/javascript" src="/_layouts/15/sp.runtime.js"></script>
+    <script type="text/javascript" src="/_layouts/15/sp.js"></script>
+</head>
+<body>
+    <h2>Add Person or Group Field to 'Book Management' List</h2>
+    <div id="status"></div>
+
+    <script type="text/javascript">
+        function sanitizeName(name) {
+            return name.replace(/[^a-zA-Z0-9]/g, '');
+        }
+
+        function addPersonOrGroupField() {
+            var ctx = SP.ClientContext.get_current();
+            var web = ctx.get_web();
+            var list = web.get_lists().getByTitle("Book Management");
+
+            var fieldName = "Assigned To";
+            var internalName = sanitizeName(fieldName);
+            if (!/^[A-Za-z]/.test(internalName)) {
+                internalName = 'F' + internalName;
+            }
+
+            var fieldXml = `<Field DisplayName="${fieldName}" Type="User" UserSelectionMode="PeopleAndGroups" UserSelectionScope="0" />`;
+
+            list.get_fields().addFieldAsXml(fieldXml, true, SP.AddFieldOptions.defaultValue);
+            ctx.executeQueryAsync(
+                function () {
+                    document.getElementById("status").innerHTML = "<p style='color:green;'>Person or Group field added successfully.</p>";
+                },
+                function (sender, args) {
+                    document.getElementById("status").innerHTML = "<p style='color:red;'>Error: " + args.get_message() + "</p>";
+                }
+            );
+        }
+
+        // Load script after page is ready
+        document.addEventListener("DOMContentLoaded", function () {
+            SP.SOD.executeOrDelayUntilScriptLoaded(addPersonOrGroupField, 'sp.js');
+        });
+    </script>
+</body>
+</html>
