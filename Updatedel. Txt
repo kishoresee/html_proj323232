@@ -1,3 +1,72 @@
+Great! Since it’s working now, to make the AuthorName input field behave like a People Picker (i.e., allow typing a user name, show suggestions from SharePoint users/groups, and select one), you need to:
+
+1. Replace your authorName <input> field with the SharePoint People Picker control:
+
+<div class="col-md-6">
+    <label for="peoplePickerAuthor" class="form-label">Author Name</label>
+    <div id="peoplePickerAuthor"></div>
+</div>
+
+2. Add this script block after the SharePoint JSOM references to initialize the People Picker:
+
+<script type="text/javascript" src="/_layouts/15/clienttemplates.js"></script>
+<script type="text/javascript" src="/_layouts/15/clientforms.js"></script>
+<script type="text/javascript" src="/_layouts/15/clientpeoplepicker.js"></script>
+<script type="text/javascript" src="/_layouts/15/autofill.js"></script>
+
+<script>
+    function initializePeoplePicker(peoplePickerElementId) {
+        var schema = {};
+        schema['PrincipalAccountType'] = 'User,DL,SecGroup,SPGroup';
+        schema['SearchPrincipalSource'] = 15;
+        schema['ResolvePrincipalSource'] = 15;
+        schema['AllowMultipleValues'] = false;
+        schema['MaximumEntitySuggestions'] = 50;
+        schema['Width'] = '100%';
+
+        SPClientPeoplePicker_InitStandaloneControlWrapper(peoplePickerElementId, null, schema);
+    }
+
+    // Call this when DOM is ready
+    document.addEventListener("DOMContentLoaded", function () {
+        initializePeoplePicker("peoplePickerAuthor");
+    });
+
+    // Get selected user from people picker
+    function getUserLoginFromPeoplePicker() {
+        var peoplePicker = SPClientPeoplePicker.SPClientPeoplePickerDict.peoplePickerAuthor_TopSpan;
+        if (!peoplePicker || peoplePicker.GetAllUserInfo().length === 0) return null;
+
+        var userInfo = peoplePicker.GetAllUserInfo()[0];
+        return userInfo.Key; // returns login name
+    }
+</script>
+
+3. Update your updateItem() function to use the selected user:
+
+Replace this line:
+
+var authorName = document.getElementById("authorName").value;
+
+With:
+
+var authorLoginName = getUserLoginFromPeoplePicker();
+if (!authorLoginName) {
+    alert("Please select an author from the People Picker.");
+    return;
+}
+var userValue = SP.FieldUserValue.fromUser(authorLoginName);
+listItem.set_item("AuthorName", userValue);
+
+This way, users can search and select SharePoint users or groups using a dropdown-style People Picker UI.
+
+Would you like me to provide the final merged code with this integrated?
+
+
+
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
