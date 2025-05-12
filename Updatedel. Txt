@@ -1,4 +1,173 @@
 <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Library Management System</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Existing CSS remains unchanged */
+  </style>
+</head>
+<body>
+
+<!-- Existing HTML structure remains unchanged -->
+
+<script type="text/javascript">
+  document.addEventListener("DOMContentLoaded", function () {
+    loadAvailableBooks();
+  });
+
+  function searchBooks() {
+    var searchTerm = document.getElementById("booksearch").value.trim();
+    if (!searchTerm) {
+      alert("Please enter a search term.");
+      return;
+    }
+
+    var clientContext = new SP.ClientContext.get_current();
+    var list = clientContext.get_web().get_lists().getByTitle("Book Management");
+
+    var camlQuery = new SP.CamlQuery();
+    camlQuery.set_viewXml(`
+      <View>
+        <Query>
+          <Where>
+            <Or>
+              <Or>
+                <Contains>
+                  <FieldRef Name='BookName' />
+                  <Value Type='Text'>${SP.Utilities.HttpUtility.htmlEncode(searchTerm)}</Value>
+                </Contains>
+                <Contains>
+                  <FieldRef Name='AuthorName' Lookup='True' />
+                  <Value Type='Text'>${SP.Utilities.HttpUtility.htmlEncode(searchTerm)}</Value>
+                </Contains>
+              </Or>
+              <Eq>
+                <FieldRef Name='ISBN' />
+                <Value Type='Number'>${SP.Utilities.HttpUtility.htmlEncode(searchTerm)}</Value>
+              </Eq>
+            </Or>
+          </Where>
+        </Query>
+      </View>
+    `);
+
+    var listItems = list.getItems(camlQuery);
+    clientContext.load(listItems);
+    clientContext.executeQueryAsync(
+      function () {
+        renderSearchResults(listItems);
+      },
+      function (sender, args) {
+        alert("Search failed: " + args.get_message());
+      }
+    );
+  }
+
+  function renderSearchResults(listItems) {
+    var container = document.getElementById("searchResults");
+    container.innerHTML = "";
+
+    var enumerator = listItems.getEnumerator();
+    if (!enumerator.moveNext()) {
+      container.innerHTML = "<div class='col-12 alert alert-warning'>No books found matching your search.</div>";
+      return;
+    }
+
+    enumerator.reset();
+    while (enumerator.moveNext()) {
+      var item = enumerator.get_current();
+      container.innerHTML += generateBookCardHTML(item);
+    }
+  }
+
+  function loadAvailableBooks() {
+    var clientContext = new SP.ClientContext.get_current();
+    var list = clientContext.get_web().get_lists().getByTitle("Book Management");
+    var camlQuery = new SP.CamlQuery();
+    var listItems = list.getItems(camlQuery);
+
+    clientContext.load(listItems);
+    clientContext.executeQueryAsync(
+      function () {
+        renderAvailableBooks(listItems);
+      },
+      function (sender, args) {
+        alert("Failed to load available books: " + args.get_message());
+      }
+    );
+  }
+
+  function renderAvailableBooks(listItems) {
+    var container = document.getElementById("availableBooks");
+    container.innerHTML = "";
+
+    var enumerator = listItems.getEnumerator();
+    var count = 0;
+
+    while (enumerator.moveNext()) {
+      var item = enumerator.get_current();
+      container.innerHTML += generateBookCardHTML(item);
+      count++;
+    }
+
+    document.getElementById("availableCount").innerText = count;
+  }
+
+  function generateBookCardHTML(item) {
+    try {
+      var bookName = item.get_item("BookName") || "";
+      var isbn = item.get_item("ISBN") || "";
+      var pubDate = item.get_item("PublicationDate");
+      var formattedDate = pubDate ? new Date(pubDate).toLocaleDateString() : "N/A";
+      
+      // Proper handling of Person/Group field
+      var authorField = item.get_item("AuthorName");
+      var authorName = "N/A";
+      if (authorField) {
+        authorName = authorField.get_lookupValue(); // Get display name
+      }
+
+      return `
+        <div class="col mb-4">
+          <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+              <i class="fas fa-book fa-2x text-info mb-2"></i>
+              <h5 class="card-title text-primary">${escapeHTML(bookName)}</h5>
+              <p class="card-text"><strong>Author:</strong> ${escapeHTML(authorName)}</p>
+              <p class="card-text"><strong>ISBN:</strong> ${escapeHTML(isbn.toString())}</p>
+              <p class="card-text"><strong>Published:</strong> ${formattedDate}</p>
+            </div>
+          </div>
+        </div>
+      `;
+    } catch (e) {
+      console.error("Error generating book card:", e);
+      return "";
+    }
+  }
+
+  // Helper function for safe HTML rendering
+  function escapeHTML(str) {
+    return str.toString()
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+</script>
+
+<!-- Rest of the HTML remains unchanged -->
+</body>
+</html>
+
+
+
+
+<!DOCTYPE html>
 <html>
 <head>
     <title>Book Management</title>
