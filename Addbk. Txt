@@ -1,3 +1,64 @@
+function sendEmailWithFallback(to, subject, body) {
+    return new Promise(function(resolve, reject) {
+        // First try the standard method
+        if (typeof SP.Utilities.Utility !== 'undefined' && 
+            typeof SP.Utilities.Utility.sendEmail === 'function') {
+            
+            var emailProperties = new SP.Utilities.EmailProperties();
+            emailProperties.set_to(to);
+            emailProperties.set_subject(subject);
+            emailProperties.set_body(body);
+            
+            SP.Utilities.Utility.sendEmail(
+                SP.ClientContext.get_current(), 
+                emailProperties
+            );
+            
+            SP.ClientContext.get_current().executeQueryAsync(
+                function() { resolve(true); },
+                function(sender, args) { reject(args.get_message()); }
+            );
+        } 
+        // Fallback to REST API if JSOM fails
+        else {
+            sendEmailViaREST(to, subject, body)
+                .then(resolve)
+                .catch(reject);
+        }
+    });
+}
+
+// REST API fallback
+function sendEmailViaREST(to, subject, body) {
+    var endpoint = _spPageContextInfo.webAbsoluteUrl + 
+                  "/_api/SP.Utilities.Utility.SendEmail";
+    
+    return $.ajax({
+        url: endpoint,
+        type: "POST",
+        data: JSON.stringify({
+            'properties': {
+                '__metadata': { 'type': 'SP.Utilities.EmailProperties' },
+                'To': { 'results': [to] },
+                'Subject': subject,
+                'Body': body
+            }
+        }),
+        headers: {
+            "Accept": "application/json;odata=verbose",
+            "Content-Type": "application/json;odata=verbose",
+            "X-RequestDigest": $("#__REQUESTDIGEST").val()
+        }
+    });
+}
+
+
+
+
+
+
+
+
 function sendEmailNotifications() {
     // Ensure SP utilities are loaded first
     SP.SOD.executeFunc('sp.js', 'SP.ClientContext', function() {
