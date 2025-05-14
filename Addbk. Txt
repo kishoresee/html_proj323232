@@ -1,3 +1,43 @@
+function sendEmailNotifications() {
+    // Ensure SP utilities are loaded first
+    SP.SOD.executeFunc('sp.js', 'SP.ClientContext', function() {
+        SP.SOD.executeFunc('sp.js', 'SP.Utilities.Utility', function() {
+            notificationItems.forEach(function(item) {
+                try {
+                    var emailProperties = new SP.Utilities.EmailProperties();
+                    emailProperties.set_to(item.author.get_email());
+                    emailProperties.set_subject("Overdue Publication Notification");
+                    emailProperties.set_body(
+                        `Dear ${item.author.get_title()},<br><br>
+                        The book "${item.title}" (ISBN: ${item.isbn}) has passed its publication date.<br>
+                        Publication Date: ${item.date}<br><br>
+                        Please update the publication information if necessary.`
+                    );
+
+                    SP.Utilities.Utility.sendEmail(
+                        SP.ClientContext.get_current(), 
+                        emailProperties
+                    );
+                    
+                    SP.ClientContext.get_current().executeQueryAsync(
+                        function() {
+                            console.log("Email sent to:", item.author.get_email());
+                        },
+                        function(sender, args) {
+                            console.error("Failed to send email:", args.get_message());
+                        }
+                    );
+                } catch (e) {
+                    console.error("Email error:", e);
+                }
+            });
+        });
+    });
+}
+
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
