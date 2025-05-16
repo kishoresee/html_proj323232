@@ -1,6 +1,51 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <title>Apply Publication Date Validation</title>
+    <!-- Load SharePoint JSOM Scripts -->
+    <script type="text/javascript" src="/_layouts/15/init.js"></script>
+    <script type="text/javascript" src="/_layouts/15/MicrosoftAjax.js"></script>
+    <script type="text/javascript" src="/_layouts/15/sp.runtime.js"></script>
+    <script type="text/javascript" src="/_layouts/15/sp.js"></script>
+</head>
+<body>
+    <h2>Apply Validation to Publication Date</h2>
+    <button onclick="addValidationToPublicationDate()">Apply Validation</button>
+
+    <script type="text/javascript">
+        function addValidationToPublicationDate() {
+            var clientContext = new SP.ClientContext.get_current();
+            var web = clientContext.get_web();
+            var list = web.get_lists().getByTitle("Book Management");
+
+            var field = list.get_fields().getByInternalNameOrTitle("PublicationDate");
+
+            field.set_validationFormula("[PublicationDate] <= TODAY()");
+            field.set_validationMessage("Publication date cannot be a future date. Please select today or an earlier date.");
+
+            field.update();
+            clientContext.executeQueryAsync(
+                function () {
+                    alert("✅ Validation successfully applied to 'PublicationDate' column.");
+                },
+                function (sender, args) {
+                    alert("❌ Error: " + args.get_message());
+                }
+            );
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
     <meta charset="utf-8">
     <title>All Notifications - Book Management</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
