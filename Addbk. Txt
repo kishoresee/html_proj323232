@@ -1,3 +1,23 @@
+/* Hide the Content Editor Web Part wrapper */
+.ms-webpart-chrome-title,
+.ms-webpart-chrome-vertical,
+.ms-webpart-chrome-horizontal {
+    display: none !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+}
+
+/* Optional: remove extra space where the web part was */
+td.ms-WPBody, .ms-webpart-zone {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+
+
+
 /* Reset body and html to allow layout and scroll */
 html, body {
     margin: 0 !important;
