@@ -1,3 +1,57 @@
+/* Reset body and html to allow layout and scroll */
+html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100%;
+    height: 100%;
+    overflow: hidden; /* prevent scrollbars here */
+}
+
+/* Main scrollable content area */
+#customContentWrapper {
+    width: 100%;
+    height: 100vh;
+    overflow-y: auto; /* enables vertical scroll */
+    padding: 0;
+    margin: 0;
+}
+
+/* Hide SharePoint UI elements */
+#s4-ribbonrow,
+#sideNavBox,
+#suiteBarTop,
+#titleAreaBox,
+#DeltaPlaceHolderPageTitleInTitleArea,
+#DeltaPlaceHolderPageDescription,
+#SiteHeader,
+#s4-titlerow,
+#TurnOnAccessibility,
+#globalNavBox,
+.ms-cui-topBar2,
+.ms-core-pageTitle,
+.ms-core-commandBar,
+.ms-core-navigation,
+.ms-quicklaunch {
+    display: none !important;
+    height: 0 !important;
+    overflow: hidden !important;
+}
+
+/* Prevent leftover spacing */
+#s4-bodyContainer, #s4-workspace {
+    padding: 0 !important;
+    margin: 0 !important;
+    top: 0 !important;
+    height: 100vh !important;
+}
+
+
+
+
+
+
+
+
 /* Force full-screen layout */
 html, body {
     margin: 0 !important;
