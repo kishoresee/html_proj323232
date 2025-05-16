@@ -1,4 +1,62 @@
+/* Force full-screen layout */
+html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* Override SharePoint content layout */
+#s4-workspace, #s4-bodyContainer, #contentBox {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    position: relative !important;
+    top: 0 !important;
+}
+
+/* Expand your content fully */
+.container-fluid {
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: auto;
+}
+
+/* Hide SharePoint chrome (no layout reserved) */
+#s4-ribbonrow,
+#sideNavBox,
+#suiteBarTop,
+#titleAreaBox,
+#DeltaPlaceHolderPageTitleInTitleArea,
+#DeltaPlaceHolderPageDescription,
+#SiteHeader,
+#s4-titlerow,
+#TurnOnAccessibility,
+#globalNavBox,
+.ms-cui-topBar2,
+.ms-core-pageTitle,
+.ms-core-commandBar,
+.ms-core-navigation,
+.ms-quicklaunch {
+    display: none !important;
+    height: 0 !important;
+    overflow: hidden !important;
+}
+
+
+
+
+
+
+
 <!DOCTYPE html>
+
+
+
 <html>
 <head>
     <title>Apply Publication Date Validation</title>
