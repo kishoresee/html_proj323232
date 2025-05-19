@@ -1,3 +1,69 @@
+function renderAvailableBooks() {
+    const ctx = new SP.ClientContext.get_current();
+    const container = document.getElementById("availableBooks");
+    container.innerHTML = "Loading books...";
+
+    // Load all books
+    const bookList = ctx.get_web().get_lists().getByTitle("Book Management");
+    const bookItems = bookList.getItems(new SP.CamlQuery());
+    ctx.load(bookItems);
+
+    // Load issued books count
+    const issuanceList = ctx.get_web().get_lists().getByTitle("Issuance and Returns");
+    const issuedQuery = new SP.CamlQuery();
+    issuedQuery.set_viewXml(`
+        <View>
+            <Query>
+                <Where>
+                    <Eq>
+                        <FieldRef Name='Track_returnofbook' />
+                        <Value Type='Choice'>Issued</Value>
+                    </Eq>
+                </Where>
+            </Query>
+        </View>
+    `);
+    const issuedItems = issuanceList.getItems(issuedQuery);
+    ctx.load(issuedItems);
+
+    ctx.executeQueryAsync(
+        function() {
+            try {
+                // Process book items
+                const bookEnumerator = bookItems.getEnumerator();
+                let totalBooks = 0;
+                let booksHTML = "";
+                
+                while (bookEnumerator.moveNext()) {
+                    const item = bookEnumerator.get_current();
+                    booksHTML += generateBookCardHTML(item);
+                    totalBooks++;
+                }
+
+                // Calculate available books
+                const issuedCount = issuedItems.get_count();
+                const availableCount = totalBooks - issuedCount;
+
+                // Update UI
+                container.innerHTML = booksHTML;
+                document.getElementById("availableCount").innerText = availableCount;
+                document.getElementById("borrowedCount").innerText = issuedCount;
+            } catch (e) {
+                console.error("Error processing books:", e);
+                container.innerHTML = "<div class='alert alert-danger'>Error loading books</div>";
+            }
+        },
+        function(sender, args) {
+            console.error("Query failed:", args.get_message());
+            container.innerHTML = `<div class='alert alert-danger'>${args.get_message()}</div>`;
+        }
+    );
+}
+
+
+
+
+
 function renderAvailableBooks(listItems) {
     const container = document.getElementById("availableBooks");
     container.innerHTML = "";
