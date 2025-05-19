@@ -1,3 +1,65 @@
+function renderAvailableBooks(listItems) {
+    const container = document.getElementById("availableBooks");
+    container.innerHTML = "";
+
+    // First get count of issued books from Issuance and Returns list
+    const ctx = new SP.ClientContext.get_current();
+    const issuanceList = ctx.get_web().get_lists().getByTitle("Issuance and Returns");
+    const issuedQuery = new SP.CamlQuery();
+    
+    issuedQuery.set_viewXml(`
+        <View>
+            <Query>
+                <Where>
+                    <Eq>
+                        <FieldRef Name='Track_returnofbook' />
+                        <Value Type='Choice'>Issued</Value>
+                    </Eq>
+                </Where>
+            </Query>
+        </View>
+    `);
+    
+    const issuedItems = issuanceList.getItems(issuedQuery);
+    ctx.load(issuedItems);
+    
+    // Then process the books
+    const enumerator = listItems.getEnumerator();
+    let totalBooks = 0;
+    let booksHTML = "";
+    
+    while (enumerator.moveNext()) {
+        const item = enumerator.get_current();
+        booksHTML += generateBookCardHTML(item);
+        totalBooks++;
+    }
+    
+    ctx.executeQueryAsync(
+        function() {
+            const issuedCount = issuedItems.get_count();
+            const availableCount = totalBooks - issuedCount;
+            
+            container.innerHTML = booksHTML;
+            document.getElementById("availableCount").innerText = availableCount;
+            document.getElementById("borrowedCount").innerText = issuedCount;
+        },
+        function(sender, args) {
+            console.error("Error loading issued books count:", args.get_message());
+            // Fallback - just show all books as available if we can't get issued count
+            container.innerHTML = booksHTML;
+            document.getElementById("availableCount").innerText = totalBooks;
+            document.getElementById("borrowedCount").innerText = "N/A";
+        }
+    );
+}
+
+
+
+
+
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
