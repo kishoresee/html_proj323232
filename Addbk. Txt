@@ -1,3 +1,25 @@
+<View>
+  <Query>
+    <Where>
+      <And>
+        <Eq>
+          <FieldRef Name='Track_returnofbook' />
+          <Value Type='Choice'>Issued</Value>
+        </Eq>
+        <Lt>
+          <FieldRef Name='IssueDate' />
+          <Value Type='DateTime' IncludeTimeValue='FALSE'>
+            <Today OffsetDays='-15' />
+          </Value>
+        </Lt>
+      </And>
+    </Where>
+  </Query>
+</View>
+
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
