@@ -1,3 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Library Notifications</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+        .notification-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        .notification-header {
+            border-bottom: 2px solid #dee2e6;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .notification-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.2s;
+        }
+        .notification-item:hover {
+            background-color: #f8f9fa;
+        }
+        .overdue-badge {
+            background-color: #dc3545;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+        .no-notifications {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="notification-container">
+        <div class="notification-header d-flex justify-content-between align-items-center">
+            <h2><i class="fas fa-bell me-2"></i> Overdue Books Notifications</h2>
+            <span class="badge bg-danger" id="notificationCount">0</span>
+        </div>
+        
+        <div id="notificationList">
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Loading notifications...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap & jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- SharePoint JSOM -->
+    <script type="text/javascript" src="/_layouts/15/SP.Runtime.js"></script>
+    <script type="text/javascript" src="/_layouts/15/SP.js"></script>
+
+    <script type="text/javascript">
+        // Main function to load notifications
+        function loadAllNotifications() {
+            const ctx = new SP.ClientContext.get_current();
+            const list = ctx.get_web().get_lists().getByTitle("Issuance and Returns");
+            const today = new Date();
+            
+            const camlQuery = new SP.CamlQuery();
+            camlQuery.set_viewXml(`
+                <View>
+                    <Query>
+                        <Where>
+                            <And>
+                                <IsNotNull>
+                                    <FieldRef Name='IssueDate' />
+                                </IsNotNull>
+                                <IsNotNull>
+                                    <FieldRef Name='ReturnDate' />
+                                </IsNotNull>
+                                <Lt>
+                                    <FieldRef Name='ReturnDate' />
+                                    <Value Type='DateTime'><Today /></Value>
+                                </Lt>
+                                <Eq>
+                                    <FieldRef Name='Track_returnofbook' />
+                                    <Value Type='Choice'>Issued</Value>
+                                </Eq>
+                            </And>
+                        </Where>
+                    </Query>
+                </View>
+            `);
+
+            const items = list.getItems(camlQuery);
+            ctx.load(items, 'Include(BookLookup,MemberLookup,IssueDate,ReturnDate,Track_returnofbook)');
+            
+            ctx.executeQueryAsync(
+                function() {
+                    const overdueBooks = [];
+                    const enumerator = items.getEnumerator();
+                    
+                    while (enumerator.moveNext()) {
+                        const item = enumerator.get_current();
+                        const issueDate = new Date(item.get_item("IssueDate"));
+                        const returnDate = new Date(item.get_item("ReturnDate"));
+                        const daysOverdue = Math.floor((today - returnDate) / (1000 * 60 * 60 * 24));
+                        
+                        // Check if book is overdue by more than 15 days and still issued
+                        if (daysOverdue > 15 && item.get_item("Track_returnofbook") === "Issued") {
+                            const bookLookup = item.get_item("BookLookup");
+                            const memberLookup = item.get_item("MemberLookup");
+                            
+                            overdueBooks.push({
+                                bookTitle: bookLookup.get_lookupValue(),
+                                memberName: memberLookup.get_lookupValue(),
+                                issueDate: issueDate.toLocaleDateString(),
+                                returnDate: returnDate.toLocaleDateString(),
+                                daysOverdue: daysOverdue,
+                                itemId: item.get_id()
+                            });
+                        }
+                    }
+                    
+                    updateNotificationUI(overdueBooks);
+                },
+                function(sender, args) {
+                    console.error("Error loading notifications:", args.get_message());
+                    document.getElementById("notificationList").innerHTML = 
+                        `<div class="alert alert-danger">Error loading overdue books: ${args.get_message()}</div>`;
+                }
+            );
+        }
+
+        // Update the UI with notifications
+        function updateNotificationUI(overdueBooks) {
+            const notificationList = document.getElementById("notificationList");
+            const countSpan = document.getElementById("notificationCount");
+            
+            notificationList.innerHTML = "";
+            countSpan.textContent = overdueBooks.length;
+
+            if (overdueBooks.length === 0) {
+                notificationList.innerHTML = `
+                    <div class="no-notifications">
+                        <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                        <h4>No overdue books found</h4>
+                        <p class="text-muted">All books have been returned on time</p>
+                    </div>
+                `;
+                return;
+            }
+
+            overdueBooks.forEach(book => {
+                const notificationHtml = `
+                    <div class="notification-item">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="mb-0">${escapeHTML(book.bookTitle)}</h5>
+                            <span class="overdue-badge">${book.daysOverdue} days overdue</span>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Issued to:</strong> ${escapeHTML(book.memberName)}</p>
+                                <p class="mb-1 text-muted"><small>Issued: ${book.issueDate}</small></p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Due date:</strong> ${book.returnDate}</p>
+                                <button class="btn btn-sm btn-outline-primary mt-1" onclick="sendReminder(${book.itemId})">
+                                    <i class="fas fa-envelope me-1"></i> Send Reminder
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                notificationList.innerHTML += notificationHtml;
+            });
+        }
+
+        // Helper function to send reminder (placeholder)
+        function sendReminder(itemId) {
+            alert(`Reminder would be sent for item ID: ${itemId}`);
+            // Implement actual reminder logic here
+        }
+
+        // Helper function for safe HTML rendering
+        function escapeHTML(str) {
+            if (!str) return "";
+            return str.toString()
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Load notifications when SharePoint scripts are ready
+        ExecuteOrDelayUntilScriptLoaded(function() {
+            SP.SOD.executeFunc('sp.js', 'SP.ClientContext', loadAllNotifications);
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
 function renderAvailableBooks() {
     const ctx = new SP.ClientContext.get_current();
     const container = document.getElementById("availableBooks");
