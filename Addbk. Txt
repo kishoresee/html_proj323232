@@ -1,3 +1,129 @@
+
+<!-- AddBook.html - SharePoint Integrated Approach -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Book</title>
+    <!-- Reference SharePoint styles -->
+    <link rel="stylesheet" href="/_layouts/15/defaultcss.ashx">
+    <script type="text/javascript" src="/_layouts/15/SP.Runtime.js"></script>
+    <script type="text/javascript" src="/_layouts/15/SP.js"></script>
+    <script type="text/javascript" src="/_layouts/15/ClientPeoplePicker.js"></script>
+    <script type="text/javascript" src="/_layouts/15/init.js"></script>
+    <script type="text/javascript" src="/_layouts/15/ClientForms.js"></script>
+    <style>
+        .sp-label { font-weight: bold; margin-top: 8px; display: block; }
+        .sp-input { width: 100%; padding: 6px; margin-top: 4px; }
+        .container { max-width: 500px; margin: 0 auto; padding: 20px; }
+        .btn { margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Add New Book</h2>
+        
+        <label class="sp-label" for="bookName">Book Name</label>
+        <input type="text" id="bookName" class="sp-input">
+
+        <label class="sp-label" for="isbn">ISBN</label>
+        <input type="number" id="isbn" class="sp-input" min="10000" max="99999" readonly>
+
+        <label class="sp-label" for="publicationDate">Publication Date</label>
+        <input type="date" id="publicationDate" class="sp-input">
+
+        <label class="sp-label" for="bookCount">Number of Copies</label>
+        <input type="number" id="bookCount" class="sp-input" min="1">
+
+        <label class="sp-label">Author</label>
+        <div id="peoplePickerDiv"></div>
+
+        <button class="btn btn-primary" onclick="submitBook()">Submit Book</button>
+    </div>
+
+    <script>
+        // Set today's date as max date for publication
+        document.addEventListener("DOMContentLoaded", function () {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById("publicationDate").setAttribute("max", today);
+
+            // Set auto-generated ISBN
+            document.getElementById("isbn").value = Math.floor(10000 + Math.random() * 90000);
+
+            initializePeoplePicker(); // init SharePoint people picker
+        });
+
+        // Function to initialize the SPClientPeoplePicker
+        function initializePeoplePicker() {
+            var schema = {};
+            schema.PrincipalAccountType = 'User';
+            schema.SearchPrincipalSource = 15;
+            schema.ResolvePrincipalSource = 15;
+            schema.AllowMultipleValues = false;
+            schema.MaximumEntitySuggestions = 50;
+            schema.Width = '100%';
+
+            SPClientPeoplePicker_InitStandaloneControlWrapper("peoplePickerDiv", null, schema);
+        }
+
+        // Function to submit the book to SharePoint List
+        function submitBook() {
+            var bookName = document.getElementById("bookName").value.trim();
+            var isbn = document.getElementById("isbn").value.trim();
+            var pubDate = document.getElementById("publicationDate").value.trim();
+            var bookCount = document.getElementById("bookCount").value.trim();
+
+            var peoplePicker = SPClientPeoplePicker.SPClientPeoplePickerDict.peoplePickerDiv_TopSpan;
+            var users = peoplePicker.GetAllUserInfo();
+
+            if (!bookName || !pubDate || !bookCount || users.length === 0) {
+                alert("Please fill all fields and select an author.");
+                return;
+            }
+
+            var loginName = users[0].Key;
+
+            var ctx = new SP.ClientContext.get_current();
+            var web = ctx.get_web();
+            var user = web.ensureUser(loginName);
+
+            ctx.load(user);
+            ctx.executeQueryAsync(function () {
+                var list = web.get_lists().getByTitle("Book Management");
+
+                var itemCreateInfo = new SP.ListItemCreationInformation();
+                var newItem = list.addItem(itemCreateInfo);
+
+                newItem.set_item("BookName", bookName);
+                newItem.set_item("ISBN", parseInt(isbn));
+                newItem.set_item("numberof_books", parseInt(bookCount));
+                newItem.set_item("AuthorName", user);
+                newItem.set_item("PublicationDate", new Date(pubDate));
+                newItem.update();
+
+                ctx.executeQueryAsync(function () {
+                    alert("Book added successfully!");
+                    window.location.href = "/sites/yoursite/Lists/BookManagement"; // Redirect to list
+                }, function (sender, args) {
+                    alert("Error adding book: " + args.get_message());
+                });
+
+            }, function (sender, args) {
+                alert("Error resolving user: " + args.get_message());
+            });
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
 <!DOCTYPE html>
 <html>
 <head>
