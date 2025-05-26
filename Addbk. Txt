@@ -11,6 +11,104 @@
     
     <style>
         /* Style for our trigger button */
+        .launch-button {
+            background-color: #0078d4;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+    <button class="launch-button" onclick="openCleanFormDialog()">Add New Book</button>
+
+    <script type="text/javascript">
+        function openCleanFormDialog() {
+            // 1. Create a custom page URL that hides all unnecessary elements
+            var formUrl = _spPageContextInfo.webAbsoluteUrl + 
+                         "/Lists/BookManagement/NewForm.aspx?IsDlg=1";
+            
+            // 2. Configure dialog options
+            var options = {
+                title: "Add New Book",
+                url: formUrl,
+                width: 800,
+                height: 600,
+                dialogReturnValueCallback: function(result, returnValue) {
+                    if (result === SP.UI.DialogResult.OK) {
+                        SP.UI.Notify.addNotification("Book added successfully!", false);
+                        location.reload(); // Refresh the page if needed
+                    }
+                }
+            };
+            
+            // 3. Open the dialog
+            var dialog = SP.UI.ModalDialog.showModalDialog(options);
+            
+            // 4. Hide unwanted elements after dialog loads
+            setTimeout(function hideUnwantedElements() {
+                try {
+                    var iframe = document.querySelector("iframe[title='Add New Book']");
+                    if (iframe && iframe.contentDocument) {
+                        var doc = iframe.contentDocument;
+                        
+                        // Hide calendar and other elements
+                        var elementsToHide = [
+                            "#Ribbon\\.EditingTools\\.CPEditTab\\.RichText\\.Spelling", // Spelling
+                            "#Ribbon\\.SiteActions", // Site Administration
+                            "#Ribbon\\.CalendarTab", // Calendar
+                            "#datepicker\\.trigger", // Date picker trigger
+                            "a[title='Calendar']", // Calendar link
+                            ".ms-dtinput", // Date input controls
+                            ".ms-dttimeinput" // Time input controls
+                        ];
+                        
+                        // Inject CSS to hide elements
+                        var style = doc.createElement("style");
+                        style.type = "text/css";
+                        style.innerHTML = elementsToHide.map(selector => 
+                            `${selector} { display: none !important; }`
+                        ).join("\n");
+                        doc.head.appendChild(style);
+                        
+                        // Alternatively hide via JavaScript if CSS doesn't work
+                        elementsToHide.forEach(selector => {
+                            var elements = doc.querySelectorAll(selector);
+                            elements.forEach(el => el.style.display = "none");
+                        });
+                    }
+                } catch(e) {
+                    console.log("Error modifying dialog content:", e);
+                }
+            }, 2000); // Wait 2 seconds for iframe to load
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Book Management</title>
+    <!-- SharePoint required scripts -->
+    <script type="text/javascript" src="/_layouts/15/init.js"></script>
+    <script type="text/javascript" src="/_layouts/15/MicrosoftAjax.js"></script>
+    <script type="text/javascript" src="/_layouts/15/SP.Runtime.js"></script>
+    <script type="text/javascript" src="/_layouts/15/SP.js"></script>
+    <script type="text/javascript" src="/_layouts/15/SP.UI.Dialog.js"></script>
+    
+    <style>
+        /* Style for our trigger button */
         .custom-button {
             background-color: #0078d4;
             color: white;
