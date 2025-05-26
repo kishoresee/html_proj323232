@@ -1,3 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Library Management</title>
+    <!-- SharePoint styles -->
+    <link rel="stylesheet" href="/_layouts/15/defaultcss.ashx" />
+    <script src="/_layouts/15/init.js"></script>
+    <script src="/_layouts/15/MicrosoftAjax.js"></script>
+    <script src="/_layouts/15/SP.Runtime.js"></script>
+    <script src="/_layouts/15/SP.js"></script>
+    <script src="/_layouts/15/SP.UI.Controls.js"></script>
+</head>
+<body>
+    <div id="chrome_ctrl_placeholder"></div>
+    <div id="main-content" style="padding:20px;">
+        <h2>Library Management Dashboard</h2>
+        
+        <button onclick="openSharePointNewForm()" class="ms-Button">
+            <span class="ms-Button-label">Add New Book</span>
+        </button>
+        
+        <button onclick="openSharePointUpload()" class="ms-Button">
+            <span class="ms-Button-label">Upload Documents</span>
+        </button>
+        
+        <h3>Book Inventory</h3>
+        <iframe src="/Lists/BookManagement/AllItems.aspx?IsDlg=1" 
+                style="width:100%; height:500px; border:none;"></iframe>
+    </div>
+
+    <script>
+    // Initialize SharePoint UI
+    ExecuteOrDelayUntilScriptLoaded(function() {
+        SP.SOD.executeFunc('sp.js', 'SP.UI.Controls.Navigation', function() {
+            var topNav = new SP.UI.Controls.Navigation(
+                "chrome_ctrl_placeholder",
+                {
+                    appTitle: "Library Management",
+                    appHelpPageUrl: "Help.aspx",
+                    appIconUrl: "/_layouts/images/issuetracker.png",
+                    appTitleIconUrl: "/_layouts/images/issuetracker.png",
+                    appWebUrl: "/",
+                    settingsLinks: [
+                        new SP.UI.Controls.NavigationSettingsLink("Settings", "../Lists/BookManagement/AllItems.aspx")
+                    ]
+                }
+            );
+        });
+        
+        // Load your custom functionality
+        SP.SOD.executeFunc('sp.js', 'SP.ClientContext', initCustomFeatures);
+    }, 'sp.js');
+    
+    function initCustomFeatures() {
+        // Only custom code that SharePoint can't do
+        checkOverdueBooks();
+    }
+    
+    function openSharePointNewForm() {
+        var options = {
+            url: _spPageContextInfo.webAbsoluteUrl + '/Lists/BookManagement/NewForm.aspx',
+            title: 'Add New Book',
+            allowMaximize: true,
+            showClose: true,
+            width: 800,
+            height: 600
+        };
+        SP.UI.ModalDialog.showModalDialog(options);
+    }
+    
+    function openSharePointUpload() {
+        var options = {
+            url: _spPageContextInfo.webAbsoluteUrl + '/_layouts/15/Upload.aspx?List={YOUR-LIST-ID}',
+            title: 'Upload Document',
+            allowMaximize: true,
+            showClose: true,
+            width: 800,
+            height: 600
+        };
+        SP.UI.ModalDialog.showModalDialog(options);
+    }
+    
+    function checkOverdueBooks() {
+        // Your existing notification logic
+        // This is one of the few custom parts you keep
+    }
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
 <View>
   <Query>
     <Where>
