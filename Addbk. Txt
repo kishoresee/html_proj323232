@@ -1,6 +1,101 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <title>Book Management</title>
+    <!-- SharePoint required scripts -->
+    <script type="text/javascript" src="/_layouts/15/init.js"></script>
+    <script type="text/javascript" src="/_layouts/15/MicrosoftAjax.js"></script>
+    <script type="text/javascript" src="/_layouts/15/SP.Runtime.js"></script>
+    <script type="text/javascript" src="/_layouts/15/SP.js"></script>
+    <script type="text/javascript" src="/_layouts/15/SP.UI.Dialog.js"></script>
+    
+    <style>
+        /* Style for our trigger button */
+        .custom-button {
+            background-color: #0078d4;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 2px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <button class="custom-button" onclick="openCustomizedForm()">Add New Book</button>
+
+    <script type="text/javascript">
+        function openCustomizedForm() {
+            // Use the complete URL to your NewForm.aspx
+            var fullFormUrl = "https://yourdomain.sharepoint.com/sites/yoursite/Lists/BookManagement/NewForm.aspx";
+            
+            // Add our custom CSS to hide elements
+            var cssToInject = `
+                <style type="text/css">
+                    /* Hide spelling option */
+                    #Ribbon\.EditingTools\.CPEditTab\.RichText\.Spelling,
+                    a[title="Spelling"] {
+                        display: none !important;
+                    }
+                    
+                    /* Hide Site Administration */
+                    #Ribbon\.SiteActions,
+                    li[title="SITE ADMINISTRATION"] {
+                        display: none !important;
+                    }
+                    
+                    /* Hide other ribbon elements if needed */
+                    .ms-cui-topBar2 {
+                        display: none !important;
+                    }
+                </style>
+            `;
+            
+            // Create a custom page URL that will inject our CSS
+            var customUrl = "/_layouts/15/iframe.aspx?";
+            customUrl += "url=" + encodeURIComponent(fullFormUrl);
+            customUrl += "&isDlg=1";
+            
+            var options = {
+                title: "Add New Book",
+                url: customUrl,
+                width: 800,
+                height: 600,
+                dialogReturnValueCallback: function(result, returnValue) {
+                    if (result === SP.UI.DialogResult.OK) {
+                        SP.UI.Notify.addNotification("Book added successfully!", false);
+                    }
+                }
+            };
+            
+            // Open the dialog
+            var dialog = SP.UI.ModalDialog.showModalDialog(options);
+            
+            // Alternative method - inject CSS after dialog loads
+            setTimeout(function() {
+                var iframe = document.querySelector("iframe[title='Add New Book']");
+                if (iframe && iframe.contentDocument) {
+                    var style = iframe.contentDocument.createElement("style");
+                    style.innerHTML = cssToInject;
+                    iframe.contentDocument.head.appendChild(style);
+                }
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
     <title>Add New Book</title>
     <!-- SharePoint required scripts -->
     <script type="text/javascript" src="/_layouts/15/init.js"></script>
