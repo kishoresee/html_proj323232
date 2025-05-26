@@ -1,3 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add New Book</title>
+    <!-- SharePoint required scripts -->
+    <script type="text/javascript" src="/_layouts/15/init.js"></script>
+    <script type="text/javascript" src="/_layouts/15/MicrosoftAjax.js"></script>
+    <script type="text/javascript" src="/_layouts/15/SP.Runtime.js"></script>
+    <script type="text/javascript" src="/_layouts/15/SP.js"></script>
+    <script type="text/javascript" src="/_layouts/15/SP.UI.Dialog.js"></script>
+    
+    <style type="text/css">
+        /* Pre-defined styles to hide elements */
+        .hide-spelling #Ribbon\.EditingTools\.CPEditTab\.RichText\.Spelling {
+            display: none !important;
+        }
+        .hide-siteadmin #Ribbon\.SiteActions {
+            display: none !important;
+        }
+        .hide-siteadmin #SiteAdminMenu {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <button onclick="openCustomNewForm()" class="ms-Button">
+        <span class="ms-Button-label">Add New Book</span>
+    </button>
+
+    <script type="text/javascript">
+        function openCustomNewForm() {
+            // Create a custom page that inherits SharePoint styles but hides unwanted elements
+            var customFormUrl = "/_layouts/15/iframe.aspx?";
+            customFormUrl += "url=" + encodeURIComponent("/sites/YourSite/Lists/BookManagement/NewForm.aspx");
+            customFormUrl += "&hideSpelling=true";
+            customFormUrl += "&hideSiteAdmin=true";
+            
+            var options = {
+                title: "Add New Book",
+                url: customFormUrl,
+                width: 800,
+                height: 600,
+                dialogReturnValueCallback: function(result, returnValue) {
+                    if (result === SP.UI.DialogResult.OK) {
+                        SP.UI.Notify.addNotification("Book added successfully!");
+                    }
+                }
+            };
+            
+            SP.UI.ModalDialog.showModalDialog(options);
+        }
+        
+        // Alternative approach using query string parameters
+        function modifyNewFormPage() {
+            var newFormUrl = "/sites/YourSite/Lists/BookManagement/NewForm.aspx";
+            newFormUrl += "?HideSpelling=true&HideSiteAdmin=true";
+            
+            var options = {
+                title: "Add New Book",
+                url: newFormUrl,
+                width: 800,
+                height: 600
+            };
+            
+            var dialog = SP.UI.ModalDialog.showModalDialog(options);
+            
+            // This approach requires corresponding JavaScript on the NewForm.aspx page
+            // that reads these parameters and hides the elements
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
 
 <!DOCTYPE html>
 <html>
