@@ -1,3 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Add New Book</title>
+  <script type="text/javascript" src="/_layouts/15/SP.Runtime.js"></script>
+  <script type="text/javascript" src="/_layouts/15/SP.js"></script>
+  <script type="text/javascript" src="/_layouts/15/SP.UI.Dialog.js"></script>
+  <style>
+    button {
+      padding: 10px 16px;
+      font-size: 14px;
+      border-radius: 4px;
+      border: none;
+      background-color: #0078d7;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #005a9e;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Trigger Button -->
+  <button onclick="openNewItemDialog()">Add New Book</button>
+
+  <script type="text/javascript">
+    function openNewItemDialog() {
+      var options = {
+        title: "Add New Book",
+        url: "/sites/YourSite/Lists/BookManagement/NewForm.aspx", // 🔁 Replace with your site URL and list name
+        width: 800,
+        height: 600,
+        dialogReturnValueCallback: function (result, returnValue) {
+          if (result === SP.UI.DialogResult.OK) {
+            alert("Book added successfully!");
+            location.reload();
+          }
+        }
+      };
+
+      SP.UI.ModalDialog.showModalDialog(options);
+
+      // Inject button after iframe loads
+      setTimeout(function injectCustomButton() {
+        var iframe = document.querySelector("iframe[title='Add New Book']"); // Match the form title shown in popup
+        if (iframe && iframe.contentDocument && iframe.contentDocument.readyState === "complete") {
+          var iframeDoc = iframe.contentDocument;
+
+          // Hide the "Spelling" button if it exists
+          var spellingBtn = iframeDoc.querySelector("a[title='Spelling']");
+          if (spellingBtn) spellingBtn.style.display = "none";
+
+          // Add custom button inside the ribbon
+          var ribbonBar = iframeDoc.querySelector(".ms-cui-topBar2");
+          if (ribbonBar) {
+            var myButton = iframeDoc.createElement("button");
+            myButton.innerText = "📝 Custom Action";
+            myButton.style.marginLeft = "20px";
+            myButton.onclick = function () {
+              alert("Custom action inside modal popup clicked!");
+              // You can trigger form functions here if needed
+            };
+            ribbonBar.appendChild(myButton);
+          }
+        } else {
+          // Retry if iframe not yet loaded
+          setTimeout(injectCustomButton, 500);
+        }
+      }, 1500);
+    }
+  </script>
+
+</body>
+</html>
+
+
+
+
+
 $env:NODE_OPTIONS="--openssl-legacy-provider"
 ng serve
 
