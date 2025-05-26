@@ -1,3 +1,66 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Add New Book</title>
+  <script type="text/javascript" src="/_layouts/15/SP.Runtime.js"></script>
+  <script type="text/javascript" src="/_layouts/15/SP.js"></script>
+  <script type="text/javascript" src="/_layouts/15/SP.UI.Dialog.js"></script>
+</head>
+<body>
+
+  <!-- Trigger Button -->
+  <button onclick="openNewItemDialog()">Add New Book</button>
+
+  <script type="text/javascript">
+    function openNewItemDialog() {
+      var options = {
+        title: "Add New Book",
+        url: "/sites/YourSite/Lists/BookManagement/NewForm.aspx", // 🔁 Replace accordingly
+        width: 800,
+        height: 600,
+        dialogReturnValueCallback: function (result, returnValue) {
+          if (result === SP.UI.DialogResult.OK) {
+            alert("Book added successfully!");
+            location.reload();
+          }
+        }
+      };
+
+      SP.UI.ModalDialog.showModalDialog(options);
+
+      setTimeout(function waitForIframe() {
+        var iframe = document.querySelector("iframe[title='Add New Book']"); // adjust if different title
+        if (iframe && iframe.contentDocument && iframe.contentDocument.readyState === "complete") {
+          var iframeDoc = iframe.contentDocument;
+
+          // 1. 🔒 Hide "Spelling" button
+          const spelling = iframeDoc.querySelector("a[title='Spelling']");
+          if (spelling) spelling.style.display = "none";
+
+          // 2. 🔒 Hide "SITE ADMINISTRATION" tab
+          const siteAdminTab = iframeDoc.querySelector("li[title='SITE ADMINISTRATION']");
+          if (siteAdminTab) siteAdminTab.style.display = "none";
+
+          // Also hide the ribbon group if needed
+          const siteAdminRibbonGroup = iframeDoc.querySelector("#Ribbon.SiteActions");
+          if (siteAdminRibbonGroup) siteAdminRibbonGroup.style.display = "none";
+
+        } else {
+          // Retry if iframe not yet loaded
+          setTimeout(waitForIframe, 500);
+        }
+      }, 1500);
+    }
+  </script>
+
+</body>
+</html>
+
+
+
+
+
 <!DOCTYPE html>
 <html>
 <head>
