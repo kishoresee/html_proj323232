@@ -1,3 +1,18 @@
+# Remove global Angular CLI
+npm uninstall -g @angular/cli
+
+# Clear npm cache
+npm cache clean --force
+
+# Reinstall Angular CLI globally
+npm install -g @angular/cli@18.2.19
+
+
+
+
+
+
+
 <button onclick="openNewItemDialog()">Add New Book</button>
 
 <script type="text/javascript">
