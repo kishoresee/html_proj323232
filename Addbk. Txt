@@ -1,3 +1,77 @@
+<button onclick="openNewItemDialog()">Add New Book</button>
+
+<script type="text/javascript">
+  function openNewItemDialog() {
+    var options = {
+      title: "Add New Book",
+      url: "/sites/YourSite/Lists/BookManagement/NewForm.aspx", // Replace with your actual URL
+      width: 800,
+      height: 600,
+      dialogReturnValueCallback: function (result, returnValue) {
+        if (result === SP.UI.DialogResult.OK) {
+          alert("Book added successfully!");
+          location.reload();
+        }
+      }
+    };
+
+    SP.UI.ModalDialog.showModalDialog(options);
+
+    // Use delay and retry mechanism
+    setTimeout(function modifyIframeContents() {
+      var iframe = document.querySelector("iframe[title='Add New Book']");
+      if (!iframe || !iframe.contentWindow || !iframe.contentDocument) {
+        setTimeout(modifyIframeContents, 500);
+        return;
+      }
+
+      var iframeDoc = iframe.contentDocument;
+
+      if (iframeDoc.readyState !== "complete") {
+        setTimeout(modifyIframeContents, 500);
+        return;
+      }
+
+      try {
+        // ✅ Hide SITE ADMINISTRATION tab
+        const tabs = iframeDoc.querySelectorAll(".ms-cui-tabContainer .ms-cui-tab");
+        tabs.forEach(tab => {
+          if (tab.innerText.trim().includes("SITE ADMINISTRATION")) {
+            tab.style.display = "none";
+          }
+        });
+
+        // ✅ Hide "Spelling" button
+        const buttons = iframeDoc.querySelectorAll(".ms-cui-tt-a[title='Spelling']");
+        buttons.forEach(btn => btn.style.display = "none");
+
+        // ✅ Optionally add a custom button to ribbon
+        const ribbonBar = iframeDoc.querySelector(".ms-cui-topBar2");
+        if (ribbonBar) {
+          const customBtn = iframeDoc.createElement("button");
+          customBtn.innerText = "📚 Custom Ribbon Action";
+          customBtn.style.marginLeft = "20px";
+          customBtn.style.padding = "5px 10px";
+          customBtn.onclick = function () {
+            alert("Custom ribbon action clicked!");
+          };
+          ribbonBar.appendChild(customBtn);
+        }
+      } catch (e) {
+        console.error("Error modifying iframe:", e);
+        setTimeout(modifyIframeContents, 500);
+      }
+    }, 1500);
+  }
+</script>
+
+
+
+
+
+
+
+
 <!DOCTYPE html>
 <html>
 <head>
