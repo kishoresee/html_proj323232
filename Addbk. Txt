@@ -1,3 +1,8 @@
+https://github.com/mschwarzmueller/angular-complete-guide-course-resources/blob/main/attachments/02-essentials/styles.css
+
+
+
+
 It looks like you're encountering the error **"Rf is not recognized"** when trying to run cleanup commands. This typically happens on Windows because the `rm -rf` command is a Unix/Linux command that doesn't work directly in Windows Command Prompt. Here's how to fix this:
 
 ---
