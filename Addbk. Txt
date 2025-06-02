@@ -1,3 +1,154 @@
+The error:
+
+❌ TypeError: Cannot read properties of undefined (reading 'hasDecoratorInputTransform')
+
+usually means that there’s an issue with the Angular build system, often caused by one of these:
+
+⸻
+
+🔍 Common Causes
+
+Cause	Fix
+🔸 You’re using a wrong Angular version with incompatible packages	Ensure you’re using the correct versions of AG-Grid + Angular
+🔸 Your Angular app is missing @angular/compiler or it’s outdated	Install it: npm install @angular/compiler
+🔸 You installed AG-Grid packages not compatible with Angular 17	Use the latest AG-Grid that supports Angular 17
+🔸 Your component is not using standalone: true properly	Make sure it’s declared correctly
+
+
+⸻
+
+✅ Step-by-Step: FIX This Error (Start from Scratch)
+
+I’ll now guide you step by step — from ng new to working AG-Grid inside AppComponent using Angular 17 (standalone setup only).
+
+⸻
+
+✅ 1. Create New Angular 17 App with Standalone API
+
+ng new aggrid-app --standalone
+cd aggrid-app
+
+Choose:
+	•	✅ Standalone API
+	•	❌ Do not enable SSR
+	•	✅ CSS as style
+
+⸻
+
+✅ 2. Install AG-Grid Packages
+
+npm install ag-grid-angular ag-grid-community
+
+
+⸻
+
+✅ 3. Replace These Files
+
+🔸 src/app/app.component.ts
+
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { AgGridModule } from 'ag-grid-angular';
+import 'ag-grid-community/styles/ag-grid.css';
+import 'ag-grid-community/styles/ag-theme-alpine.css';
+
+@Component({
+  selector: 'app-root',
+  standalone: true,
+  imports: [CommonModule, AgGridModule],
+  template: `
+    <h2>AG Grid Basic Demo</h2>
+    <ag-grid-angular
+      class="ag-theme-alpine"
+      style="width: 100%; height: 400px;"
+      [rowData]="rowData"
+      [columnDefs]="columnDefs"
+      [defaultColDef]="defaultColDef"
+      (gridReady)="onGridReady($event)">
+    </ag-grid-angular>
+  `
+})
+export class AppComponent {
+  columnDefs = [
+    { field: 'make', editable: true },
+    { field: 'model', editable: true },
+    { field: 'price', editable: true }
+  ];
+
+  defaultColDef = {
+    sortable: true,
+    filter: true,
+    resizable: true
+  };
+
+  rowData = [
+    { make: 'Toyota', model: 'Celica', price: 35000 },
+    { make: 'Ford', model: 'Mondeo', price: 32000 },
+    { make: 'Porsche', model: 'Boxster', price: 72000 }
+  ];
+
+  onGridReady(params: any) {
+    params.api.sizeColumnsToFit();
+  }
+}
+
+
+⸻
+
+🔸 src/styles.css
+
+@import "ag-grid-community/styles/ag-grid.css";
+@import "ag-grid-community/styles/ag-theme-alpine.css";
+
+
+⸻
+
+🔸 src/main.ts
+
+Make sure it looks like this:
+
+import { bootstrapApplication } from '@angular/platform-browser';
+import { AppComponent } from './app/app.component';
+
+bootstrapApplication(AppComponent)
+  .catch(err => console.error(err));
+
+
+⸻
+
+✅ 4. Serve the App
+
+ng serve
+
+You should now see a working editable AG Grid table inside your AppComponent. You can edit any cell directly.
+
+⸻
+
+🧪 Final Note
+
+If you’re still getting:
+
+TypeError: Cannot read properties of undefined (reading 'hasDecoratorInputTransform')
+
+Then do the following:
+
+npm install @angular/compiler --save
+
+Or ensure your Angular version is correctly synced:
+
+npm install @angular/core@17 @angular/compiler@17 @angular/common@17 @angular/platform-browser@17
+
+
+⸻
+
+Do you want me to give you a GitHub link or a zip file of this working demo?
+
+
+
+
+
+
+
 Great — we’ll start from scratch, use only AppComponent (no separate grid component), and show exactly how to integrate AG-Grid in Angular without getting the window is not defined error, assuming you’re not using Angular Universal (SSR).
 
 ⸻
