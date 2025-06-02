@@ -1,3 +1,60 @@
+import { Component } from '@angular/core';
+import { AgGridModule } from 'ag-grid-angular';
+
+@Component({
+  selector: 'app-root',
+  standalone: true,
+  imports: [AgGridModule],  // ✅ Important for standalone Angular
+  templateUrl: './app.component.html',
+  styleUrl: './app.component.css'
+})
+export class AppComponent {
+  columnDefs = [
+    { headerName: 'ID', field: 'id', editable: true },
+    { headerName: 'Name', field: 'name', editable: true },
+    { headerName: 'Age', field: 'age', editable: true }
+  ];
+
+  defaultColDef = {
+    sortable: true,
+    filter: true,
+    resizable: true
+  };
+
+  rowData = [
+    { id: 1, name: 'John Doe', age: 25 },
+    { id: 2, name: 'Jane Smith', age: 30 }
+  ];
+
+  gridApi: any;
+
+  onGridReady(params: any) {
+    this.gridApi = params.api;
+  }
+
+  onCellValueChanged(event: any) {
+    console.log('Cell updated:', event.data);
+  }
+
+  addRow() {
+    const newItem = { id: this.rowData.length + 1, name: '', age: 0 };
+    this.rowData = [...this.rowData, newItem];
+  }
+
+  deleteSelectedRow() {
+    const selectedRows = this.gridApi?.getSelectedRows();
+    if (selectedRows?.length) {
+      this.rowData = this.rowData.filter(row => row !== selectedRows[0]);
+    }
+  }
+}
+
+
+
+
+
+
+
 Perfect! Let’s walk step-by-step from your fresh Angular app angularapp1 to building an editable AG Grid with add, delete, and modify functionality. You’re starting from ng new angularapp1, so here’s what you do next:
 
 ⸻
