@@ -1,3 +1,8 @@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-grid.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community/styles/ag-theme-alpine.css">
+
+
+
 Thanks for the update — if the AG Grid is still breaking on the right and bottom, even with card styling, the most likely causes are:
 
 ⸻
