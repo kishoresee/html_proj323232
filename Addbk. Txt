@@ -1,3 +1,93 @@
+Thanks for the image — it clearly shows AG Grid v33+ breaking changes, especially:
+
+⸻
+
+❌ Error Recap:
+
+AG Grid: error #239 Theming API and CSS file themes are both used in the same page...
+
+This happens because you’re using old CSS (ag-theme-alpine.css) with AG Grid v33+, which now uses a new theming API.
+
+⸻
+
+✅ Fix the Issue Step-by-Step
+
+✅ Step 1: Remove old CSS import
+
+Go to your app.component.ts and remove this line:
+
+// ❌ REMOVE THIS
+import 'ag-grid-community/styles/ag-theme-alpine.css';
+
+
+⸻
+
+✅ Step 2: Use new theme API in global styles.css (or styles.scss)
+
+In your src/styles.css (or src/styles.scss), replace old CSS with:
+
+@use "ag-grid-community/styles" as ag;
+
+@include ag.grid-core();
+@include ag.theme-alpine(); /* or any theme you prefer */
+
+✅ You need to make sure your project supports SCSS if using @use syntax.
+
+If you’re not using SCSS yet, rename styles.css → styles.scss, then update angular.json to reflect that under styles.
+
+⸻
+
+✅ Step 3: Update Row Selection (no more string values)
+
+In your app.component.ts, change:
+
+// ❌ Old style (deprecated)
+rowSelection="single"
+
+To:
+
+[rowSelection]="{ type: 'single' }"
+
+Also:
+
+// ❌ DEPRECATED: checkboxSelection: true
+{ field: 'make', editable: true, checkboxSelection: true }
+
+Change to:
+
+{
+  field: 'make',
+  editable: true,
+  headerCheckboxSelection: true,
+  checkboxSelection: true
+}
+
+⚠️ But still be aware: checkbox selection support also changed in v33, and AG Grid recommends using new config format for multi-selection.
+
+⸻
+
+🔁 Summary of Updated Fixes
+	•	✅ Migrate to SCSS and use AG Grid’s @use theming syntax
+	•	✅ Avoid ag-theme-alpine.css import in TS
+	•	✅ Use object format for row selection
+	•	✅ Use updated grid configuration for checkbox selection
+
+⸻
+
+👇 Need help updating angular.json, styles.scss, or theming?
+
+Let me know if:
+	•	You want to continue using CSS (then we disable new theme API)
+	•	Or you want help converting the project to SCSS
+	•	Or want to use a specific theme (like theme-balham, theme-material)
+
+I’ll guide you based on what you’re using.
+
+
+
+
+
+
 Thanks! Based on your previous image and the error shown:
 
 ⸻
