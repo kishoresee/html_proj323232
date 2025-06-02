@@ -1,3 +1,75 @@
+Great! Since you’re not using SCSS, and want to continue using regular .css, here’s how to fix the AG Grid v33 error using .css only, without migrating to SCSS.
+
+⸻
+
+✅ Fix for AG Grid v33+ using .css
+
+✅ Step 1: Use the new Theming CSS file
+
+Instead of importing ag-theme-alpine.css (legacy), use the new path:
+
+// ✅ Use new Theming API CSS file
+import 'ag-grid-community/styles/ag-grid.css';
+import 'ag-grid-community/styles/themes/ag-theme-alpine.css'; // ✅ updated path
+
+⚠️ This matches AG Grid’s v33+ theme structure.
+
+⸻
+
+✅ Step 2: Use theme correctly in HTML
+
+In your app.component.html, wrap your grid with the correct theme class:
+
+<div class="ag-theme-alpine" style="height: 400px; width: 600px;">
+  <ag-grid-angular
+    [rowData]="rowData"
+    [columnDefs]="columnDefs"
+    [defaultColDef]="defaultColDef"
+    [animateRows]="true"
+    [rowSelection]="{ type: 'single' }" <!-- ✅ new format -->
+    (gridReady)="onGridReady($event)">
+  </ag-grid-angular>
+</div>
+
+
+⸻
+
+✅ Step 3: Add defaultColDef and onGridReady (optional but good practice)
+
+In your app.component.ts:
+
+defaultColDef: ColDef = {
+  sortable: true,
+  filter: true,
+  resizable: true
+};
+
+onGridReady(params: GridReadyEvent) {
+  params.api.sizeColumnsToFit();
+}
+
+Don’t forget to import:
+
+import { GridReadyEvent } from 'ag-grid-community';
+
+
+⸻
+
+✅ Result
+
+Your grid will now:
+	•	✅ Work without SCSS
+	•	✅ Use the latest AG Grid theming structure
+	•	✅ Avoid warning error #239
+
+⸻
+
+Let me know if you want Add/Delete/Update row buttons — I can give the full working example for that too.
+
+
+
+
+
 Thanks for the image — it clearly shows AG Grid v33+ breaking changes, especially:
 
 ⸻
