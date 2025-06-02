@@ -1,3 +1,123 @@
+
+To enable Add, Edit, and Delete functionality in your AG Grid within the same AppComponent (Angular 17), here’s how you can update your code.
+
+⸻
+
+✅ Goal
+	•	Editable cells ✅
+	•	Add new row ➕
+	•	Delete selected row ❌
+	•	Update values automatically (already supported with [editable: true]) ✅
+
+⸻
+
+✅ Modified app.component.ts
+
+import { Component } from '@angular/core';
+import { ColDef, GridApi, ModuleRegistry } from 'ag-grid-community';
+import { AllCommunityModules } from 'ag-grid-community';
+import 'ag-grid-community/styles/ag-grid.css';
+import 'ag-grid-community/styles/ag-theme-alpine.css';
+
+ModuleRegistry.registerModules(AllCommunityModules);
+
+@Component({
+  selector: 'app-root',
+  standalone: true,
+  imports: [],
+  templateUrl: './app.component.html',
+  styleUrl: './app.component.css',
+})
+export class AppComponent {
+  private gridApi!: GridApi;
+
+  columnDefs: ColDef[] = [
+    { field: 'make', editable: true },
+    { field: 'model', editable: true },
+    { field: 'price', editable: true }
+  ];
+
+  rowData = [
+    { make: 'Toyota', model: 'Celica', price: 35000 },
+    { make: 'Ford', model: 'Mondeo', price: 32000 },
+    { make: 'Porsche', model: 'Boxster', price: 72000 }
+  ];
+
+  onGridReady(params: any) {
+    this.gridApi = params.api;
+  }
+
+  addRow() {
+    const newItem = { make: '', model: '', price: 0 };
+    this.gridApi.applyTransaction({ add: [newItem] });
+  }
+
+  deleteSelectedRow() {
+    const selectedRows = this.gridApi.getSelectedRows();
+    if (selectedRows.length > 0) {
+      this.gridApi.applyTransaction({ remove: selectedRows });
+    } else {
+      alert('Please select a row to delete.');
+    }
+  }
+}
+
+
+⸻
+
+✅ Modified app.component.html
+
+<div style="margin-bottom: 10px;">
+  <button (click)="addRow()">Add Row</button>
+  <button (click)="deleteSelectedRow()">Delete Selected Row</button>
+</div>
+
+<ag-grid-angular
+  class="ag-theme-alpine"
+  style="width: 100%; height: 500px;"
+  [rowData]="rowData"
+  [columnDefs]="columnDefs"
+  [rowSelection]="'single'"
+  (gridReady)="onGridReady($event)">
+</ag-grid-angular>
+
+
+⸻
+
+✅ Modified app.component.css (optional)
+
+:host {
+  display: block;
+  height: 100%;
+  padding: 10px;
+}
+
+
+⸻
+
+🔁 Summary
+
+Feature	Status
+Add row	✅ Yes
+Delete row	✅ Yes
+Edit row cells	✅ Yes
+Live update	✅ Yes
+
+
+⸻
+
+Let me know if you want:
+	•	Multi-row delete
+	•	Validation (e.g. no empty make/model)
+	•	Sorting/filtering
+	•	Save to local storage or Firebase backend
+
+
+
+
+
+
+
 import { Component } from '@angular/core';
 import { AgGridModule } from 'ag-grid-angular';
 import { CommonModule } from '@angular/common';
