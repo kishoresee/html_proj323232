@@ -1,3 +1,127 @@
+Thanks! Based on your previous image and the error shown:
+
+⸻
+
+🔴 Error Recap:
+
+"ag-grid-community" has no exported member named 'AllCommunityModules'. Did you mean 'AllCommunityModule'?
+
+But now even when you use AllCommunityModule, you’re still getting an error after fixing that? Let’s correctly configure the entire AG Grid integration for Angular 17.
+
+⸻
+
+✅ Clean Full Working Code with AG Grid + Add/Delete/Update (Angular 17+)
+
+1. Install Required Packages
+
+Make sure you’ve installed AG Grid for Angular:
+
+npm install ag-grid-community ag-grid-angular
+
+
+⸻
+
+2. app.component.ts
+
+import { Component } from '@angular/core';
+import { ColDef, GridApi, GridReadyEvent } from 'ag-grid-community';
+import { AgGridModule } from 'ag-grid-angular';
+import 'ag-grid-community/styles/ag-grid.css';
+import 'ag-grid-community/styles/ag-theme-alpine.css';
+
+@Component({
+  selector: 'app-root',
+  standalone: true,
+  imports: [AgGridModule],
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+  private gridApi!: GridApi;
+
+  columnDefs: ColDef[] = [
+    { field: 'make', editable: true, checkboxSelection: true },
+    { field: 'model', editable: true },
+    { field: 'price', editable: true }
+  ];
+
+  rowData = [
+    { make: 'Toyota', model: 'Celica', price: 35000 },
+    { make: 'Ford', model: 'Mondeo', price: 32000 },
+    { make: 'Porsche', model: 'Boxster', price: 72000 }
+  ];
+
+  onGridReady(params: GridReadyEvent) {
+    this.gridApi = params.api;
+  }
+
+  addRow() {
+    const newItem = { make: '', model: '', price: 0 };
+    this.gridApi.applyTransaction({ add: [newItem] });
+  }
+
+  deleteSelectedRow() {
+    const selectedRows = this.gridApi.getSelectedRows();
+    if (selectedRows.length > 0) {
+      this.gridApi.applyTransaction({ remove: selectedRows });
+    } else {
+      alert('Please select a row to delete.');
+    }
+  }
+}
+
+
+⸻
+
+3. app.component.html
+
+<div style="margin-bottom: 10px;">
+  <button (click)="addRow()">Add Row</button>
+  <button (click)="deleteSelectedRow()">Delete Selected Row</button>
+</div>
+
+<div class="ag-theme-alpine" style="height: 400px; width: 600px;">
+  <ag-grid-angular
+    [rowData]="rowData"
+    [columnDefs]="columnDefs"
+    rowSelection="single"
+    (gridReady)="onGridReady($event)">
+  </ag-grid-angular>
+</div>
+
+
+⸻
+
+4. app.component.css
+
+button {
+  margin-right: 10px;
+}
+
+
+⸻
+
+🚫 Remove These Unused Imports
+
+Remove this from your code (you don’t need it for Angular 17+ standalone):
+
+// ❌ NOT NEEDED
+// import { ModuleRegistry } from 'ag-grid-community';
+// import { AllCommunityModules } from 'ag-grid-community';
+// ModuleRegistry.registerModules([AllCommunityModule]);
+
+
+⸻
+
+Let Me Know:
+	•	If you’re still using a module.ts setup instead of standalone components.
+	•	If you want the user to multi-select rows.
+	•	If you’re using strict types and need interfaces.
+
+Let’s get your AG Grid fully working step-by-step.
+
+
+
 
 To enable Add, Edit, and Delete functionality in your AG Grid within the same AppComponent (Angular 17), here’s how you can update your code.
 
