@@ -1,3 +1,224 @@
+
+Thanks for the detailed update. You’re facing a "window is not defined" error with AG-Grid in Angular, likely due to Server-Side Rendering (SSR) or improper placement of browser-only code.
+
+Let’s walk through a complete step-by-step setup to integrate AG-Grid correctly in Angular without causing window errors, even in SSR environments.
+
+⸻
+
+✅ Step-by-Step Guide: AG-Grid in Angular Without window is not defined Error
+
+⸻
+
+🔧 Step 1: Install Required Packages
+
+npm install ag-grid-angular ag-grid-community
+
+
+⸻
+
+📁 Step 2: File Structure Overview
+
+src/
+ └── app/
+      ├── grid/
+      │    ├── grid.component.ts
+      │    ├── grid.component.html
+      │    └── grid.component.css
+      └── app.config.ts
+      └── app.component.ts
+      └── app.component.html
+      └── main.ts
+styles.css
+angular.json
+
+
+⸻
+
+📦 Step 3: Add AG-Grid CSS to styles.css
+
+File: src/styles.css
+
+@import "ag-grid-community/styles/ag-grid.css";
+@import "ag-grid-community/styles/ag-theme-alpine.css";
+
+
+⸻
+
+📄 Step 4: Create Grid Component Safely (Browser Check)
+
+File: src/app/grid/grid.component.ts
+
+import { Component, Inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { ColDef, GridApi, GridReadyEvent } from 'ag-grid-community';
+import { AgGridModule } from 'ag-grid-angular';
+
+@Component({
+  selector: 'app-grid',
+  standalone: true,
+  imports: [AgGridModule],
+  templateUrl: './grid.component.html',
+  styleUrls: ['./grid.component.css']
+})
+export class GridComponent {
+  isBrowser = false;
+  private gridApi!: GridApi;
+
+  columnDefs: ColDef[] = [
+    { field: 'make' },
+    { field: 'model' },
+    { field: 'price' }
+  ];
+
+  rowData = [
+    { make: 'Toyota', model: 'Celica', price: 35000 },
+    { make: 'Ford', model: 'Mondeo', price: 32000 },
+    { make: 'Porsche', model: 'Boxster', price: 72000 }
+  ];
+
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    this.isBrowser = isPlatformBrowser(platformId);
+  }
+
+  onGridReady(params: GridReadyEvent) {
+    if (this.isBrowser) {
+      this.gridApi = params.api;
+      this.gridApi.sizeColumnsToFit();
+    }
+  }
+}
+
+
+⸻
+
+🧾 File: grid.component.html
+
+<ag-grid-angular
+  *ngIf="isBrowser"
+  style="width: 100%; height: 500px;"
+  class="ag-theme-alpine"
+  [rowData]="rowData"
+  [columnDefs]="columnDefs"
+  (gridReady)="onGridReady($event)">
+</ag-grid-angular>
+
+
+⸻
+
+🧾 File: grid.component.css
+
+/* Optional grid styling */
+
+
+⸻
+
+🧩 Step 5: Add GridComponent in Routes or AppComponent
+
+Option A: Add via routing
+
+File: app.routes.ts (Angular v17+)
+
+import { Routes } from '@angular/router';
+
+export const routes: Routes = [
+  {
+    path: '',
+    loadComponent: () =>
+      import('./grid/grid.component').then((m) => m.GridComponent),
+  },
+];
+
+Option B: Add directly to app.component.html
+
+<app-grid></app-grid>
+
+And add this to app.component.ts:
+
+import { Component } from '@angular/core';
+import { GridComponent } from './grid/grid.component';
+
+@Component({
+  selector: 'app-root',
+  standalone: true,
+  imports: [GridComponent],
+  templateUrl: './app.component.html',
+})
+export class AppComponent {}
+
+
+⸻
+
+⚙️ Step 6: Verify angular.json → Make sure "main" is defined
+
+File: angular.json
+
+Find this part under projects > your-app-name > architect > build > options:
+
+"options": {
+  "outputPath": "dist/project-name",
+  "index": "src/index.html",
+  "main": "src/main.ts",              // ✅ REQUIRED
+  "polyfills": "src/polyfills.ts",    // ✅ REQUIRED
+  "tsConfig": "tsconfig.app.json",
+  "assets": [
+    "src/favicon.ico",
+    "src/assets"
+  ],
+  "styles": [
+    "src/styles.css"
+  ],
+  "scripts": []
+}
+
+✅ If main or polyfills are missing — add them!
+
+⸻
+
+🧪 Step 7: Run and Test
+
+ng serve
+
+	•	Make sure src/main.ts and src/polyfills.ts exist
+	•	If using SSR (ng add @nguniversal/express-engine), this setup still works due to the isPlatformBrowser guard
+
+⸻
+
+❗ Common Mistake Recap
+
+Issue	Fix
+window is not defined	Use isPlatformBrowser to avoid SSR-side rendering
+Missing main in angular.json	Add "main": "src/main.ts" inside "build > options"
+AG-Grid CSS not loading	Import in styles.css as shown above
+AG-Grid trying to render early	Use *ngIf="isBrowser" on <ag-grid-angular>
+
+
+⸻
+
+💡 Bonus: Confirm Environment
+
+Run this to confirm Angular version:
+
+ng version
+
+
+⸻
+
+If you still face issues, send:
+	•	Your angular.json
+	•	Your main.ts and polyfills.ts
+	•	Whether you are using SSR (Universal)
+	•	The full updated error message
+
+I’ll debug and rewrite the entire structure for you.
+
+
+
+
+
+
+
+
+
 # Understanding and Fixing the "Window is not defined" Error in Angular with AG-Grid
 
 Based on your image and error message, I'll help you resolve the "Window is not defined" error that commonly occurs when using AG-Grid in Angular applications, especially with server-side rendering (SSR) or incorrect imports.
