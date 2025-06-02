@@ -1,3 +1,169 @@
+
+Thanks for the image! It clearly shows that:
+	•	The AG Grid is not properly centered or styled.
+	•	There’s extra space on the right and bottom.
+	•	The layout is breaking, possibly due to improper width or height settings.
+
+Let’s fix it cleanly so it appears sharp and centered like a professional data grid.
+
+⸻
+
+✅ Step-by-Step Fix: Clean Layout & Styling
+
+🔧 app.component.html
+
+Replace your current HTML with:
+
+<div class="grid-wrapper">
+  <h2>Editable Car Table</h2>
+
+  <div class="toolbar">
+    <button (click)="addRow()">Add Row</button>
+    <button (click)="deleteSelectedRow()">Delete Selected Row</button>
+  </div>
+
+  <div class="ag-theme-alpine grid-container">
+    <ag-grid-angular
+      [rowData]="rowData"
+      [columnDefs]="columnDefs"
+      [defaultColDef]="defaultColDef"
+      [rowSelection]="rowSelection"
+      (gridReady)="onGridReady($event)"
+      style="width: 100%; height: 100%;">
+    </ag-grid-angular>
+  </div>
+</div>
+
+
+⸻
+
+🎨 app.component.css
+
+Add this styling:
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: #f2f2f2;
+  font-family: Arial, sans-serif;
+}
+
+.grid-wrapper {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+}
+
+.grid-container {
+  height: 400px;
+  width: 100%;
+  margin-top: 20px;
+}
+
+.toolbar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+button {
+  padding: 6px 14px;
+  background-color: #1976d2;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #145ea8;
+}
+
+
+⸻
+
+⚙️ app.component.ts – Add Missing Pieces for Add/Delete
+
+Update your component like this:
+
+import { Component } from '@angular/core';
+import { ColDef, GridReadyEvent, GridApi } from 'ag-grid-community';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+  columnDefs: ColDef[] = [
+    { field: 'make', editable: true },
+    { field: 'model', editable: true },
+    { field: 'price', editable: true }
+  ];
+
+  defaultColDef: ColDef = {
+    sortable: true,
+    filter: true,
+    resizable: true,
+    flex: 1,
+    minWidth: 120
+  };
+
+  rowData = [
+    { make: 'Toyota', model: 'Celica', price: 35000 },
+    { make: 'Ford', model: 'Mondeo', price: 32000 },
+    { make: 'Porsche', model: 'Boxster', price: 72000 }
+  ];
+
+  rowSelection = 'single';
+  private gridApi!: GridApi;
+
+  onGridReady(params: GridReadyEvent) {
+    this.gridApi = params.api;
+    params.api.sizeColumnsToFit(); // Adjust to fit screen
+  }
+
+  addRow() {
+    const newItem = { make: '', model: '', price: 0 };
+    this.gridApi.applyTransaction({ add: [newItem] });
+  }
+
+  deleteSelectedRow() {
+    const selectedRows = this.gridApi.getSelectedRows();
+    if (selectedRows.length > 0) {
+      this.gridApi.applyTransaction({ remove: selectedRows });
+    } else {
+      alert('Please select a row to delete.');
+    }
+  }
+}
+
+
+⸻
+
+✅ Result:
+	•	Grid looks neat and centered.
+	•	Responsive width.
+	•	No scrollbars unless content overflows.
+	•	Add/Delete works.
+	•	Styled buttons.
+
+Let me know if you also want:
+	•	Search/filter toolbar
+	•	Export to Excel/CSV
+	•	Pagination
+
+
+
+
+
+
+
+
 Great! Since the grid is now visible, but not styled properly or not looking good, here’s how to make it look professional, clean, and responsive using the AG Grid Alpine theme:
 
 ⸻
