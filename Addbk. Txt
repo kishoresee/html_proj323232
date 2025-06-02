@@ -1,3 +1,201 @@
+Great — we’ll start from scratch, use only AppComponent (no separate grid component), and show exactly how to integrate AG-Grid in Angular without getting the window is not defined error, assuming you’re not using Angular Universal (SSR).
+
+⸻
+
+✅ Complete Guide — AG-Grid in AppComponent (No Separate Grid Component)
+
+We’ll use:
+	•	Angular 17+
+	•	AG-Grid
+	•	No SSR
+	•	No separate component
+	•	Just AppComponent
+
+⸻
+
+🔧 Step 1: Create a New Angular Project
+
+ng new ag-grid-app --standalone
+cd ag-grid-app
+
+✅ Choose “No” when asked for routing
+✅ Choose CSS for styling (or SCSS if you prefer)
+
+⸻
+
+📦 Step 2: Install AG-Grid Packages
+
+npm install ag-grid-angular ag-grid-community
+
+
+⸻
+
+🎨 Step 3: Add AG-Grid CSS in src/styles.css
+
+@import "ag-grid-community/styles/ag-grid.css";
+@import "ag-grid-community/styles/ag-theme-alpine.css";
+
+
+⸻
+
+🧠 Step 4: Update app.component.ts
+
+File: src/app/app.component.ts
+
+import { Component } from '@angular/core';
+import { AgGridModule } from 'ag-grid-angular';
+import { ColDef, GridReadyEvent, GridApi } from 'ag-grid-community';
+
+@Component({
+  selector: 'app-root',
+  standalone: true,
+  imports: [AgGridModule],
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+  title = 'ag-grid-app';
+
+  private gridApi!: GridApi;
+
+  columnDefs: ColDef[] = [
+    { field: 'make' },
+    { field: 'model' },
+    { field: 'price' }
+  ];
+
+  rowData = [
+    { make: 'Toyota', model: 'Celica', price: 35000 },
+    { make: 'Ford', model: 'Mondeo', price: 32000 },
+    { make: 'Porsche', model: 'Boxster', price: 72000 }
+  ];
+
+  onGridReady(params: GridReadyEvent) {
+    this.gridApi = params.api;
+    this.gridApi.sizeColumnsToFit();
+  }
+}
+
+
+⸻
+
+🧾 Step 5: Update app.component.html
+
+File: src/app/app.component.html
+
+<h2>AG Grid in AppComponent</h2>
+
+<ag-grid-angular
+  style="width: 100%; height: 400px;"
+  class="ag-theme-alpine"
+  [rowData]="rowData"
+  [columnDefs]="columnDefs"
+  (gridReady)="onGridReady($event)">
+</ag-grid-angular>
+
+
+⸻
+
+🎨 Step 6: Add Optional Styling (Optional)
+
+File: src/app/app.component.css
+
+:host {
+  display: block;
+  padding: 20px;
+}
+
+
+⸻
+
+⚙️ Step 7: Confirm angular.json has correct entries
+
+File: angular.json
+
+Find this section under projects > ag-grid-app > architect > build > options:
+
+"options": {
+  "outputPath": "dist/ag-grid-app",
+  "index": "src/index.html",
+  "main": "src/main.ts",         ✅ must exist
+  "polyfills": "src/polyfills.ts", ✅ must exist
+  "tsConfig": "tsconfig.app.json",
+  "assets": [
+    "src/favicon.ico",
+    "src/assets"
+  ],
+  "styles": [
+    "src/styles.css"
+  ],
+  "scripts": []
+}
+
+
+⸻
+
+▶️ Step 8: Run the App
+
+ng serve
+
+
+⸻
+
+✅ Output
+
+You should now see an AG-Grid table with rows and columns in the browser.
+
+⸻
+
+❗ If You’re Still Seeing window is not defined
+
+That would only happen if you’re using SSR (Angular Universal).
+
+If so, you must guard AG-Grid code using this check:
+
+import { Inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+
+constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
+
+ngOnInit() {
+  if (isPlatformBrowser(this.platformId)) {
+    // Initialize AG-Grid here
+  }
+}
+
+But since you’re using only AppComponent and not SSR — you do not need this.
+
+⸻
+
+✅ Summary
+
+Step	Done?
+New Angular app created	✅
+AG-Grid installed	✅
+CSS added to styles.css	✅
+AG-Grid code in AppComponent	✅
+Used only AppComponent	✅
+No SSR/Universal used	✅
+
+
+⸻
+
+If you follow these steps exactly and still get the error:
+
+Please send:
+	•	Your full angular.json
+	•	Screenshot of full error
+	•	Output of ng version
+	•	Confirm whether you added SSR (@nguniversal/...)
+
+I’ll debug it line by line for you.
+
+
+
+
+
+
+
 
 Thanks for the detailed update. You’re facing a "window is not defined" error with AG-Grid in Angular, likely due to Server-Side Rendering (SSR) or improper placement of browser-only code.
 
