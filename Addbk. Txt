@@ -1,6 +1,138 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <title>SharePoint Custom Ribbon Tab</title>
+  <meta charset="utf-8" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #0078D4;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #status {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h2>Custom Ribbon Tab</h2>
+  <button onclick="createRibbon()">Create Ribbon</button>
+  <div id="status"></div>
+
+  <script>
+    function createRibbon() {
+      document.getElementById('status').innerText = "Loading scripts...";
+
+      const scripts = [
+        '/_layouts/15/init.js',
+        '/_layouts/15/MicrosoftAjax.js',
+        '/_layouts/15/SP.Runtime.js',
+        '/_layouts/15/SP.js',
+        '/_layouts/15/SP.Ribbon.js'
+      ];
+
+      let i = 0;
+      function loadNext() {
+        if (i >= scripts.length) {
+          initRibbon();
+          return;
+        }
+        const s = document.createElement('script');
+        s.src = scripts[i++];
+        s.onload = loadNext;
+        s.onerror = () => document.getElementById('status').innerText = "Error loading script: " + s.src;
+        document.head.appendChild(s);
+      }
+
+      loadNext();
+    }
+
+    function initRibbon() {
+      ExecuteOrDelayUntilScriptLoaded(function () {
+        const ribbonXml = `
+<CommandUIExtension xmlns="http://schemas.microsoft.com/sharepoint/">
+  <CommandUIDefinitions>
+    <CommandUIDefinition Location="Ribbon.Tabs._children">
+      <Tab Id="Ribbon.CustomTab"
+           Title="Books"
+           Sequence="501"
+           Description="Custom tab for books">
+        <Scaling Id="Ribbon.CustomTab.Scaling">
+          <MaxSize Id="Ribbon.CustomTab.MaxSize" GroupId="Ribbon.CustomTab.Group1" Size="LargeLarge"/>
+        </Scaling>
+        <Groups Id="Ribbon.CustomTab.Groups">
+          <Group Id="Ribbon.CustomTab.Group1"
+                 Sequence="52"
+                 Title="Book Actions"
+                 Template="Ribbon.Templates.Flexible2">
+            <Controls Id="Ribbon.CustomTab.Group1.Controls">
+              <Button Id="Ribbon.CustomTab.Group1.Button1"
+                      Command="Cmd_AddBook"
+                      LabelText="Add Book"
+                      TemplateAlias="o1"
+                      Image16by16="/_layouts/15/images/formatmap16x16.png"
+                      Image32by32="/_layouts/15/images/formatmap32x32.png"
+                      Description="Add a new book to the library"/>
+            </Controls>
+          </Group>
+        </Groups>
+      </Tab>
+    </CommandUIDefinition>
+  </CommandUIDefinitions>
+  <CommandUIHandlers>
+    <CommandUIHandler Command="Cmd_AddBook"
+                      CommandAction="javascript:alert('Book added!');"
+                      EnabledScript="javascript:true;" />
+  </CommandUIHandlers>
+</CommandUIExtension>`;
+
+        const pageComponent = {
+          getId: function () { return "MyRibbonComponent"; },
+          getGlobalCommands: function () { return ["Cmd_AddBook"]; },
+          canHandleCommand: function (cmdId) { return cmdId === "Cmd_AddBook"; },
+          handleCommand: function (cmdId) {
+            if (cmdId === "Cmd_AddBook") alert("Book added!");
+          },
+          isCommandEnabled: function (cmdId) { return true; },
+          getFocusedCommands: function () { return []; },
+          receiveFocus: function () { return false; },
+          yieldFocus: function () { return false; }
+        };
+
+        const ribbon = SP.Ribbon.PageManager.get_instance();
+        ribbon.addPageComponent(pageComponent);
+
+        ribbon.get_ribbon().appendChild(SP.UI.Ribbon.createTabFromXML(ribbonXml));
+        SP.Ribbon.PageManager.get_instance().add_ribbonInited(function () {
+          SetRibbonTabVisible("Ribbon.CustomTab", true);
+          document.getElementById('status').innerText = "Ribbon created!";
+        });
+
+      }, 'sp.ribbon.js');
+    }
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
     <title>Custom Ribbon Creator</title>
     <style>
         body {
