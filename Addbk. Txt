@@ -1,3 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Custom Ribbon Tab</title>
+  <meta charset="utf-8">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #0078d4;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    #status {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h2>Create Custom Ribbon</h2>
+  <button onclick="createRibbon()">Create Ribbon</button>
+  <div id="status"></div>
+
+  <script type="text/javascript">
+    function createRibbon() {
+      document.getElementById('status').innerText = 'Creating ribbon customization...';
+
+      SP.SOD.executeFunc('sp.ribbon.js', 'SP.Ribbon.PageManager', function () {
+        var ribbonManager = SP.Ribbon.PageManager.get_instance();
+
+        ribbonManager.add_ribbonInited(function () {
+          var ribbonXml = '<CommandUIExtension xmlns="http://schemas.microsoft.com/sharepoint/">' +
+            '<CommandUIDefinitions>' +
+            '<CommandUIDefinition Location="Ribbon.Tabs._children">' +
+            '<Tab Id="Ribbon.CustomTab" Title="My Custom Tab" Sequence="501" Description="Custom tab">' +
+            '<Scaling Id="Ribbon.CustomTab.Scaling">' +
+            '<MaxSize Id="Ribbon.CustomTab.MaxSize" GroupId="Ribbon.CustomTab.Group1" Size="LargeLarge"/>' +
+            '</Scaling>' +
+            '<Groups Id="Ribbon.CustomTab.Groups">' +
+            '<Group Id="Ribbon.CustomTab.Group1" Title="My Actions" Template="Ribbon.Templates.Flexible2">' +
+            '<Controls Id="Ribbon.CustomTab.Group1.Controls">' +
+            '<Button Id="Ribbon.CustomTab.Group1.Button1" Command="MyCommand1" LabelText="Hello" ' +
+            'Image16by16="/_layouts/15/images/formatmap16x16.png" Image32by32="/_layouts/15/images/formatmap32x32.png" ' +
+            'TemplateAlias="o1" />' +
+            '</Controls>' +
+            '</Group>' +
+            '</Groups>' +
+            '</Tab>' +
+            '</CommandUIDefinition>' +
+            '</CommandUIDefinitions>' +
+            '<CommandUIHandlers>' +
+            '<CommandUIHandler Command="MyCommand1" CommandAction="javascript:alert(\'Hello from ribbon!\');" EnabledScript="javascript:true;" />' +
+            '</CommandUIHandlers>' +
+            '</CommandUIExtension>';
+
+          var ribbon = ribbonManager.get_ribbon();
+          if (ribbon) {
+            ribbon.importRibbonXml(ribbonXml);
+            ribbon.refreshRibbon();
+            ribbon.setSelectedTab('Ribbon.CustomTab');
+            document.getElementById('status').innerText = 'Ribbon created successfully!';
+          } else {
+            document.getElementById('status').innerText = 'Ribbon not available.';
+          }
+        });
+      });
+    }
+  </script>
+</body>
+</html>
+
+
+
+
+
 
 <!DOCTYPE html>
 <html>
