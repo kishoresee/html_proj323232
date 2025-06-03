@@ -1,3 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ribbon Deployment</title>
+    <!-- Load SharePoint JSOM libraries -->
+    <script type="text/javascript" src="/_layouts/15/init.js"></script>
+    <script type="text/javascript" src="/_layouts/15/MicrosoftAjax.js"></script>
+    <script type="text/javascript" src="/_layouts/15/SP.Runtime.js"></script>
+    <script type="text/javascript" src="/_layouts/15/SP.js"></script>
+    <script type="text/javascript" src="/_layouts/15/SP.Ribbon.js"></script>
+</head>
+<body>
+    <div id="ribbon-deployment-status">Loading ribbon customization...</div>
+    
+    <script type="text/javascript">
+    // Your deployment code here
+    function deployRibbonCustomization() {
+        var ctx = new SP.ClientContext.get_current();
+        var web = ctx.get_web();
+        var userActions = web.get_userCustomActions();
+        ctx.load(userActions);
+        
+        var customAction = userActions.add();
+        customAction.set_location("ScriptLink");
+        customAction.set_scriptSrc("~sitecollection/SiteAssets/custom-ribbon.js");
+        customAction.set_sequence(100);
+        customAction.set_title("Custom Book Management Ribbon");
+        
+        customAction.update();
+        ctx.executeQueryAsync(
+            function() {
+                document.getElementById("ribbon-deployment-status").innerHTML = 
+                    "Ribbon customization deployed successfully! Page will refresh...";
+                setTimeout(function() { window.location.reload(true); }, 2000);
+            },
+            function(sender, args) {
+                document.getElementById("ribbon-deployment-status").innerHTML = 
+                    "Failed to deploy ribbon: " + args.get_message();
+            }
+        );
+    }
+
+    // Initialize when SharePoint is ready
+    ExecuteOrDelayUntilScriptLoaded(function() {
+        SP.SOD.executeFunc('sp.js', 'SP.ClientContext', function() {
+            if (window.location.href.indexOf("BookManagement") > -1) {
+                deployRibbonCustomization();
+            }
+        });
+    }, 'sp.js');
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
 # Adding a Custom Ribbon to SharePoint 2016 Using JSOM
 
 Here's a complete step-by-step guide to add a custom ribbon tab with buttons to your SharePoint 2016 page using JavaScript Object Model (JSOM).
