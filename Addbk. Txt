@@ -1,3 +1,155 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Custom Ribbon Creator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        button {
+            background-color: #0078d4;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        #status {
+            padding: 10px;
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            min-height: 20px;
+        }
+        .success {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>Custom Ribbon Creator</h1>
+    <button onclick="createCustomRibbon()">Create Custom Ribbon</button>
+    <div id="status">Click the button to create a custom ribbon tab.</div>
+
+    <script type="text/javascript">
+        function createCustomRibbon() {
+            document.getElementById('status').innerHTML = "Loading SharePoint libraries...";
+
+            loadSharePointScripts()
+                .then(() => {
+                    document.getElementById('status').innerHTML = "Creating ribbon customization...";
+                    return registerCustomRibbon();
+                })
+                .then(() => {
+                    document.getElementById('status').innerHTML = 
+                        '<span class="success">Custom ribbon created successfully! Refreshing page...</span>';
+                    setTimeout(() => location.reload(), 2000);
+                })
+                .catch(error => {
+                    document.getElementById('status').innerHTML = 
+                        '<span class="error">Error: ' + error.message + '</span>';
+                    console.error(error);
+                });
+        }
+
+        function loadSharePointScripts() {
+            return new Promise((resolve, reject) => {
+                const scripts = [
+                    '/_layouts/15/init.js',
+                    '/_layouts/15/MicrosoftAjax.js',
+                    '/_layouts/15/SP.Runtime.js',
+                    '/_layouts/15/SP.js',
+                    '/_layouts/15/SP.Ribbon.js'
+                ];
+
+                function loadScript(index) {
+                    if (index >= scripts.length) {
+                        resolve();
+                        return;
+                    }
+
+                    const script = document.createElement('script');
+                    script.src = scripts[index];
+                    script.onload = () => loadScript(index + 1);
+                    script.onerror = () => reject(new Error('Failed to load ' + scripts[index]));
+                    document.head.appendChild(script);
+                }
+
+                loadScript(0);
+            });
+        }
+
+        function registerCustomRibbon() {
+            return new Promise((resolve, reject) => {
+                try {
+                    const ribbonXml = `
+                        <CommandUIExtension xmlns="http://schemas.microsoft.com/sharepoint/">
+                            <CommandUIDefinitions>
+                                <CommandUIDefinition Location="Ribbon.Tabs._children">
+                                    <Tab Id="Ribbon.CustomTab" Title="Book Management" Sequence="100">
+                                        <Scaling Id="Ribbon.CustomTab.Scaling">
+                                            <MaxSize Id="Ribbon.CustomTab.MaxSize" GroupId="Ribbon.CustomTab.Group1" Size="OneLargeTwoMedium"/>
+                                            <Scale Id="Ribbon.CustomTab.Scaling.Group1" GroupId="Ribbon.CustomTab.Group1" Size="OneLargeTwoMedium"/>
+                                        </Scaling>
+                                        <Groups Id="Ribbon.CustomTab.Groups">
+                                            <Group Id="Ribbon.CustomTab.Group1" Title="Book Actions" Description="Custom book management actions" Sequence="100" Template="Ribbon.Templates.Flexible2">
+                                                <Controls Id="Ribbon.CustomTab.Group1.Controls">
+                                                    <Button Id="Ribbon.CustomTab.Group1.Button1" Command="Custom_AddBook" Sequence="100" Image16by16="/_layouts/15/images/formatmap16x16.png" Image16by16Top="-144" Image16by16Left="-288" Image32by32="/_layouts/15/images/formatmap32x32.png" Image32by32Top="-192" Image32by32Left="-288" LabelText="Add Book" Description="Add a new book to the library" TemplateAlias="o1"/>
+                                                    <Button Id="Ribbon.CustomTab.Group1.Button2" Command="Custom_ViewReports" Sequence="200" Image16by16="/_layouts/15/images/formatmap16x16.png" Image16by16Top="-144" Image16by16Left="-432" Image32by32="/_layouts/15/images/formatmap32x32.png" Image32by32Top="-192" Image32by32Left="-432" LabelText="View Reports" Description="View book reports" TemplateAlias="o1"/>
+                                                </Controls>
+                                            </Group>
+                                        </Groups>
+                                    </Tab>
+                                </CommandUIDefinition>
+                            </CommandUIDefinitions>
+                            <CommandUIHandlers>
+                                <CommandUIHandler Command="Custom_AddBook" CommandAction="javascript:alert('Add Book clicked! Replace this with your function.');" EnabledScript="javascript: true;"/>
+                                <CommandUIHandler Command="Custom_ViewReports" CommandAction="javascript:alert('View Reports clicked! Replace this with your function.');" EnabledScript="javascript: true;"/>
+                            </CommandUIHandlers>
+                        </CommandUIExtension>
+                    `;
+
+                    ExecuteOrDelayUntilScriptLoaded(function() {
+                        SP.SOD.executeFunc('sp.ribbon.js', 'SP.Ribbon.PageManager', function() {
+                            const ribbonManager = SP.Ribbon.PageManager.get_instance();
+
+                            ribbonManager.add_ribbonInited(function() {
+                                const ribbon = ribbonManager.get_ribbon();
+                                if (ribbon) {
+                                    ribbon.importRibbonXml(ribbonXml);
+                                    ribbon.refreshRibbon();
+                                    ribbon.setSelectedTab('Ribbon.CustomTab');
+                                    resolve();
+                                } else {
+                                    reject(new Error('Ribbon not available.'));
+                                }
+                            });
+                        });
+                    }, 'sp.ribbon.js');
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
 <!DOCTYPE html>
 <html>
 <head>
