@@ -1,3 +1,65 @@
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable, map, switchMap } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class SharepointApiService {
+
+  private listName = 'EmployeeList';
+  private siteUrl = '/sites/YourSiteName';  // Replace your sub-site URL here
+
+  constructor(private http: HttpClient) { }
+
+  /**
+   * Get FormDigestValue for authentication
+   */
+  private getRequestDigest(): Observable<string> {
+    const url = `${this.siteUrl}/_api/contextinfo`;
+    const headers = new HttpHeaders({
+      'Accept': 'application/json;odata=verbose'
+    });
+
+    return this.http.post<any>(url, null, { headers }).pipe(
+      map(res => res.d.GetContextWebInformation.FormDigestValue)
+    );
+  }
+
+  /**
+   * Add Employee to SharePoint List
+   */
+  addEmployee(employee: any): Observable<any> {
+    return this.getRequestDigest().pipe(
+      switchMap(formDigest => {
+
+        const url = `${this.siteUrl}/_api/web/lists/getbytitle('${this.listName}')/items`;
+
+        const body = {
+          '__metadata': { 'type': 'SP.Data.EmployeeListListItem' },  // Entity type
+          'Title': employee.name,
+          'EmployeeID': employee.employeeID,
+          'Department': employee.department,
+          'JoiningDate': employee.joiningDate,
+          'Salary': employee.salary
+        };
+
+        const headers = new HttpHeaders({
+          'Accept': 'application/json;odata=verbose',
+          'Content-Type': 'application/json;odata=verbose',
+          'X-RequestDigest': formDigest
+        });
+
+        return this.http.post(url, body, { headers });
+      })
+    );
+  }
+}
+
+
+
+
+
 Excellent — you’re trying to integrate Angular 17 frontend with SharePoint backend using REST API to read/write data (e.g. Employee List).
 I’ll explain step-by-step very clearly without missing any part:
 
