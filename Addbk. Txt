@@ -1,3 +1,191 @@
+# Simplified SharePoint Service for Data Submission Only
+
+Here's a streamlined version of your SharePoint service that focuses solely on posting data to SharePoint without any GET or DELETE functionality:
+
+## Updated SharePoint Service
+
+**File: `src/app/services/sharepoint.service.ts`**
+
+```typescript
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class SharePointService {
+  private siteUrl = 'https://my-apps.dev.echonet/teams/INTERNTRAINING/kishore';
+  private apiUrl = `${this.siteUrl}/_api/web/lists/getbytitle('Employee')/items`;
+  private digestUrl = `${this.siteUrl}/_api/contextinfo`;
+
+  constructor(private http: HttpClient) {}
+
+  private async getRequestDigest(): Promise<string> {
+    try {
+      const response: any = await this.http.post(this.digestUrl, {}).toPromise();
+      return response.d.GetContextWebInformation.FormDigestValue;
+    } catch (error) {
+      console.error('Error getting request digest:', error);
+      throw error;
+    }
+  }
+
+  private async getHeaders(): Promise<HttpHeaders> {
+    const digest = await this.getRequestDigest();
+    return new HttpHeaders({
+      'Accept': 'application/json;odata=verbose',
+      'Content-Type': 'application/json;odata=verbose',
+      'X-RequestDigest': digest
+    });
+  }
+
+  async submitEmployee(employee: any): Promise<any> {
+    try {
+      const headers = await this.getHeaders();
+      const body = {
+        '__metadata': { 'type': 'SP.Data.EmployeeListItem' },
+        'Title': employee.EmployeeName,
+        'EmployeeID': employee.EmployeeID,
+        'Salary': employee.Salary,
+        'Department': employee.Department,
+        'JoiningDate': employee.JoiningDate
+      };
+      
+      return await this.http.post(this.apiUrl, body, { headers }).toPromise();
+    } catch (error) {
+      console.error('Error submitting employee:', error);
+      throw error;
+    }
+  }
+}
+```
+
+## Corresponding Form Component
+
+**File: `src/app/components/employee-form/employee-form.component.ts`**
+
+```typescript
+import { Component } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { SharePointService } from '../../services/sharepoint.service';
+
+@Component({
+  selector: 'app-employee-form',
+  templateUrl: './employee-form.component.html',
+  styleUrls: ['./employee-form.component.css']
+})
+export class EmployeeFormComponent {
+  employeeForm: FormGroup;
+  submissionStatus: 'idle' | 'submitting' | 'success' | 'error' = 'idle';
+  departments = ['IT', 'HR', 'Sales', 'Finance', 'Admin', 'Others'];
+
+  constructor(
+    private fb: FormBuilder,
+    private spService: SharePointService
+  ) {
+    this.employeeForm = this.fb.group({
+      EmployeeName: ['', Validators.required],
+      EmployeeID: ['', [Validators.required, Validators.pattern('^[0-9]*$')]],
+      Salary: ['', [Validators.required, Validators.pattern('^[0-9]*$')]],
+      Department: ['', Validators.required],
+      JoiningDate: ['', Validators.required]
+    });
+  }
+
+  async onSubmit() {
+    if (this.employeeForm.valid) {
+      this.submissionStatus = 'submitting';
+      
+      try {
+        const formData = this.employeeForm.value;
+        const employeeData = {
+          EmployeeName: formData.EmployeeName,
+          EmployeeID: formData.EmployeeID,
+          Salary: formData.Salary,
+          Department: formData.Department,
+          JoiningDate: new Date(formData.JoiningDate).toISOString()
+        };
+
+        await this.spService.submitEmployee(employeeData);
+        this.submissionStatus = 'success';
+        this.employeeForm.reset();
+        
+        // Reset status after 3 seconds
+        setTimeout(() => this.submissionStatus = 'idle', 3000);
+      } catch (error) {
+        this.submissionStatus = 'error';
+        console.error('Submission failed:', error);
+      }
+    }
+  }
+}
+```
+
+## Simplified Template
+
+**File: `src/app/components/employee-form/employee-form.component.html`**
+
+```html
+<div class="form-container">
+  <h2>Add New Employee</h2>
+  
+  <form [formGroup]="employeeForm" (ngSubmit)="onSubmit()">
+    <!-- Form fields remain the same as your original -->
+    <div class="form-group">
+      <label for="employeeName">Employee Name*</label>
+      <input type="text" id="employeeName" formControlName="EmployeeName" class="form-control">
+      <!-- Validation messages -->
+    </div>
+
+    <!-- Other form fields... -->
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary" [disabled]="!employeeForm.valid || submissionStatus === 'submitting'">
+        <span *ngIf="submissionStatus !== 'submitting'">Submit</span>
+        <span *ngIf="submissionStatus === 'submitting'">Submitting...</span>
+      </button>
+    </div>
+
+    <div *ngIf="submissionStatus === 'success'" class="alert alert-success">
+      Employee data successfully submitted to SharePoint!
+    </div>
+
+    <div *ngIf="submissionStatus === 'error'" class="alert alert-danger">
+      Error submitting employee data. Please try again.
+    </div>
+  </form>
+</div>
+```
+
+## Key Changes Made:
+
+1. **Simplified Service**:
+   - Removed all GET, UPDATE, DELETE methods
+   - Kept only the essential POST functionality
+   - Added better error handling
+
+2. **Streamlined Component**:
+   - Removed employee list display
+   - Added submission status tracking
+   - Improved user feedback
+
+3. **CORS Solution**:
+   - Remember to implement one of the CORS solutions mentioned earlier (proxy recommended)
+   - The service now uses your actual URL: `https://my-apps.dev.echonet/teams/INTERNTRAINING/kishore`
+
+4. **Better Error Handling**:
+   - Added try-catch blocks
+   - Added status indicators
+   - User feedback on success/error
+
+This implementation focuses solely on submitting data to SharePoint without any retrieval functionality, as per your requirements. The form will collect employee data and send it to your SharePoint list when submitted.
+
+
+
+
+
+
+
 <div class="app-container">
   <header>
     <h1>Employee Management System</h1>
