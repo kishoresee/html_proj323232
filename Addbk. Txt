@@ -1,3 +1,220 @@
+Here's a simplified version of your SharePoint service that focuses only on adding and updating employee data in SharePoint, without any delete or get functionality:
+
+**File: `src/app/services/sharepoint.service.ts`**
+
+```typescript
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class SharePointService {
+  private siteUrl = 'https://yourdomain.sharepoint.com/sites/yoursite';
+  private apiUrl = `${this.siteUrl}/_api/web/lists/getbytitle('Employee')/items`;
+  private digestUrl = `${this.siteUrl}/_api/contextinfo`;
+
+  constructor(private http: HttpClient) {}
+
+  private async getRequestDigest(): Promise<string> {
+    const response: any = await this.http.post(this.digestUrl, {}).toPromise();
+    return response.d.GetContextWebInformation.FormDigestValue;
+  }
+
+  private async getHeaders(): Promise<HttpHeaders> {
+    const digest = await this.getRequestDigest();
+    return new HttpHeaders({
+      'Accept': 'application/json;odata=verbose',
+      'Content-Type': 'application/json;odata=verbose',
+      'X-RequestDigest': digest
+    });
+  }
+
+  async saveEmployee(employee: any, isUpdate: boolean = false, id?: number): Promise<any> {
+    const headers = await this.getHeaders();
+    const body = {
+      '__metadata': { 'type': 'SP.Data.EmployeeListItem' },
+      'Title': employee.EmployeeName,
+      'EmployeeID': employee.EmployeeID,
+      'Salary': employee.Salary,
+      'Department': employee.Department,
+      'JoiningDate': employee.JoiningDate
+    };
+
+    if (isUpdate && id) {
+      const updateUrl = `${this.apiUrl}(${id})`;
+      return this.http.post(updateUrl, body, { 
+        headers: headers
+          .set('X-HTTP-Method', 'MERGE')
+          .set('IF-MATCH', '*') 
+      }).toPromise();
+    } else {
+      return this.http.post(this.apiUrl, body, { headers }).toPromise();
+    }
+  }
+}
+```
+
+And here's how you would use it in your component:
+
+**File: `src/app/components/employee-form/employee-form.component.ts`**
+
+```typescript
+import { Component } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { SharePointService } from '../../services/sharepoint.service';
+
+@Component({
+  selector: 'app-employee-form',
+  templateUrl: './employee-form.component.html',
+  styleUrls: ['./employee-form.component.css']
+})
+export class EmployeeFormComponent {
+  employeeForm: FormGroup;
+  isUpdating = false;
+  currentEmployeeId: number | null = null;
+  submissionStatus: 'idle' | 'loading' | 'success' | 'error' = 'idle';
+
+  constructor(
+    private fb: FormBuilder,
+    private spService: SharePointService
+  ) {
+    this.employeeForm = this.fb.group({
+      EmployeeName: ['', Validators.required],
+      EmployeeID: ['', [Validators.required, Validators.pattern('^[0-9]*$')]],
+      Salary: ['', [Validators.required, Validators.pattern('^[0-9]*$')]],
+      Department: ['', Validators.required],
+      JoiningDate: ['', Validators.required]
+    });
+  }
+
+  async onSubmit() {
+    if (this.employeeForm.valid) {
+      this.submissionStatus = 'loading';
+      try {
+        const formData = this.employeeForm.value;
+        const employeeData = {
+          EmployeeName: formData.EmployeeName,
+          EmployeeID: formData.EmployeeID,
+          Salary: formData.Salary,
+          Department: formData.Department,
+          JoiningDate: new Date(formData.JoiningDate).toISOString()
+        };
+
+        await this.spService.saveEmployee(
+          employeeData,
+          this.isUpdating,
+          this.currentEmployeeId || undefined
+        );
+
+        this.submissionStatus = 'success';
+        this.resetForm();
+        setTimeout(() => this.submissionStatus = 'idle', 3000);
+      } catch (error) {
+        console.error('Error saving employee:', error);
+        this.submissionStatus = 'error';
+      }
+    }
+  }
+
+  resetForm() {
+    this.employeeForm.reset();
+    this.isUpdating = false;
+    this.currentEmployeeId = null;
+  }
+}
+```
+
+**File: `src/app/components/employee-form/employee-form.component.html`**
+
+```html
+<div class="form-container">
+  <h2>Employee Form</h2>
+  
+  <form [formGroup]="employeeForm" (ngSubmit)="onSubmit()">
+    <!-- Form fields -->
+    <div class="form-group">
+      <label>Employee Name*</label>
+      <input type="text" formControlName="EmployeeName">
+      <div *ngIf="employeeForm.get('EmployeeName')?.invalid && employeeForm.get('EmployeeName')?.touched" 
+           class="error-message">
+        Name is required
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Employee ID*</label>
+      <input type="text" formControlName="EmployeeID">
+      <div *ngIf="employeeForm.get('EmployeeID')?.invalid && employeeForm.get('EmployeeID')?.touched" 
+           class="error-message">
+        Valid ID is required (numbers only)
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Salary*</label>
+      <input type="number" formControlName="Salary">
+      <div *ngIf="employeeForm.get('Salary')?.invalid && employeeForm.get('Salary')?.touched" 
+           class="error-message">
+        Valid salary is required
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Department*</label>
+      <select formControlName="Department">
+        <option value="">Select Department</option>
+        <option value="IT">IT</option>
+        <option value="HR">HR</option>
+        <option value="Finance">Finance</option>
+        <option value="Sales">Sales</option>
+        <option value="Admin">Admin</option>
+      </select>
+      <div *ngIf="employeeForm.get('Department')?.invalid && employeeForm.get('Department')?.touched" 
+           class="error-message">
+        Department is required
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Joining Date*</label>
+      <input type="date" formControlName="JoiningDate">
+      <div *ngIf="employeeForm.get('JoiningDate')?.invalid && employeeForm.get('JoiningDate')?.touched" 
+           class="error-message">
+        Date is required
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" [disabled]="!employeeForm.valid || submissionStatus === 'loading'">
+        {{ submissionStatus === 'loading' ? 'Saving...' : 'Save Employee' }}
+      </button>
+      <button type="button" (click)="resetForm()">Reset</button>
+    </div>
+
+    <div *ngIf="submissionStatus === 'success'" class="success-message">
+      Employee data saved successfully!
+    </div>
+    <div *ngIf="submissionStatus === 'error'" class="error-message">
+      Error saving employee data. Please try again.
+    </div>
+  </form>
+</div>
+```
+
+Key changes made:
+1. Removed all delete and get functionality
+2. Simplified the service to just have one `saveEmployee` method that handles both create and update
+3. Added proper form status feedback (loading, success, error states)
+4. Kept all validation and form handling
+5. Removed any display of existing data from SharePoint
+6. Simplified the template to just show the form and submission status
+
+This implementation focuses solely on sending data to SharePoint without retrieving or displaying existing data.
+
+
+
+
 # Simplified SharePoint Service for Data Submission Only
 
 Here's a streamlined version of your SharePoint service that focuses solely on posting data to SharePoint without any GET or DELETE functionality:
