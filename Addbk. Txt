@@ -1,3 +1,27 @@
+import { lastValueFrom } from 'rxjs';
+
+const body = {
+  '__metadata': { 'type': 'SP.Data.EmployeeListItem' },
+  'Title': employee.EmployeeName,
+  'EmployeeID': employee.EmployeeID,
+  'Salary': employee.Salary,
+  'Department': employee.Department,
+  'JoiningDate': employee.JoiningDate
+};
+
+if (isUpdate && id) {
+  const updateUrl = `${this.apiUrl}(${id})`;
+  return lastValueFrom(this.http.post(updateUrl, body, {
+    headers: headers
+      .set('X-HTTP-Method', 'MERGE')
+      .set('IF-MATCH', '*')
+  }));
+} else {
+  return lastValueFrom(this.http.post(this.apiUrl, body, { headers }));
+}
+
+
+
 const response: any = await firstValueFrom(this.http.post(this.digestUrl, {}, { headers }));
 console.log('Context Info Response:', response);
 
