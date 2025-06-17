@@ -1,3 +1,71 @@
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class SharePointService {
+  private siteUrl = 'https://my-apps.dev.echonet/teams/INTERNTARINING/kishore';
+  private apiUrl = `${this.siteUrl}/_api/web/lists/getbytitle('Employee')/items`;
+  private digestUrl = `${this.siteUrl}/_api/contextinfo`;
+
+  constructor(private http: HttpClient) {}
+
+  private async getRequestDigest(): Promise<string> {
+    const response: any = await firstValueFrom(
+      this.http.post(this.digestUrl, {}, {
+        headers: new HttpHeaders({
+          'Accept': 'application/json;odata=verbose'
+        })
+      })
+    );
+    return response.d.GetContextWebInformation.FormDigestValue;
+  }
+
+  private async getHeaders(): Promise<HttpHeaders> {
+    const digest = await this.getRequestDigest();
+    return new HttpHeaders({
+      'Accept': 'application/json;odata=verbose',
+      'Content-Type': 'application/json;odata=verbose',
+      'X-RequestDigest': digest
+    });
+  }
+
+  async saveEmployee(employee: any, isUpdate: boolean = false, id?: number): Promise<any> {
+    const headers = await this.getHeaders();
+
+    const body = {
+      __metadata: { type: 'SP.Data.EmployeeListItem' },
+      Title: employee.EmployeeName,
+      EmployeeID: employee.EmployeeID,
+      Salary: employee.Salary,
+      Department: employee.Department,
+      JoiningDate: employee.JoiningDate
+    };
+
+    if (isUpdate && id != null) {
+      const updateUrl = `${this.apiUrl}(${id})`;
+      return firstValueFrom(
+        this.http.post(updateUrl, body, {
+          headers: headers
+            .set('X-HTTP-Method', 'MERGE')
+            .set('IF-MATCH', '*')
+        })
+      );
+    } else {
+      return firstValueFrom(
+        this.http.post(this.apiUrl, body, { headers })
+      );
+    }
+  }
+}
+
+
+
+
+
+
 import { lastValueFrom } from 'rxjs';
 
 const body = {
