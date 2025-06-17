@@ -1,3 +1,60 @@
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { SharepointApiService } from '../sharepoint-api.service';
+
+@Component({
+  selector: 'app-employee-form',
+  standalone: true,
+  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  template: `
+    <form [formGroup]="employeeForm" (ngSubmit)="onSubmit()">
+      <label>Employee Name:</label>
+      <input formControlName="name"><br><br>
+
+      <label>Employee ID:</label>
+      <input formControlName="employeeID"><br><br>
+
+      <label>Department:</label>
+      <input formControlName="department"><br><br>
+
+      <label>Joining Date:</label>
+      <input type="date" formControlName="joiningDate"><br><br>
+
+      <label>Salary:</label>
+      <input formControlName="salary"><br><br>
+
+      <button type="submit">Submit</button>
+    </form>
+  `
+})
+export class EmployeeFormComponent {
+  employeeForm: FormGroup;
+
+  constructor(private fb: FormBuilder, private api: SharepointApiService) {
+    this.employeeForm = this.fb.group({
+      name: ['', Validators.required],
+      employeeID: ['', Validators.required],
+      department: ['', Validators.required],
+      joiningDate: ['', Validators.required],
+      salary: ['', Validators.required],
+    });
+  }
+
+  onSubmit() {
+    if (this.employeeForm.valid) {
+      this.api.addEmployee(this.employeeForm.value).subscribe({
+        next: res => console.log('Success:', res),
+        error: err => console.error('Error:', err)
+      });
+    }
+  }
+}
+
+
+
+
+
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, map, switchMap } from 'rxjs';
