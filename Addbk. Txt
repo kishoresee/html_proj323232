@@ -1,3 +1,60 @@
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable, map, switchMap } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class SharepointApiService {
+
+  private listName = 'EmployeeList';
+  private siteUrl = '/sites/YourSiteName';  // Replace with your SharePoint subsite
+
+  constructor(private http: HttpClient) { }
+
+  private getRequestDigest(): Observable<string> {
+    const url = `${this.siteUrl}/_api/contextinfo`;
+    const headers = new HttpHeaders({
+      'Accept': 'application/json;odata=verbose'
+    });
+
+    return this.http.post<any>(url, null, { headers }).pipe(
+      map(res => res.d.GetContextWebInformation.FormDigestValue)
+    );
+  }
+
+  addEmployee(employee: any): Observable<any> {
+    return this.getRequestDigest().pipe(
+      switchMap(formDigest => {
+
+        const url = `${this.siteUrl}/_api/web/lists/getbytitle('${this.listName}')/items`;
+
+        const body = {
+          '__metadata': { 'type': 'SP.Data.EmployeeListListItem' },
+          'Title': employee.name,
+          'EmployeeID': employee.employeeID,
+          'Department': employee.department,
+          'JoiningDate': employee.joiningDate,
+          'Salary': employee.salary
+        };
+
+        const headers = new HttpHeaders({
+          'Accept': 'application/json;odata=verbose',
+          'Content-Type': 'application/json;odata=verbose',
+          'X-RequestDigest': formDigest
+        });
+
+        return this.http.post(url, body, { headers });
+      })
+    );
+  }
+}
+
+
+
+
+
+
 Here's a simplified version of your SharePoint service that focuses only on adding and updating employee data in SharePoint, without any delete or get functionality:
 
 **File: `src/app/services/sharepoint.service.ts`**
