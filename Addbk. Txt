@@ -1,3 +1,14 @@
+<style>
+    /* Force image inside Image Viewer webpart to align left */
+    .ms-webpart-zone table img {
+        display: inline-block !important;
+        margin: 0 !important;
+        text-align: left !important;
+        float: left !important;
+    }
+</style>
+
+
 .ms-webpart-zone table img {
     display: block;
     margin: 0; /* removes centering */
