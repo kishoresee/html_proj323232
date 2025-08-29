@@ -1,3 +1,261 @@
+Got it 👍 thanks for clarifying.
+So you want this flow:
+
+* **SurveyQuestions list** will have:
+
+  * **Title** (Question text)
+  * **ImageURL** (the picture shown to the user)
+  * **CorrectAnswer** (new column → stores the right one-word answer)
+
+* **SurveyAnswers list** will still capture all user submissions (QuestionID, User, Answer).
+
+* When a user submits:
+
+  1. Check if they already answered → block if yes.
+  2. If not → compare typed answer vs. `CorrectAnswer` from `SurveyQuestions`.
+  3. Show ✅ *Correct* or ❌ *Wrong*.
+  4. Store their submission in **SurveyAnswers** (even if wrong, so you keep track).
+
+---
+
+## 🔹 Final Files
+
+### **survey.html**
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Custom Survey</title>
+  <link rel="stylesheet" href="survey.css">
+  <script src="/_layouts/15/SP.Runtime.js"></script>
+  <script src="/_layouts/15/SP.js"></script>
+  <script src="survey.js"></script>
+</head>
+<body>
+  <div class="survey-container">
+    <h2>Survey</h2>
+    <div id="question-container">
+      <img id="question-image" src="" alt="Survey Question" />
+      <p id="question-text"></p>
+    </div>
+
+    <div class="answer-container">
+      <input type="text" id="answer-box" placeholder="Type your answer..." />
+      <button id="submit-btn">Submit</button>
+    </div>
+
+    <div id="status"></div>
+  </div>
+</body>
+</html>
+```
+
+---
+
+### **survey.css** (simple dark green theme)
+
+```css
+body {
+  font-family: Arial, sans-serif;
+  background: #003300; /* dark green */
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.survey-container {
+  padding: 20px;
+  border-radius: 8px;
+  background: #004d00; /* lighter green */
+  text-align: center;
+}
+
+#question-image {
+  max-width: 100%;
+  margin-bottom: 10px;
+}
+
+#answer-box {
+  width: 80%;
+  padding: 6px;
+  margin-top: 10px;
+}
+
+#submit-btn {
+  margin-top: 10px;
+  padding: 8px 16px;
+  background: #006600;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+#submit-btn:hover {
+  background: #009900;
+}
+```
+
+---
+
+### **survey.js** (validation + correct answer check)
+
+```javascript
+var context, web, questionID, correctAnswer;
+
+// Load SharePoint data after page loads
+document.addEventListener("DOMContentLoaded", function () {
+    loadQuestion();
+
+    document.getElementById("submit-btn").addEventListener("click", function () {
+        checkAndSaveAnswer();
+    });
+});
+
+// Load the question (from SurveyQuestions list)
+function loadQuestion() {
+    context = new SP.ClientContext.get_current();
+    web = context.get_web();
+    var list = web.get_lists().getByTitle("SurveyQuestions");
+
+    var query = new SP.CamlQuery();
+    query.set_viewXml("<View><RowLimit>1</RowLimit></View>"); // fetch latest question
+    var items = list.getItems(query);
+    context.load(items);
+
+    context.executeQueryAsync(function () {
+        var enumerator = items.getEnumerator();
+        if (enumerator.moveNext()) {
+            var item = enumerator.get_current();
+            var imageUrl = item.get_item("ImageURL").get_url();
+            var questionTitle = item.get_item("Title");
+            correctAnswer = item.get_item("CorrectAnswer"); // <-- new column
+
+            document.getElementById("question-image").src = imageUrl;
+            document.getElementById("question-text").innerText = questionTitle;
+
+            questionID = item.get_id();
+            document.getElementById("submit-btn").setAttribute("data-qid", questionID);
+        }
+    }, function (sender, args) {
+        alert("Error loading question: " + args.get_message());
+    });
+}
+
+// Check if user already answered, then validate and save
+function checkAndSaveAnswer() {
+    var answer = document.getElementById("answer-box").value.trim();
+    if (answer === "") {
+        alert("Please enter your answer!");
+        return;
+    }
+
+    var user = _spPageContextInfo.userLoginName;
+    var answerList = web.get_lists().getByTitle("SurveyAnswers");
+
+    // Query to check if user already submitted for this question
+    var query = new SP.CamlQuery();
+    query.set_viewXml(
+        "<View><Query>" +
+        "<Where><And>" +
+            "<Eq><FieldRef Name='QuestionID'/><Value Type='Text'>" + questionID + "</Value></Eq>" +
+            "<Eq><FieldRef Name='SubmittedBy'/><Value Type='Text'>" + user + "</Value></Eq>" +
+        "</And></Where>" +
+        "</Query></View>"
+    );
+
+    var items = answerList.getItems(query);
+    context.load(items);
+
+    context.executeQueryAsync(function () {
+        if (items.get_count() > 0) {
+            document.getElementById("status").innerText = "❌ You have already answered this question.";
+        } else {
+            validateAndSaveAnswer(answer, user);
+        }
+    }, function (sender, args) {
+        alert("Error checking answer: " + args.get_message());
+    });
+}
+
+// Validate answer with correct answer, then save
+function validateAndSaveAnswer(answer, user) {
+    var resultMsg;
+    if (answer.toLowerCase() === correctAnswer.toLowerCase()) {
+        resultMsg = "✅ Correct Answer!";
+    } else {
+        resultMsg = "❌ Wrong Answer!";
+    }
+
+    var answerList = web.get_lists().getByTitle("SurveyAnswers");
+    var itemCreateInfo = new SP.ListItemCreationInformation();
+    var newItem = answerList.addItem(itemCreateInfo);
+
+    newItem.set_item("QuestionID", questionID);
+    newItem.set_item("Answer", answer);
+    newItem.set_item("SubmittedBy", user);
+
+    newItem.update();
+    context.load(newItem);
+
+    context.executeQueryAsync(function () {
+        document.getElementById("status").innerText = resultMsg;
+        document.getElementById("answer-box").value = "";
+    }, function (sender, args) {
+        alert("Error saving answer: " + args.get_message());
+    });
+}
+```
+
+---
+
+## 🔹 What you need to do in SharePoint
+
+### **SurveyQuestions list**
+
+* **Title** → Single line of text (your question caption).
+* **ImageURL** → Hyperlink or Picture (for question image).
+* **CorrectAnswer** → Single line of text (store the correct one-word answer).
+
+### **SurveyAnswers list**
+
+* **QuestionID** → Single line of text (or Number).
+* **Answer** → Single line of text.
+* **SubmittedBy** → Single line of text (stores `_spPageContextInfo.userLoginName`).
+
+---
+
+✅ Now the flow is:
+
+1. Question is fetched from **SurveyQuestions** (with image + correct answer).
+2. User submits → script checks if already answered.
+3. If not → validates answer with **CorrectAnswer**.
+4. Shows ✅ or ❌ and logs their submission into **SurveyAnswers**.
+
+---
+
+Do you also want me to modify it so **multiple questions can exist in SurveyQuestions** (and user can cycle through them one by one), or you want it fixed to always show just the **latest question only**?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 https://myonboarding-apac-bnpparibas.requests.eu.people-doc.com/employee/login/?next=%2Femployee%2Fleap%2Ftasks%2F12765866&normal_access=true
 
 
