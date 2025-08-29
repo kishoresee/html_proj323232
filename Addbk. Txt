@@ -1,3 +1,13 @@
+<style>
+  input[value="Finish"]:nth-of-type(2),
+  input[value="Cancel"]:nth-of-type(2) {
+      display: none !important;
+  }
+</style>
+
+
+
+
 Iam Working on sharepoint 2016 in my office lap,my requirement is to create a survey where i have keep a picture as the quest in survey to ask and user should answer it in one word by typing no mcqs,SO FAR I HAVE ADDED A SURVEY APP IN MY SITE ,WITHIN SURVEY PAGE I HAVE EDITED THEPAGE AND ADDED A BUTTON WHICH WILL REDIRECT ME TO ACTUAL SURVEY THING I SAID BEFORE , NOW I NEED THE SURVEY PAGE WITH HTML ,CSS,JS AS REQUIRED AND MY IDEA IS TO KEEP THEM IN SITE ASSETS,AND ALSO REMEBWRTO HANDLE THE PICTURE, QUESTION FROM ANOTHER SEPARATE LIST AND THEN PROJECT THEM HERE USING LINK no actually i want like the answer should already there in list so once the user types the answer in survey it should check and validate and at same i want to keep the surveyanswers list as same to store responses, so what you do add another column in surveyQuestion called "Answers" to check from and now give all the modifieed html,csss,js
 
 
