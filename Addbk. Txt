@@ -1,24 +1,23 @@
 <script type="text/javascript">
 document.addEventListener("DOMContentLoaded", function() {
-    // Grab all buttons named "Finish"
+    // Grab all "Finish" buttons
     var finishBtns = document.querySelectorAll("input[value='Finish']");
     if (finishBtns.length > 1) {
-        // Keep the first, remove the rest
-        for (var i = 1; i < finishBtns.length; i++) {
+        // Keep the last, hide the rest
+        for (var i = 0; i < finishBtns.length - 1; i++) {
             finishBtns[i].style.display = "none";
         }
     }
 
-    // Grab all buttons named "Cancel"
+    // Grab all "Cancel" buttons
     var cancelBtns = document.querySelectorAll("input[value='Cancel']");
     if (cancelBtns.length > 1) {
-        for (var j = 1; j < cancelBtns.length; j++) {
+        for (var j = 0; j < cancelBtns.length - 1; j++) {
             cancelBtns[j].style.display = "none";
         }
     }
 });
 </script>
-
 
 
 
