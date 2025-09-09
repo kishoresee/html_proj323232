@@ -51,6 +51,224 @@
       margin-top: 20px;
     }
 
+    /* Button Styling - same as before */
+    .btn-green-custom {
+      background-color: rgba(0, 145, 90, 1) !important;
+      color: #fff !important;
+      border: 2px solid #008f5a !important;
+      border-radius: 0 !important;
+      padding: 10px 20px !important;
+      font-size: 16px;
+      display: inline-block;
+      text-decoration: none !important;
+      cursor: pointer;
+      transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+
+    .btn-green-custom:hover {
+      background-color: #006d45 !important;
+      border-color: #004d32 !important;
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .button-container {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="gameContainer"></div>
+
+  <script type="text/javascript">
+    const LIST_TITLE = "GameDetails";
+    const NAME_COLUMN_INTERNAL = "GameName";
+    const DESCRIPTION_COLUMN = "GameDescription";
+    const RULES_COLUMN = "GameRules"; // <-- NEW COLUMN for rules
+    const LINK_COLUMN = "GameUrl";
+
+    // Utility to get query params
+    function getQueryParam(name) {
+      const params = new URLSearchParams(window.location.search);
+      return params.get(name) || null;
+    }
+
+    // Sanitize HTML
+    function escHtml(str) {
+      return str ? String(str).replace(/[&<>'"]/g, (tag) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        "'": '&#39;',
+        '"': '&quot;'
+      }[tag])) : '';
+    }
+
+    // Safely extract URL from a field that might be a string or an object { Url: "...", Description: "..." }
+    function extractUrl(fieldValue) {
+      if (!fieldValue) return '';
+      if (typeof fieldValue === 'string') {
+        return fieldValue.trim();
+      }
+      if (typeof fieldValue === 'object') {
+        // common properties used by SP url fields
+        if (typeof fieldValue.Url === 'string' && fieldValue.Url.trim()) return fieldValue.Url.trim();
+        if (typeof fieldValue.url === 'string' && fieldValue.url.trim()) return fieldValue.url.trim();
+        // sometimes returned as an array or nested object - try a basic fallback
+        if (Array.isArray(fieldValue) && fieldValue.length > 0 && typeof fieldValue[0].Url === 'string') {
+          return fieldValue[0].Url.trim();
+        }
+      }
+      return '';
+    }
+
+    // Main loader
+    async function loadGameDetails() {
+      const gameName = getQueryParam('GameName');
+      const container = document.getElementById('gameContainer');
+
+      if (!gameName) {
+        container.innerHTML = "<p style='color:#800000;'>No GameName supplied in the URL.</p>";
+        return;
+      }
+
+      try {
+        const siteUrl = (window._spPageContextInfo && window._spPageContextInfo.webAbsoluteUrl) ? window._spPageContextInfo.webAbsoluteUrl : '';
+        if (!siteUrl) {
+          container.innerHTML = "<p style='color:#800000;'>Cannot determine the site URL.</p>";
+          return;
+        }
+
+        // Note: keeping request structure same as before; only handling link extraction safely
+        const filterVal = gameName.replace(/'/g, "''"); // escape single quotes for OData filter
+        const requestUrl = siteUrl + "/_api/web/lists/getbytitle('" + LIST_TITLE + "')/items?$select="
+          + NAME_COLUMN_INTERNAL + "," + DESCRIPTION_COLUMN + "," + RULES_COLUMN + "," + LINK_COLUMN
+          + "&$filter=" + NAME_COLUMN_INTERNAL + " eq '" + encodeURIComponent(filterVal) + "'";
+
+        const response = await fetch(requestUrl, {
+          method: 'GET',
+          headers: { 'Accept': 'application/json;odata=verbose' }
+        });
+
+        if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
+
+        const data = await response.json();
+        const results = (data && data.d && data.d.results) ? data.d.results : [];
+        if (!results.length) {
+          container.innerHTML = `<p style='color:#800000;'>No game found with name: <strong>${escHtml(gameName)}</strong></p>`;
+          return;
+        }
+
+        renderGame(results[0]);
+      } catch (err) {
+        console.error(err);
+        container.innerHTML = `<p style='color:#800000;'>Error loading game details: ${escHtml(err.message || err)}</p>`;
+      }
+    }
+
+    // Render Game details
+    function renderGame(item) {
+      const container = document.getElementById('gameContainer');
+      const title = escHtml(item[NAME_COLUMN_INTERNAL] || '');
+      const description = escHtml(item[DESCRIPTION_COLUMN] || '');
+      const rulesRaw = item[RULES_COLUMN] || '';
+      // rules may be multi-line; escape then replace newlines with <br>
+      const rules = escHtml(rulesRaw).replace(/\r?\n/g, '<br>');
+
+      // SAFELY extract the link - prevents .trim is not a function errors
+      const rawGameUrl = extractUrl(item[LINK_COLUMN]);
+      const gameUrl = rawGameUrl ? escHtml(rawGameUrl) : '#';
+
+      // Cancel URL - back to list page
+      const cancelUrl = "/teams/ConductWeek/SitePages/HomePage.aspx";
+
+      container.innerHTML = `
+        <div class="event-card">
+          <h3>Event Details</h3>
+          <p><strong>Event Name:</strong> ${title}</p>
+          <p><strong>Event Description:</strong> ${description}</p>
+          <p><strong>Event Rules:</strong><br>${rules || 'No rules provided.'}</p>
+          
+          <div class="button-container">
+            <a href="${gameUrl}" target="_blank" rel="noopener" class="btn-green-custom">Click to Participate</a>
+            <a href="${cancelUrl}" class="btn-green-custom">Cancel</a>
+          </div>
+        </div>
+      `;
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', loadGameDetails);
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Event Details</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body {
+      background: #f8f9fa;
+      font-family: Arial, Helvetica, sans-serif;
+      padding: 20px;
+    }
+
+    /* Card Styling */
+    .event-card {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      color: #000; /* Black text */
+    }
+
+    .event-card h3 {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      text-align: center;
+      color: #000;
+    }
+
+    .event-card p {
+      font-size: 16px;
+      line-height: 1.5;
+      margin-bottom: 15px;
+      color: #000;
+    }
+
+    .event-card strong {
+      color: #000;
+    }
+
+    /* Buttons container */
+    .button-container {
+      display: flex;
+      justify-content: flex-end;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
     /* Button Styling - Same as before */
     .btn-green-custom {
       background-color: rgba(0, 145, 90, 1) !important;
