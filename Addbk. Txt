@@ -21,6 +21,198 @@
       max-width: 600px;
       margin: 0 auto;
       padding: 20px;
+      color: #000;
+    }
+
+    .event-card h3 {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      text-align: center;
+      color: #000;
+    }
+
+    .event-card p, .event-card ol, .event-card ul {
+      font-size: 16px;
+      line-height: 1.5;
+      color: #000;
+    }
+
+    .event-card strong {
+      color: #000;
+    }
+
+    /* Buttons container */
+    .button-container {
+      display: flex;
+      justify-content: flex-end;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    /* Button Styling */
+    .btn-green-custom {
+      background-color: rgba(0, 145, 90, 1) !important;
+      color: #fff !important;
+      border: 2px solid #008f5a !important;
+      border-radius: 0 !important;
+      padding: 10px 20px !important;
+      font-size: 16px;
+      display: inline-block;
+      text-decoration: none !important;
+      cursor: pointer;
+      transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+
+    .btn-green-custom:hover {
+      background-color: #006d45 !important;
+      border-color: #004d32 !important;
+    }
+  </style>
+</head>
+<body>
+  <div id="gameContainer"></div>
+
+  <script type="text/javascript">
+    const LIST_TITLE = "GameDetails";
+    const NAME_COLUMN_INTERNAL = "GameName";
+    const DESCRIPTION_COLUMN = "GameDescription";
+    const RULES_COLUMN = "GameRules";
+    const LINK_COLUMN = "GameUrl";
+
+    // Utility to get query params
+    function getQueryParam(name) {
+      const params = new URLSearchParams(window.location.search);
+      return params.get(name) || null;
+    }
+
+    // Safely extract URL whether it's a string or object
+    function extractUrl(fieldValue) {
+      if (!fieldValue) return '';
+      if (typeof fieldValue === 'string') return fieldValue.trim();
+      if (typeof fieldValue === 'object') {
+        if (fieldValue.Url) return fieldValue.Url.trim();
+        if (fieldValue.url) return fieldValue.url.trim();
+      }
+      return '';
+    }
+
+    // Clean SharePoint rich text output by removing wrapper divs
+    function cleanRichText(html) {
+      if (!html) return '';
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = html;
+
+      // Remove ExternalClass wrappers
+      const externals = tempDiv.querySelectorAll('div.ExternalClass');
+      externals.forEach(div => {
+        div.outerHTML = div.innerHTML; // unwrap content
+      });
+
+      return tempDiv.innerHTML.trim();
+    }
+
+    // Main loader
+    async function loadGameDetails() {
+      const gameName = getQueryParam('GameName');
+      const container = document.getElementById('gameContainer');
+
+      if (!gameName) {
+        container.innerHTML = "<p style='color:#800000;'>No GameName supplied in the URL.</p>";
+        return;
+      }
+
+      try {
+        const siteUrl = _spPageContextInfo.webAbsoluteUrl;
+        const filterVal = gameName.replace(/'/g, "''"); // escape quotes for OData
+        const requestUrl = `${siteUrl}/_api/web/lists/getbytitle('${LIST_TITLE}')/items?$select=${NAME_COLUMN_INTERNAL},${DESCRIPTION_COLUMN},${RULES_COLUMN},${LINK_COLUMN}&$filter=${NAME_COLUMN_INTERNAL} eq '${encodeURIComponent(filterVal)}'`;
+
+        const response = await fetch(requestUrl, {
+          method: 'GET',
+          headers: { 'Accept': 'application/json;odata=verbose' }
+        });
+
+        if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
+
+        const data = await response.json();
+        const results = data?.d?.results || [];
+
+        if (!results.length) {
+          container.innerHTML = `<p style='color:#800000;'>No game found with name: <strong>${gameName}</strong></p>`;
+          return;
+        }
+
+        renderGame(results[0]);
+      } catch (err) {
+        console.error(err);
+        container.innerHTML = `<p style='color:#800000;'>Error loading game details: ${err.message}</p>`;
+      }
+    }
+
+    // Render game
+    function renderGame(item) {
+      const container = document.getElementById('gameContainer');
+
+      const title = item[NAME_COLUMN_INTERNAL] || '';
+      const descriptionHtml = cleanRichText(item[DESCRIPTION_COLUMN] || '');
+      const rulesHtml = cleanRichText(item[RULES_COLUMN] || '');
+      const gameUrl = extractUrl(item[LINK_COLUMN]) || '#';
+
+      const cancelUrl = "/teams/ConductWeek/SitePages/HomePage.aspx";
+
+      container.innerHTML = `
+        <div class="event-card">
+          <h3>Event Details</h3>
+          <p><strong>Event Name:</strong> ${title}</p>
+          <div><strong>Event Description:</strong><br>${descriptionHtml}</div>
+          <div style="margin-top:15px;"><strong>Event Rules:</strong><br>${rulesHtml}</div>
+          
+          <div class="button-container">
+            <a href="${gameUrl}" target="_blank" rel="noopener" class="btn-green-custom">Click to Participate</a>
+            <a href="${cancelUrl}" class="btn-green-custom">Cancel</a>
+          </div>
+        </div>
+      `;
+    }
+
+    document.addEventListener('DOMContentLoaded', loadGameDetails);
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Event Details</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body {
+      background: #f8f9fa;
+      font-family: Arial, Helvetica, sans-serif;
+      padding: 20px;
+    }
+
+    /* Card Styling */
+    .event-card {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
       color: #000; /* Black text */
     }
 
