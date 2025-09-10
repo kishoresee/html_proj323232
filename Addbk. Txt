@@ -1,3 +1,18 @@
+<div>
+  <!-- First Header Image -->
+  <img src="/teams/ConductWeek/QuizImages/ListBanner.png" style="width:97%; max-height: 35vh;">
+</div>
+
+<div style="text-align: center; margin-top: 20px;">
+  <!-- Second Puzzle Image (Centered) -->
+  <img src="https://sp-apps-cib-uat.staging.echonet/teams/Conductsweek/QuizImages/Crossword%20Puzzle.png" 
+       style="width:50%; max-width: 600px; height: auto;">
+</div>
+
+
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
