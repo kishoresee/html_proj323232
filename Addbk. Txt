@@ -1,4 +1,15 @@
 <style>
+/* Target survey question text */
+.ms-formlabel, .ms-standardheader, .ms-formtable td span {
+    font-size: 18px !important; /* Adjust the size as needed */
+    font-weight: 500;           /* Optional: make it slightly bolder */
+}
+</style>
+
+
+
+
+<style>
 /* Target the container holding the Finish and Cancel buttons */
 input[value="Finish"], input[value="Cancel"] {
     position: relative;
