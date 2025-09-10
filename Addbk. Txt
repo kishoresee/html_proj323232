@@ -1,3 +1,22 @@
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Select the whole page content
+    const pageContent = document.body.innerHTML;
+
+    // Replace words with bold versions (case-insensitive)
+    const updatedContent = pageContent
+        .replace(/\bAcross\b/g, "<b>Across</b>")
+        .replace(/\bDown\b/g, "<b>Down</b>");
+
+    // Update the page with the modified text
+    document.body.innerHTML = updatedContent;
+});
+</script>
+
+
+
+
+
 <div>
   <!-- First Header Image -->
   <img src="/teams/ConductWeek/QuizImages/ListBanner.png" style="width:97%; max-height: 35vh;">
