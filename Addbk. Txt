@@ -1,3 +1,22 @@
+<style>
+/* Target the container holding the Finish and Cancel buttons */
+input[value="Finish"], input[value="Cancel"] {
+    position: relative;
+    right: 20px; /* Move 20px left from the edge */
+    margin-left: 10px; /* Space between Finish and Cancel */
+}
+
+/* Optional: Keep buttons visible on smaller screens */
+@media screen and (max-width: 768px) {
+    input[value="Finish"], input[value="Cancel"] {
+        position: relative;
+        right: 10px; /* Adjust more for mobile */
+    }
+}
+</style>
+
+
+
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     // Select the whole page content
