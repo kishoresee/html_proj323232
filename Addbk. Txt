@@ -2,6 +2,53 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <title>Responsive Header Image</title>
+  <style>
+    .header-image {
+      width: 100%;
+      height: 250px; /* Adjust as needed */
+      background-image: url('YOUR_IMAGE_URL_HERE'); /* Replace this with your actual image URL */
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+
+    @media (max-width: 768px) {
+      .header-image {
+        height: 180px; /* Adjust for smaller screens */
+      }
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header-image"></div>
+
+  <!-- Page Content -->
+  <div style="padding: 20px;">
+    <h2>Welcome</h2>
+    <p>This is the content below your header image.</p>
+  </div>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
   <title>Event Details</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css" rel="stylesheet">
 
