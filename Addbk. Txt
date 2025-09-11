@@ -1,4 +1,16 @@
 <style>
+/* Target ONLY the Image Viewer Web Part */
+.ms-webpartzone-cell[data-sp-feature-instance-id] .ms-webpart-chrome img {
+    max-width: 44% !important;  /* Set width to 44% */
+    height: auto !important;    /* Maintain aspect ratio */
+    display: block;
+    margin: 0 auto;              /* Center the image */
+}
+</style>
+
+
+
+<style>
 /* Target image inside Image Viewer */
 .ms-webpart-zone img {
     max-width: 80% !important; /* Resize to 80% of the container */
