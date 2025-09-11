@@ -1,4 +1,17 @@
 <style>
+/* Target image inside Image Viewer */
+.ms-webpart-zone img {
+    max-width: 80% !important; /* Resize to 80% of the container */
+    height: auto !important;   /* Keep proper aspect ratio */
+    display: block;
+    margin: 0 auto;            /* Center the image */
+}
+</style>
+
+
+
+
+<style>
 /* Target survey question text */
 .ms-formlabel, .ms-standardheader, .ms-formtable td span {
     font-size: 18px !important; /* Adjust the size as needed */
