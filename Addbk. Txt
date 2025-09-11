@@ -1,4 +1,17 @@
 <style>
+/* Target only this specific Image Viewer Web Part */
+#MSOZoneCell_WebPartWPQ2 img {
+    max-width: 44% !important;  /* Set image width */
+    height: auto !important;    /* Maintain aspect ratio */
+    display: block;
+    margin: 0 auto;             /* Center the image */
+}
+</style>
+
+
+
+
+<style>
 /* Target ONLY the Image Viewer Web Part */
 .ms-webpartzone-cell[data-sp-feature-instance-id] .ms-webpart-chrome img {
     max-width: 44% !important;  /* Set width to 44% */
