@@ -1,3 +1,7 @@
+.append("<span style='display: block' class='familyDayDate'>" + formatDateWithSuffix(familyDayDateSelected) + "</span>");
+
+
+
 function formatDateWithSuffix(dateString) {
     const date = new Date(dateString);
     const day = date.getDate();
