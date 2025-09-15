@@ -1,3 +1,61 @@
+function disableSessions() {
+
+    var currentLocation = $("select[id^='FamilyDayLocation']").val();
+
+    $(".familyDayDate").remove();
+
+    // ✅ Format the date into 15th Nov 2025
+    function formatDateWithSuffix(dateString) {
+        const date = new Date(dateString);
+        const day = date.getDate();
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const month = monthNames[date.getMonth()];
+        const year = date.getFullYear();
+
+        const suffix = (d) => {
+            if (d > 3 && d < 21) return "th";
+            switch (d % 10) {
+                case 1: return "st";
+                case 2: return "nd";
+                case 3: return "rd";
+                default: return "th";
+            }
+        };
+
+        return `${day}${suffix(day)} ${month} ${year}`;
+    }
+
+    // ✅ Display the formatted date next to the session dropdown
+    $("select[id^='FamilyDaySession']").parent()
+        .append("<span style='display: block' class='familyDayDate'>" +
+            formatDateWithSuffix(locationDate[currentLocation]) + "</span>");
+
+    // Also update the hidden FamilyDayDate input field
+    $("input[id^='FamilyDayDate_']").val(formatDateWithSuffix(locationDate[currentLocation]));
+
+    // Enable only the sessions that belong to the selected location
+    $.each($("select[id^='FamilyDaySession']")[0].options, function (index, option) {
+        if (locationSession[currentLocation].includes(option.text)) {
+            option.disabled = false;
+        } else {
+            option.disabled = true;
+        }
+    });
+
+    // If there is only ONE possible session, pre-select it & lock the dropdown
+    if (locationSession[currentLocation].length == 1) {
+        $("select[id^='FamilyDaySession']").val(locationSession[currentLocation][0]);
+        $("select[id^='FamilyDaySession']").attr("disabled", true);
+    } else {
+        $("select[id^='FamilyDaySession']").val('');
+        $("select[id^='FamilyDaySession']").attr("disabled", false);
+    }
+}
+
+
+
+
+
 .append("<span style='display: block' class='familyDayDate'>" + formatDateWithSuffix(familyDayDateSelected) + "</span>");
 
 
