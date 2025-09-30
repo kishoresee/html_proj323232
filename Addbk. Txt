@@ -1,3 +1,7 @@
+=IFERROR(VLOOKUP(A2, Sheet1!$A$2:$C$100, 2, FALSE), U2)
+
+
+
 function disableSessions() {
 
     var currentLocation = $("select[id^='FamilyDayLocation']").val();
