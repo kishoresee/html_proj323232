@@ -1,3 +1,9 @@
+npm cache clean --force
+rm -rf node_modules package-lock.json
+npm install --legacy-peer-deps
+
+
+
 =IFERROR(VLOOKUP(A2, Sheet1!$A$2:$C$100, 2, FALSE), U2)
 
 
