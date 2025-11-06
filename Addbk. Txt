@@ -1,3 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="config">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="record" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="ContainerID" type="xs:string" />
+              <xs:element name="Key" type="xs:string" />
+              <xs:element name="Value" type="xs:string" />
+              <xs:element name="DataClassification" type="xs:string" />
+              <xs:element name="StorageRequirement" type="xs:string" />
+              <xs:element name="Operation" type="xs:string" />
+              <xs:element name="IsMetadata" type="xs:string" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+</xs:schema>
+
+
+
 npm install @angular/material@12.2.0 @angular/flex-layout@12.0.0-beta.35 --legacy-peer-deps
 
 
