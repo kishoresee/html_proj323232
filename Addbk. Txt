@@ -1,3 +1,37 @@
+using Microsoft.SharePoint.Client;
+using System;
+using System.Net;
+
+namespace SPCreateList
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            string siteUrl = "http://yoursharepointsite";
+
+            ClientContext context = new ClientContext(siteUrl);
+
+            // If your SP does not use default credentials:
+            context.Credentials = new NetworkCredential("username", "password", "domain");
+
+            // Create list info
+            ListCreationInformation listInfo = new ListCreationInformation();
+            listInfo.Title = "MyNewList";                     // List Name
+            listInfo.TemplateType = (int)ListTemplateType.GenericList; // Custom List
+            listInfo.Description = "List created via CSOM";
+
+            // Add to site
+            List newList = context.Web.Lists.Add(listInfo);
+
+            // Commit changes to SharePoint
+            context.ExecuteQuery();
+
+            Console.WriteLine("✔ List created successfully!");
+        }
+    }
+}
+
 https://www.linkedin.com/in/kishore-s-14555a228?utm_source=share_via&utm_content=profile&utm_medium=member_ios
 
 
