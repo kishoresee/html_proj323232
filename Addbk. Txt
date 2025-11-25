@@ -1,3 +1,184 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using Microsoft.SharePoint.Client;
+
+namespace SetUniquePermissionsPerItem
+{
+    class Program
+    {
+        const string SiteUrl = "https://my-apps.dev.echonet/teams/INTERNTRAINING/kishore/";
+        private const string ListName = "Unique permissions";
+
+        static void Main(string[] args)
+        {
+            try
+            {
+                using (ClientContext ctx = new ClientContext(SiteUrl))
+                {
+                    Web web = ctx.Web;
+                    List list = web.Lists.GetByTitle(ListName);
+
+                    // Load site users once
+                    UserCollection siteUsers = web.SiteUsers;
+                    ctx.Load(siteUsers, users => users.Include(u => u.Title, u => u.LoginName));
+                    ctx.ExecuteQuery();
+
+                    // Load list items
+                    CamlQuery query = CamlQuery.CreateAllItemsQuery();
+                    ListItemCollection items = list.GetItems(query);
+                    ctx.Load(items,
+                        ic => ic.Include(
+                            i => i.Id,
+                            i => i["Emp_name"],
+                            i => i["Manager1"],
+                            i => i["Manager2"],
+                            i => i["HRBP"]
+                        ));
+                    ctx.ExecuteQuery();
+
+                    // Make a safe snapshot
+                    var allItems = items.ToList();
+
+                    foreach (var item in allItems)
+                    {
+                        int itemId = item.Id;
+                        Console.WriteLine($"\n===== Processing List Item {itemId} =====");
+
+                        var usersForItem = new List<(string DisplayName, string RoleName)>();
+
+                        // Helper – Get person or string field
+                        string GetUserDisplayName(string internalName)
+                        {
+                            var raw = item[internalName];
+                            if (raw == null) return string.Empty;
+
+                            if (raw is FieldUserValue fuv)
+                                return fuv.LookupValue?.Trim() ?? string.Empty;
+
+                            if (raw is FieldUserValue[] arr && arr.Length > 0)
+                                return arr[0].LookupValue?.Trim() ?? string.Empty;
+
+                            return raw.ToString().Trim();
+                        }
+
+                        // Employee – Read
+                        string emp = GetUserDisplayName("Emp_name");
+                        if (!string.IsNullOrEmpty(emp))
+                            usersForItem.Add((emp, "Read"));
+
+                        // Manager/HR – Edit
+                        string m1 = GetUserDisplayName("Manager1");
+                        string m2 = GetUserDisplayName("Manager2");
+                        string hr = GetUserDisplayName("HRBP");
+
+                        if (!string.IsNullOrEmpty(m1)) usersForItem.Add((m1, "Edit"));
+                        if (!string.IsNullOrEmpty(m2)) usersForItem.Add((m2, "Edit"));
+                        if (!string.IsNullOrEmpty(hr)) usersForItem.Add((hr, "Edit"));
+
+                        // Ensure unique permissions
+                        ctx.Load(item, i => i.HasUniqueRoleAssignments);
+                        ctx.ExecuteQuery();
+
+                        if (!item.HasUniqueRoleAssignments)
+                        {
+                            item.BreakRoleInheritance(copyRoleAssignments: false, clearSubscopes: false);
+                            ctx.ExecuteQuery();
+                            Console.WriteLine("Inheritance broken – empty ACL created.");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Item already has unique permissions.");
+                        }
+
+                        // Clear existing role assignments – SAFE version
+                        ctx.Load(item, i => i.RoleAssignments);
+                        ctx.ExecuteQuery();
+
+                        var rolesToDelete = item.RoleAssignments.ToList();
+                        foreach (var ra in rolesToDelete)
+                        {
+                            ra.DeleteObject();
+                        }
+                        ctx.ExecuteQuery();
+                        Console.WriteLine("Existing role assignments cleared.");
+
+                        // Add permissions
+                        foreach (var spec in usersForItem)
+                        {
+                            string displayName = spec.DisplayName;
+                            string roleName = spec.RoleName;
+
+                            Principal principal = null;
+
+                            // Find user by Display Name
+                            foreach (User u in siteUsers)
+                            {
+                                if (string.Equals(u.Title.Trim(), displayName.Trim(), StringComparison.OrdinalIgnoreCase))
+                                {
+                                    principal = u;
+                                    Console.WriteLine($"Found user \"{u.Title}\" → {u.LoginName}");
+                                    break;
+                                }
+                            }
+
+                            if (principal == null)
+                            {
+                                Console.WriteLine($"Could not resolve user \"{displayName}\" — skipping.");
+                                continue;
+                            }
+
+                            // Get role definition
+                            RoleDefinition roleDef = web.RoleDefinitions.GetByName(roleName);
+                            ctx.Load(roleDef);
+                            ctx.ExecuteQuery();
+
+                            var roleBindings = new RoleDefinitionBindingCollection(ctx);
+                            roleBindings.Add(roleDef);
+
+                            try
+                            {
+                                item.RoleAssignments.Add(principal, roleBindings);
+                                ctx.ExecuteQuery();
+                                Console.WriteLine($"Granted \"{roleName}\" to \"{principal.Title}\".");
+                            }
+                            catch (ServerException ex) when (ex.ServerErrorCode == -2146232832)
+                            {
+                                Console.WriteLine($"\"{principal.Title}\" already has \"{roleName}\" (duplicate ignored).");
+                            }
+                        }
+
+                        // Show final permissions
+                        Console.WriteLine("\nFinal role assignments:");
+                        ctx.Load(item, i => i.RoleAssignments);
+                        ctx.ExecuteQuery();
+
+                        foreach (RoleAssignment ra in item.RoleAssignments)
+                        {
+                            ctx.Load(ra.Member);
+                            ctx.Load(ra.RoleDefinitionBindings);
+                            ctx.ExecuteQuery();
+
+                            foreach (RoleDefinition rd in ra.RoleDefinitionBindings)
+                            {
+                                Console.WriteLine($"{ra.Member.Title}  →  {rd.Name}");
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("\nERROR: " + ex.Message);
+            }
+        }
+    }
+}
+
+
+
+
 using Microsoft.SharePoint.Client;
 using System;
 using System.Net;
