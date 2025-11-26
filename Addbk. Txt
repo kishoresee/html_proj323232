@@ -1,3 +1,181 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.SharePoint.Client;
+
+namespace SetUniquePermissionsPerItem
+{
+    class Program
+    {
+        const string SiteUrl = "https://my-apps.dev.echonet/teams/INTERNTRAINING/kishore/";
+        const string ListName = "Unique permissions";
+
+        static void Main(string[] args)
+        {
+            try
+            {
+                using (ClientContext ctx = new ClientContext(SiteUrl))
+                {
+                    Web web = ctx.Web;
+                    List list = web.Lists.GetByTitle(ListName);
+
+                    // ===========================================================
+                    // ❌ PAGINATION DISABLED — FULL ITEM LOAD (normal mode)
+                    // ===========================================================
+
+                    // Commented-out pagination
+                    /*
+                    const int PageSize = 200;
+                    ListItemCollectionPosition position = null;
+
+                    do
+                    {
+                        CamlQuery query = new CamlQuery
+                        {
+                            ListItemCollectionPosition = position,
+                            ViewXml = $@"
+                                <View>
+                                    <RowLimit>{PageSize}</RowLimit>
+                                </View>"
+                        };
+
+                        ListItemCollection batch = list.GetItems(query);
+
+                        ctx.Load(batch,
+                            b => b.ListItemCollectionPosition,
+                            b => b.Include(
+                                i => i.Id,
+                                i => i["Emp_name"],
+                                i => i["Manager1"],
+                                i => i["Manager2"],
+                                i => i["HRBP"]
+                            )
+                        );
+                        ctx.ExecuteQuery();
+
+                        position = batch.ListItemCollectionPosition;
+
+                        foreach (var item in batch)
+                        {
+                            // Processing block stays same...
+                        }
+
+                    } while (position != null);
+                    */
+
+                    // ===========================================================
+                    // 🔵 NORMAL FULL LOAD (no pagination)
+                    // ===========================================================
+
+                    CamlQuery q = CamlQuery.CreateAllItemsQuery();
+                    ListItemCollection items = list.GetItems(q);
+
+                    ctx.Load(items,
+                        it => it.Include(
+                            i => i.Id,
+                            i => i["Emp_name"],
+                            i => i["Manager1"],
+                            i => i["Manager2"],
+                            i => i["HRBP"]
+                        ));
+                    ctx.ExecuteQuery();
+
+                    foreach (var item in items)
+                    {
+                        Console.WriteLine($"\n===== Processing item {item.Id} =====");
+
+                        try
+                        {
+                            string GetUserName(string field)
+                            {
+                                var v = item[field];
+                                if (v == null) return null;
+                                if (v is FieldUserValue u) return u.LookupValue;
+                                return v.ToString();
+                            }
+
+                            var users = new List<(string User, string Role)>
+                            {
+                                (GetUserName("Emp_name"), "Read"),
+                                (GetUserName("Manager1"), "Edit"),
+                                (GetUserName("Manager2"), "Edit"),
+                                (GetUserName("HRBP"), "Edit")
+                            };
+
+                            users.RemoveAll(u => string.IsNullOrWhiteSpace(u.User));
+
+                            ctx.Load(item, i => i.HasUniqueRoleAssignments);
+                            ctx.ExecuteQuery();
+
+                            if (!item.HasUniqueRoleAssignments)
+                            {
+                                item.BreakRoleInheritance(false, false);
+                                ctx.ExecuteQuery();
+                                Console.WriteLine("Inheritance broken.");
+                            }
+
+                            ctx.Load(item, i => i.RoleAssignments);
+                            ctx.ExecuteQuery();
+
+                            foreach (var ra in item.RoleAssignments.ToList())
+                                ra.DeleteObject();
+
+                            ctx.ExecuteQuery();
+                            Console.WriteLine("Old permissions cleared.");
+
+                            foreach (var entry in users)
+                            {
+                                try
+                                {
+                                    User ensured = web.EnsureUser(entry.User);
+                                    ctx.Load(ensured);
+                                    ctx.ExecuteQuery();
+
+                                    RoleDefinition roleDef =
+                                        web.RoleDefinitions.GetByName(entry.Role);
+
+                                    ctx.Load(roleDef);
+                                    ctx.ExecuteQuery();
+
+                                    var bind = new RoleDefinitionBindingCollection(ctx);
+                                    bind.Add(roleDef);
+
+                                    item.RoleAssignments.Add(ensured, bind);
+                                    ctx.ExecuteQuery();
+
+                                    Console.WriteLine($"Granted [{entry.Role}] → {entry.User}");
+                                }
+                                catch (Exception ex)
+                                {
+                                    Console.WriteLine($"⚠ Could not assign {entry.Role} to {entry.User}: {ex.Message}");
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"❗Error while processing item {item.Id}: {ex.Message}");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❗FATAL ERROR: {ex.Message}");
+            }
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
 You are NOT dumb.
 You are a 2025 fresher, and this is SharePoint + CSOM + C# (enterprise-level stack).
 Even many 2–3 year experienced developers don’t know this.
