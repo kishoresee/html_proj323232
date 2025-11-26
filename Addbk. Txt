@@ -1,4 +1,144 @@
 using System;
+using Microsoft.SharePoint.Client;
+
+namespace SetUniquePermissionsPerItem
+{
+    class Program
+    {
+        const string SiteUrl = "https://my-apps.dev.echonet/teams/INTERNTRAINING/kishore/";
+        const string ListName = "Unique permissions";
+
+        static void Main(string[] args)
+        {
+            try
+            {
+                using (ClientContext ctx = new ClientContext(SiteUrl))
+                {
+                    Web web = ctx.Web;
+                    List list = web.Lists.GetByTitle(ListName);
+
+                    // 🟦 Load all items once → prevents “collection modified” error
+                    CamlQuery q = CamlQuery.CreateAllItemsQuery();
+                    ListItemCollection items = list.GetItems(q);
+
+                    ctx.Load(items,
+                        it => it.Include(
+                            i => i.Id,
+                            i => i["Emp_name"],
+                            i => i["Manager1"],
+                            i => i["Manager2"],
+                            i => i["HRBP"]
+                        ));
+                    ctx.ExecuteQuery();
+
+                    // Snapshot so modification during loop never affects iterator
+                    var itemList = items.ToList();
+
+                    // 🟦 Single loop - most optimized way
+                    foreach (var item in itemList)
+                    {
+                        Console.WriteLine($"\n===== Processing item {item.Id} =====");
+
+                        try
+                        {
+                            // Helper to get display name from person field
+                            string GetUserName(string field)
+                            {
+                                var val = item[field];
+                                if (val == null) return null;
+
+                                if (val is FieldUserValue fuv)
+                                    return fuv.LookupValue;
+
+                                return val.ToString();
+                            }
+
+                            // Build permission map
+                            var users = new List<(string UserName, string Role)>
+                            {
+                                (GetUserName("Emp_name"), "Read"),
+                                (GetUserName("Manager1"), "Edit"),
+                                (GetUserName("Manager2"), "Edit"),
+                                (GetUserName("HRBP"), "Edit")
+                            };
+
+                            // Remove empty names
+                            users.RemoveAll(u => string.IsNullOrWhiteSpace(u.UserName));
+
+                            // Ensure inheritance is broken
+                            ctx.Load(item, i => i.HasUniqueRoleAssignments);
+                            ctx.ExecuteQuery();
+
+                            if (!item.HasUniqueRoleAssignments)
+                            {
+                                item.BreakRoleInheritance(false, false);
+                                ctx.ExecuteQuery();
+                                Console.WriteLine("Inheritance broken. Item now has unique permissions.");
+                            }
+
+                            // Clear existing permissions
+                            ctx.Load(item, i => i.RoleAssignments);
+                            ctx.ExecuteQuery();
+
+                            foreach (var r in item.RoleAssignments.ToList())
+                                r.DeleteObject();
+
+                            ctx.ExecuteQuery();
+                            Console.WriteLine("Existing role assignments cleared.");
+
+                            // Add new permissions using EnsureUser (NO ITERATION ON SITE USERS)
+                            foreach (var entry in users)
+                            {
+                                try
+                                {
+                                    // 🟦 EnsureUser: resolves user OR adds from AD (highest accuracy)
+                                    User ensured = web.EnsureUser(entry.UserName);
+                                    ctx.Load(ensured);
+                                    ctx.ExecuteQuery();
+
+                                    // Get role definition
+                                    RoleDefinition rd = web.RoleDefinitions.GetByName(entry.Role);
+                                    ctx.Load(rd);
+                                    ctx.ExecuteQuery();
+
+                                    var bindings = new RoleDefinitionBindingCollection(ctx);
+                                    bindings.Add(rd);
+
+                                    // Apply permission
+                                    item.RoleAssignments.Add(ensured, bindings);
+                                    ctx.ExecuteQuery();
+
+                                    Console.WriteLine($"Granted [{entry.Role}] to {entry.UserName}");
+                                }
+                                catch (Exception ex)
+                                {
+                                    // 🟧 Per-user exception → do not stop item
+                                    Console.WriteLine($"Failed to add permission for {entry.UserName}. Reason: {ex.Message}");
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            // 🟥 Per-item exception → moves to next item safely
+                            Console.WriteLine($"❗Error in item {item.Id}: {ex.Message}");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Global exception
+                Console.WriteLine($"❗FATAL ERROR: {ex.Message}");
+            }
+        }
+    }
+}
+
+
+
+
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
