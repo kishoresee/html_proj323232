@@ -1,3 +1,16 @@
+=TEXTJOIN(", ", TRUE,
+ XLOOKUP(
+   TRIM(TEXTAFTER(TEXTSPLIT('Report List'!B2, CHAR(10)), ".")),
+   Sheet2!A:A,
+   Sheet2!B:B,
+   ""
+ )
+)
+
+
+
+
+
 =TEXTJOIN(", ",TRUE,
  XLOOKUP(
    TRIM(TEXTAFTER(TEXTSPLIT('Report List'!B2,","),".")),
