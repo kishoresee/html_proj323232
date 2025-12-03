@@ -1,3 +1,16 @@
+=TEXTJOIN(", ",TRUE,
+ XLOOKUP(
+   TRIM(TEXTAFTER(TEXTSPLIT('Report List'!B2,","),".")),
+   Sheet2!A:A,
+   Sheet2!B:B,
+   ""
+ )
+)
+
+
+
+
+
 Apologies for the delay. I had a few doubts while filling the EMEA form, so I took some extra time to double-check before submitting. I’ve sent it now. Thank you for your patience.
 
 
