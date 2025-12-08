@@ -1,3 +1,6 @@
+="INSERT INTO RecordTypeTable (Id, ApplicationId, RecordType) VALUES ("&B2&","&C2&",'"&A2&"');"
+
+
 =TEXTJOIN(", ", TRUE,
  XLOOKUP(
    TRIM(TEXTAFTER(TEXTSPLIT('Report List'!B2, CHAR(10)), ".")),
