@@ -1,3 +1,23 @@
+=CONCATENATE(
+"INSERT INTO SRMS.Metadata (ID,ApplicationID,RecordTypeID,RecordDescription,OfficeOfRecord,",
+"RetentionRequirement,RetentionPeriod,RegulatoryBody,RegulatoryBodyState,",
+"RegulatoryBodyCountry,RegulatoryRule,DataClassification,ITStorageRequirement,",
+"PrimaryBusinessContact,PrimaryITContact,DispositionAfter,FileNamePattern,",
+"FileNamePatternRegEx,PatternMatchOrder,Owners,Visitors,LegalHoldVisitors,",
+"ManualUpload,LimitedVisitors,PrimaryBusinessContactEmail,PrimaryITContactEmail,",
+"ReportCode,Region,Disposition) VALUES (",
+A2,",",B2,",",C2,",'",
+D2,"','",E2,"','",F2,"','",G2,"','",H2,"','",I2,"','",
+J2,"','",K2,"','",L2,"','",M2,"','",N2,"','",O2,"','",P2,"','",
+Q2,"','",R2,"',",S2,",'",
+T2,"','",U2,"','",V2,"',",W2,",'",
+X2,"','",Y2,"','",Z2,"','",AA2,"','",AB2,"','",AC2,"');"
+)
+
+
+
+
+
 ="INSERT INTO SRMS.Metadata (ID,ApplicationID,RecordTypeID,RecordDescription,OfficeOfRecord,RetentionRequirement,RetentionPeriod,RegulatoryBody,RegulatoryBodyState,RegulatoryBodyCountry,RegulatoryRule,DataClassification,ITStorageRequirement,PrimaryBusinessContact,PrimaryITContact,DispositionAfter,FileNamePattern,FileNamePatternRegEx,PatternMatchOrder,Owners,Visitors,LegalHoldVisitors,ManualUpload,LimitedVisitors,PrimaryBusinessContactEmail,PrimaryITContactEmail,ReportCode,Region,Disposition) VALUES ("
 & A2 & "," & B2 & "," & C2 & ",'"
 & D2 & "','" & E2 & "','" & F2 & "','" & G2 & "','" & H2 & "','" & I2 & "','" & J2 & "','" & K2 & "','" & L2 & "','" & M2 & "','" & N2 & "','" & O2 & "','" & P2 & "','"
