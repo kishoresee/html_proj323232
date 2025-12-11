@@ -1,3 +1,124 @@
+MERGE INTO SRMS.ApplicationAccessCountries AS T
+USING (VALUES
+(11234,39,10766,'NL','','Confidential','WORM','Nicolas OBERLE','Nicolas OBERLE','10years','rh100.pdf','rh100.*pdf$',1,
+'Y249U1JNU19BVEXeBUZjFmlNFt3duZXJzLG91PWdyb3VwLG91PVNSTVMsBU9YXBlbGljYXJpb25zLGRjpPXJvb3Q=',
+'Y249U1JNU19BVEXbBU19UV09fVFNKRSkxvd1ncm91cxdv1TLK91PWFwcGxpY2F0aW9ucyxkYz1jb290DQ0=',
+'Y249U1JNU19FTUVBX1JT19LWLG91PWdyb3VwLG91PVNSTVMsBU9YXBlbGljYXJpb25zLGRjpPXJvb3Q=',
+'nicolas.oberle@bnpparibas.com','nicolas.oberle@bnpparibas.com','', 'EMEA','120',1),
+
+(11235,40,10766,'Lux','','Confidential','WORM','Nicolas OBERLE','Nicolas OBERLE','10years','rh100.pdf','rh100.*pdf$',1,
+'Y249U1JNU19BVEXeBUZjFmlNFt3duZXJzLG91PWdyb3VwLG91PVNSTVMsBU9YXBlbGljYXJpb25zLGRjpPXJvb3Q=',
+'Y249U1JNU19BVEXbBU19UV09fVFNKRSkxvd1ncm91cxdv1TLK91PWFwcGxpY2F0aW9ucyxkYz1jb290DQ0=',
+'Y249U1JNU19FTUVBX1JT19LWLG91PWdyb3VwLG91PVNSTVMsBU9YXBlbGljYXJpb25zLGRjpPXJvb3Q=',
+'nicolas.oberle@bnpparibas.com','nicolas.oberle@bnpparibas.com','', 'EMEA','120',1),
+
+(11236,41,10766,'CH','','Confidential','WORM','Nicolas OBERLE','Nicolas OBERLE','10years','rh100.pdf','rh100.*pdf$',1,
+'Y249U1JNU19BVEXeBUZjFmlNFt3duZXJzLG91PWdyb3VwLG91PVNSTVMsBU9YXBlbGljYXJpb25zLGRjpPXJvb3Q=',
+'Y249U1JNU19BVEXbBU19UV09fVFNKRSkxvd1ncm91cxdv1TLK91PWFwcGxpY2F0aW9ucyxkYz1jb290DQ0=',
+'Y249U1JNU19FTUVBX1JT19LWLG91PWdyb3VwLG91PVNSTVMsBU9YXBlbGljYXJpb25zLGRjpPXJvb3Q=',
+'nicolas.oberle@bnpparibas.com','nicolas.oberle@bnpparibas.com','', 'EMEA','120',1),
+
+(11237,42,10766,'RO','','Confidential','WORM','Nicolas OBERLE','Nicolas OBERLE','10years','rh100.pdf','rh100.*pdf$',1,
+'Y249U1JNU19BVEXeBUZjFmlNFt3duZXJzLG91PWdyb3VwLG91PVNSTVMsBU9YXBlbGljYXJpb25zLGRjpPXJvb3Q=',
+'Y249U1JNU19BVEXbBU19UV09fVFNKRSkxvd1ncm91cxdv1TLK91PWFwcGxpY2F0aW9ucyxkYz1jb290DQ0=',
+'Y249U1JNU19FTUVBX1JT19LWLG91PWdyb3VwLG91PVNSTVMsBU9YXBlbGljYXJpb25zLGRjpPXJvb3Q=',
+'nicolas.oberle@bnpparibas.com','nicolas.oberle@bnpparibas.com','', 'EMEA','120',1),
+
+(11238,43,10766,'HU','','Confidential','WORM','Nicolas OBERLE','Nicolas OBERLE','10years','rh100.pdf','rh100.*pdf$',1,
+'Y249U1JNU19BVEXeBUZjFmlNFt3duZXJzLG91PWdyb3VwLG91PVNSTVMsBU9YXBlbGljYXJpb25zLGRjpPXJvb3Q=',
+'Y249U1JNU19BVEXbBU19UV09fVFNKRSkxvd1ncm91cxdv1TLK91PWFwcGxpY2F0aW9ucyxkYz1jb290DQ0=',
+'Y249U1JNU19FTUVBX1JT19LWLG91PWdyb3VwLG91PVNSTVMsBU9YXBlbGljYXJpb25zLGRjpPXJvb3Q=',
+'nicolas.oberle@bnpparibas.com','nicolas.oberle@bnpparibas.com','', 'EMEA','120',1),
+
+(11239,44,10766,'DK','','Confidential','WORM','Nicolas OBERLE','Nicolas OBERLE','10years','rh100.pdf','rh100.*pdf$',1,
+'Y249U1JNU19BVEXeBUZjFmlNFt3duZXJzLG91PWdyb3VwLG91PVNSTVMsBU9YXBlbGljYXJpb25zLGRjpPXJvb3Q=',
+'Y249U1JNU19BVEXbBU19UV09fVFNKRSkxvd1ncm91cxdv1TLK91PWFwcGxpY2F0aW9ucyxkYz1jb290DQ0=',
+'Y249U1JNU19FTUVBX1JT19LWLG91PWdyb3VwLG91PVNSTVMsBU9YXBlbGljYXJpb25zLGRjpPXJvb3Q=',
+'nicolas.oberle@bnpparibas.com','nicolas.oberle@bnpparibas.com','', 'EMEA','120',1),
+
+(11240,45,10766,'IE','','Confidential','WORM','Nicolas OBERLE','Nicolas OBERLE','10years','rh100.pdf','rh100.*pdf$',1,
+'Y249U1JNU19BVEXeBUZjFmlNFt3duZXJzLG91PWdyb3VwLG91PVNSTVMsBU9YXBlbGljYXJpb25zLGRjpPXJvb3Q=',
+'Y249U1JNU19BVEXbBU19UV09fVFNKRSkxvd1ncm91cxdv1TLK91PWFwcGxpY2F0aW9ucyxkYz1jb290DQ0=',
+'Y249U1JNU19FTUVBX1JT19LWLG91PWdyb3VwLG91PVNSTVMsBU9YXBlbGljYXJpb25zLGRjpPXJvb3Q=',
+'nicolas.oberle@bnpparibas.com','nicolas.oberle@bnpparibas.com','', 'EMEA','120',1),
+
+(11241,46,10766,'DE','','Confidential','WORM','Nicolas OBERLE','Nicolas OBERLE','10years','rh100.pdf','rh100.*pdf$',1,
+'Y249U1JNU19BVEXeBUZjFmlNFt3duZXJzLG91PWdyb3VwLG91PVNSTVMsBU9YXBlbGljYXJpb25zLGRjpPXJvb3Q=',
+'Y249U1JNU19BVEXbBU19UV09fVFNKRSkxvd1ncm91cxdv1TLK91PWFwcGxpY2F0aW9ucyxkYz1jb290DQ0=',
+'Y249U1JNU19FTUVBX1JT19LWLG91PWdyb3VwLG91PVNSTVMsBU9YXBlbGljYXJpb25zLGRjpPXJvb3Q=',
+'nicolas.oberle@bnpparibas.com','nicolas.oberle@bnpparibas.com','', 'EMEA','120',1),
+
+(11242,47,10766,'PT','','Confidential','WORM','Nicolas OBERLE','Nicolas OBERLE','10years','rh100.pdf','rh100.*pdf$',1,
+'Y249U1JNU19BVEXeBUZjFmlNFt3duZXJzLG91PWdyb3VwLG91PVNSTVMsBU9YXBlbGljYXJpb25zLGRjpPXJvb3Q=',
+'Y249U1JNU19BVEXbBU19UV09fVFNKRSkxvd1ncm91cxdv1TLK91PWFwcGxpY2F0aW9ucyxkYz1jb290DQ0=',
+'Y249U1JNU19FTUVBX1JT19LWLG91PWdyb3VwLG91PVNSTVMsBU9YXBlbGljYXJpb25zLGRjpPXJvb3Q=',
+'nicolas.oberle@bnpparibas.com','nicolas.oberle@bnpparibas.com','', 'EMEA','120',1),
+
+(11243,48,10766,'GB','','Confidential','WORM','Nicolas OBERLE','Nicolas OBERLE','10years','rh100.pdf','rh100.*pdf$',1,
+'Y249U1JNU19BVEXeBUZjFmlNFt3duZXJzLG91PWdyb3VwLG91PVNSTVMsBU9YXBlbGljYXJpb25zLGRjpPXJvb3Q=',
+'Y249U1JNU19BVEXbBU19UV09fVFNKRSkxvd1ncm91cxdv1TLK91PWFwcGxpY2F0aW9ucyxkYz1jb290DQ0=',
+'Y249U1JNU19FTUVBX1JT19LWLG91PWdyb3VwLG91PVNSTVMsBU9YXBlbGljYXJpb25zLGRjpPXJvb3Q=',
+'nicolas.oberle@bnpparibas.com','nicolas.oberle@bnpparibas.com','', 'EMEA','120',1),
+
+(11244,49,10766,'ES','','Confidential','WORM','Nicolas OBERLE','Nicolas OBERLE','10years','rh100.pdf','rh100.*pdf$',1,
+'Y249U1JNU19BVEXeBUZjFmlNFt3duZXJzLG91PWdyb3VwLG91PVNSTVMsBU9YXBlbGljYXJpb25zLGRjpPXJvb3Q=',
+'Y249U1JNU19BVEXbBU19UV09fVFNKRSkxvd1ncm91cxdv1TLK91PWFwcGxpY2F0aW9ucyxkYz1jb290DQ0=',
+'Y249U1JNU19FTUVBX1JT19LWLG91PWdyb3VwLG91PVNSTVMsBU9YXBlbGljYXJpb25zLGRjpPXJvb3Q=',
+'nicolas.oberle@bnpparibas.com','nicolas.oberle@bnpparibas.com','', 'EMEA','120',1),
+
+(11245,50,10766,'NO','','Confidential','WORM','Nicolas OBERLE','Nicolas OBERLE','10years','rh100.pdf','rh100.*pdf$',1,
+'Y249U1JNU19BVEXeBUZjFmlNFt3duZXJzLG91PWdyb3VwLG91PVNSTVMsBU9YXBlbGljYXJpb25zLGRjpPXJvb3Q=',
+'Y249U1JNU19BVEXbBU19UV09fVFNKRSkxvd1ncm91cxdv1TLK91PWFwcGxpY2F0aW9ucyxkYz1jb290DQ0=',
+'Y249U1JNU19FTUVBX1JT19LWLG91PWdyb3VwLG91PVNSTVMsBU9YXBlbGljYXJpb25zLGRjpPXJvb3Q=',
+'nicolas.oberle@bnpparibas.com','nicolas.oberle@bnpparibas.com','', 'EMEA','120',1),
+
+(11246,51,10766,'CZ','','Confidential','WORM','Nicolas OBERLE','Nicolas OBERLE','10years','rh100.pdf','rh100.*pdf$',1,
+'Y249U1JNU19BVEXeBUZjFmlNFt3duZXJzLG91PWdyb3VwLG91PVNSTVMsBU9YXBlbGljYXJpb25zLGRjpPXJvb3Q=',
+'Y249U1JNU19BVEXbBU19UV09fVFNKRSkxvd1ncm91cxdv1TLK91PWFwcGxpY2F0aW9ucyxkYz1jb290DQ0=',
+'Y249U1JNU19FTUVBX1JT19LWLG91PWdyb3VwLG91PVNSTVMsBU9YXBlbGljYXJpb25zLGRjpPXJvb3Q=',
+'nicolas.oberle@bnpparibas.com','nicolas.oberle@bnpparibas.com','', 'EMEA','120',1),
+
+(11247,52,10766,'BU','','Confidential','WORM','Nicolas OBERLE','Nicolas OBERLE','10years','rh100.pdf','rh100.*pdf$',1,
+'Y249U1JNU19BVEXeBUZjFmlNFt3duZXJzLG91PWdyb3VwLG91PVNSTVMsBU9YXBlbGljYXJpb25zLGRjpPXJvb3Q=',
+'Y249U1JNU19BVEXbBU19UV09fVFNKRSkxvd1ncm91cxdv1TLK91PWFwcGxpY2F0aW9ucyxkYz1jb290DQ0=',
+'Y249U1JNU19FTUVBX1JT19LWLG91PWdyb3VwLG91PVNSTVMsBU9YXBlbGljYXJpb25zLGRjpPXJvb3Q=',
+'nicolas.oberle@bnpparibas.com','nicolas.oberle@bnpparibas.com','', 'EMEA','120',1),
+
+(11248,53,10766,'SE','','Confidential','WORM','Nicolas OBERLE','Nicolas OBERLE','10years','rh100.pdf','rh100.*pdf$',1,
+'Y249U1JNU19BVEXeBUZjFmlNFt3duZXJzLG91PWdyb3VwLG91PVNSTVMsBU9YXBlbGljYXJpb25zLGRjpPXJvb3Q=',
+'Y249U1JNU19BVEXbBU19UV09fVFNKRSkxvd1ncm91cxdv1TLK91PWFwcGxpY2F0aW9ucyxkYz1jb290DQ0=',
+'Y249U1JNU19FTUVBX1JT19LWLG91PWdyb3VwLG91PVNSTVMsBU9YXBlbGljYXJpb25zLGRjpPXJvb3Q=',
+'nicolas.oberle@bnpparibas.com','nicolas.oberle@bnpparibas.com','', 'EMEA','120',1),
+
+(11249,54,10766,'AT','','Confidential','WORM','Nicolas OBERLE','Nicolas OBERLE','10years','rh100.pdf','rh100.*pdf$',1,
+'Y249U1JNU19BVEXeBUZjFmlNFt3duZXJzLG91PWdyb3VwLG91PVNSTVMsBU9YXBlbGljYXJpb25zLGRjpPXJvb3Q=',
+'Y249U1JNU19BVEXbBU19UV09fVFNKRSkxvd1ncm91cxdv1TLK91PWFwcGxpY2F0aW9ucyxkYz1jb290DQ0=',
+'Y249U1JNU19FTUVBX1JT19LWLG91PWdyb3VwLG91PVNSTVMsBU9YXBlbGljYXJpb25zLGRjpPXJvb3Q=',
+'nicolas.oberle@bnpparibas.com','nicolas.oberle@bnpparibas.com','', 'EMEA','120',1),
+
+(11250,55,10766,'PL','','Confidential','WORM','Nicolas OBERLE','Nicolas OBERLE','10years','rh100.pdf','rh100.*pdf$',1,
+'Y249U1JNU19BVEXeBUZjFmlNFt3duZXJzLG91PWdyb3VwLG91PVNSTVMsBU9YXBlbGljYXJpb25zLGRjpPXJvb3Q=',
+'Y249U1JNU19BVEXbBU19UV09fVFNKRSkxvd1ncm91cxdv1TLK91PWFwcGxpY2F0aW9ucyxkYz1jb290DQ0=',
+'Y249U1JNU19FTUVBX1JT19LWLG91PWdyb3VwLG91PVNSTVMsBU9YXBlbGljYXJpb25zLGRjpPXJvb3Q=',
+'nicolas.oberle@bnpparibas.com','nicolas.oberle@bnpparibas.com','', 'EMEA','120',1)
+
+) AS S(ID, ApplicationID, RecordTypeID, Country, LimitedVisitors, RetentionRequirement, OfficeOfRecord, PrimaryBusinessContact, SecondaryBusinessContact,
+RetentionPeriod, ITStorageRequirement, RegulatoryRule, IsRecordActive, MetadataRegex, MetadataRegex1, MetadataRegex2,
+PrimaryEmail, SecondaryEmail, Notes, Region, Code, Active)
+
+ON T.ID = S.ID
+WHEN NOT MATCHED THEN
+INSERT (ID, ApplicationID, RecordTypeID, Country, LimitedVisitors, RetentionRequirement, OfficeOfRecord,
+PrimaryBusinessContact, SecondaryBusinessContact, RetentionPeriod, ITStorageRequirement, RegulatoryRule,
+IsRecordActive, MetadataRegex, MetadataRegex1, MetadataRegex2, PrimaryEmail, SecondaryEmail, Notes, Region, Code, Active)
+VALUES (S.ID, S.ApplicationID, S.RecordTypeID, S.Country, S.LimitedVisitors, S.RetentionRequirement, S.OfficeOfRecord,
+S.PrimaryBusinessContact, S.SecondaryBusinessContact, S.RetentionPeriod, S.ITStorageRequirement, S.RegulatoryRule,
+S.IsRecordActive, S.MetadataRegex, S.MetadataRegex1, S.MetadataRegex2, S.PrimaryEmail, S.SecondaryEmail, S.Notes, S.Region, S.Code, S.Active);
+
+
+
+
+
 =CONCATENATE(
 "INSERT INTO SRMS.Metadata (ID,ApplicationID,RecordTypeID,RecordDescription,OfficeOfRecord,",
 "RetentionRequirement,RetentionPeriod,RegulatoryBody,RegulatoryBodyState,",
