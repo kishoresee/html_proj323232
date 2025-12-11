@@ -1,3 +1,28 @@
+Here are the country codes → full country names:
+
+Code	Country Name
+NL	Netherlands
+LUX or LU	Luxembourg
+CH	Switzerland
+RO	Romania
+HU	Hungary
+DK	Denmark
+IE	Ireland
+DE	Germany
+PT	Portugal
+GB	United Kingdom (Great Britain)
+ES	Spain
+NO	Norway
+CZ	Czech Republic
+BU (not standard, likely BG)	Bulgaria
+SE	Sweden
+AT	Austria
+PL	Poland
+
+If you want, I can convert an entire Excel column of codes into country names using a formula too.
+
+
+
 MERGE INTO SRMS.ApplicationAccessCountries AS T
 USING (VALUES
 (11234,39,10766,'NL','','Confidential','WORM','Nicolas OBERLE','Nicolas OBERLE','10years','rh100.pdf','rh100.*pdf$',1,
