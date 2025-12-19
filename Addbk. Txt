@@ -1,3 +1,133 @@
+
+<form [formGroup]="pipForm" class="pip-container">
+
+  <p-tabView>
+
+    <p-tabPanel header="PIP Details">
+
+      <p-card header="Manager Details" class="section" formGroupName="manager">
+        <div class="grid">
+          <div class="field">
+            <label>Manager UID</label>
+            <input pInputText formControlName="uid">
+          </div>
+          <div class="field">
+            <label>Manager Name</label>
+            <input pInputText formControlName="name">
+          </div>
+          <div class="field">
+            <label>Manager Email</label>
+            <input pInputText type="email" formControlName="email">
+          </div>
+        </div>
+      </p-card>
+
+      <p-card header="Employee Details" class="section" formGroupName="employee">
+        <div class="grid">
+          <div class="field">
+            <label>Employee UID</label>
+            <input pInputText formControlName="uid">
+          </div>
+          <div class="field">
+            <label>Employee Name</label>
+            <input pInputText formControlName="name">
+          </div>
+          <div class="field">
+            <label>Employee Email</label>
+            <input pInputText type="email" formControlName="email">
+          </div>
+          <div class="field">
+            <label>Department</label>
+            <input pInputText formControlName="department">
+          </div>
+          <div class="field">
+            <label>Position</label>
+            <input pInputText formControlName="position">
+          </div>
+        </div>
+      </p-card>
+
+      <p-card header="HRBP Details" class="section" formGroupName="hrbp">
+        <div class="grid">
+          <div class="field">
+            <label>HRBP UID</label>
+            <input pInputText formControlName="uid">
+          </div>
+          <div class="field">
+            <label>HRBP Name</label>
+            <input pInputText formControlName="name">
+          </div>
+          <div class="field">
+            <label>HRBP Email</label>
+            <input pInputText type="email" formControlName="email">
+          </div>
+        </div>
+      </p-card>
+
+      <p-card header="PIP Recommendation" class="section">
+        <div class="field">
+          <label>Rationale for PIP</label>
+          <textarea pInputTextarea rows="3" formControlName="pipRationale"></textarea>
+        </div>
+      </p-card>
+
+      <p-card header="Performance Issues" class="section">
+        <div formArrayName="performanceIssues">
+
+          <div
+            *ngFor="let issue of performanceIssues.controls; let i = index"
+            [formGroupName]="i"
+            class="issue-card">
+
+            <div class="grid">
+              <div class="field full-width">
+                <label>Performance Issue</label>
+                <textarea pInputTextarea rows="2" formControlName="issue"></textarea>
+              </div>
+
+              <div class="field">
+                <label>Timeline</label>
+                <input pInputText formControlName="timeline">
+              </div>
+
+              <div class="field">
+                <label>Performance Standard</label>
+                <textarea pInputTextarea rows="2" formControlName="standard"></textarea>
+              </div>
+
+              <div class="field full-width">
+                <label>Current Performance Assessment</label>
+                <textarea pInputTextarea rows="2" formControlName="currentAssessment"></textarea>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </p-card>
+
+      <div class="actions">
+        <button pButton label="Save" severity="secondary" type="button"></button>
+        <button pButton label="Submit" severity="primary" type="submit" [disabled]="pipForm.invalid"></button>
+        <button pButton label="Cancel" severity="danger" type="button"></button>
+      </div>
+
+    </p-tabPanel>
+
+    <p-tabPanel header="Check-in Dates"></p-tabPanel>
+    <p-tabPanel header="Documentation"></p-tabPanel>
+
+  </p-tabView>
+
+</form>
+
+
+
+
+
+
+
+
 Got it.
 Below is a **clean, enterprise-ready, PrimeNG-based implementation** that works with:
 
