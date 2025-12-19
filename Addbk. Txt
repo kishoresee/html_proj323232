@@ -1,3 +1,312 @@
+
+<form [formGroup]="pipForm" class="pip-container">
+
+  <!-- Tabs -->
+  <div class="pip-tabs">
+    <button type="button" class="active">PIP Details</button>
+    <button type="button">Check-in Dates</button>
+    <button type="button">Documentation</button>
+  </div>
+
+  <!-- MANAGER DETAILS -->
+  <div class="section" formGroupName="manager">
+    <h3 class="section-title">Manager Details</h3>
+
+    <div class="grid">
+      <div class="field">
+        <label>Manager UID</label>
+        <input type="text" formControlName="uid">
+      </div>
+
+      <div class="field">
+        <label>Manager Name</label>
+        <input type="text" formControlName="name">
+      </div>
+
+      <div class="field">
+        <label>Manager Email</label>
+        <input type="email" formControlName="email">
+      </div>
+    </div>
+  </div>
+
+  <!-- EMPLOYEE DETAILS -->
+  <div class="section" formGroupName="employee">
+    <h3 class="section-title">Employee Details</h3>
+
+    <div class="grid">
+      <div class="field">
+        <label>Employee UID</label>
+        <input type="text" formControlName="uid">
+      </div>
+
+      <div class="field">
+        <label>Employee Name</label>
+        <input type="text" formControlName="name">
+      </div>
+
+      <div class="field">
+        <label>Employee Email</label>
+        <input type="email" formControlName="email">
+      </div>
+
+      <div class="field">
+        <label>Department</label>
+        <input type="text" formControlName="department">
+      </div>
+
+      <div class="field">
+        <label>Position</label>
+        <input type="text" formControlName="position">
+      </div>
+    </div>
+  </div>
+
+  <!-- PIP RATIONALE -->
+  <div class="section">
+    <h3 class="section-title">PIP Recommendation</h3>
+
+    <div class="field">
+      <label>Rationale for PIP</label>
+      <textarea formControlName="pipRationale"></textarea>
+    </div>
+
+    <button type="button" class="add-btn" (click)="addIssue()">
+      + Add Performance Issue
+    </button>
+  </div>
+
+  <!-- PERFORMANCE ISSUES -->
+  <div
+    class="issue-card"
+    *ngFor="let issue of performanceIssues.controls; let i = index"
+    [formGroup]="issue">
+
+    <button type="button" class="close-btn" (click)="removeIssue(i)">×</button>
+
+    <div class="issue-grid">
+      <div class="field">
+        <label>Performance Issue</label>
+        <textarea formControlName="issue"></textarea>
+      </div>
+
+      <div class="field">
+        <label>Timeline</label>
+        <input type="text" formControlName="timeline">
+      </div>
+
+      <div class="field">
+        <label>Performance Standard</label>
+        <textarea formControlName="standard"></textarea>
+      </div>
+
+      <div class="field">
+        <label>Current Performance Assessment</label>
+        <textarea formControlName="currentAssessment"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="actions">
+    <button class="save" type="button">Save</button>
+    <button class="submit" type="submit" [disabled]="pipForm.invalid">
+      Submit
+    </button>
+    <button class="cancel" type="button">Cancel</button>
+  </div>
+
+</form>
+
+:host {
+  display: block;
+  background: #f4f7fa;
+}
+
+* {
+  box-sizing: border-box;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.pip-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px 24px 40px;
+}
+
+.pip-tabs {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 24px;
+  border-bottom: 2px solid #d6dde6;
+}
+
+.pip-tabs button {
+  padding: 10px 20px;
+  border: none;
+  background: transparent;
+  color: #44546a;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.pip-tabs .active {
+  color: #0a66c2;
+  border-bottom: 3px solid #0a66c2;
+}
+
+.section {
+  background: #ffffff;
+  border: 1px solid #d6dde6;
+  border-radius: 4px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.section-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 16px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px 20px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+}
+
+.field label {
+  font-size: 12px;
+  color: #475569;
+  margin-bottom: 6px;
+}
+
+.field input,
+.field textarea {
+  padding: 8px 10px;
+  font-size: 13px;
+  border: 1px solid #cbd5e1;
+  border-radius: 3px;
+  background: #ffffff;
+}
+
+.field input:focus,
+.field textarea:focus {
+  outline: none;
+  border-color: #0a66c2;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 70px;
+}
+
+.add-btn {
+  margin-top: 16px;
+  padding: 8px 14px;
+  background: #0a66c2;
+  color: #ffffff;
+  border: none;
+  border-radius: 3px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.issue-card {
+  position: relative;
+  background: #ffffff;
+  border: 1px solid #d6dde6;
+  border-radius: 4px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.issue-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px 20px;
+}
+
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.actions button {
+  padding: 8px 20px;
+  font-size: 13px;
+  border-radius: 3px;
+  border: none;
+  cursor: pointer;
+}
+
+.save {
+  background: #64748b;
+  color: #ffffff;
+}
+
+.submit {
+  background: #0a66c2;
+  color: #ffffff;
+}
+
+.cancel {
+  background: #e5e7eb;
+  color: #1f2937;
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .issue-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pip-tabs {
+    flex-direction: column;
+  }
+
+  .actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+
+
+
+
+
 .pip-container {
   padding: 20px;
 }
