@@ -1,3 +1,70 @@
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
+
+@Component({
+  selector: 'app-pip-form',
+  templateUrl: './pip-form.component.html',
+  styleUrls: ['./pip-form.component.css']
+})
+export class PipFormComponent implements OnInit {
+
+  pipForm!: FormGroup;
+
+  constructor(private fb: FormBuilder) {}
+
+  ngOnInit(): void {
+    this.pipForm = this.fb.group({
+      manager: this.fb.group({
+        uid: ['', Validators.required],
+        name: ['', Validators.required],
+        email: ['', [Validators.required, Validators.email]]
+      }),
+
+      employee: this.fb.group({
+        uid: ['', Validators.required],
+        name: ['', Validators.required],
+        email: ['', [Validators.required, Validators.email]],
+        department: ['', Validators.required],
+        position: ['', Validators.required]
+      }),
+
+      hrbp: this.fb.group({
+        uid: [''],
+        name: [''],
+        email: ['', Validators.email]
+      }),
+
+      pipRationale: ['', Validators.required],
+
+      performanceIssues: this.fb.array([])
+    });
+
+    this.addIssue();
+  }
+
+  get performanceIssues(): FormArray {
+    return this.pipForm.get('performanceIssues') as FormArray;
+  }
+
+  private createIssue(): FormGroup {
+    return this.fb.group({
+      issue: ['', Validators.required],
+      timeline: ['', Validators.required],
+      standard: ['', Validators.required],
+      currentAssessment: ['', Validators.required]
+    });
+  }
+
+  addIssue(): void {
+    this.performanceIssues.push(this.createIssue());
+  }
+
+  removeIssue(index: number): void {
+    this.performanceIssues.removeAt(index);
+  }
+}
+
+
 
 <form [formGroup]="pipForm" class="pip-container">
 
