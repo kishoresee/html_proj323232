@@ -1,3 +1,243 @@
+
+<div class="pip-container">
+
+  <div class="pip-tabs">
+    <button class="active">PIP Details</button>
+    <button>PIP Check-in Dates</button>
+    <button>Check-in Documentation</button>
+  </div>
+
+  <div class="section">
+    <h3 class="section-title">Details</h3>
+
+    <div class="group">
+      <h4 class="group-title">Manager Details</h4>
+      <div class="grid">
+        <div class="field">
+          <label>Manager UID</label>
+          <input>
+        </div>
+        <div class="field">
+          <label>Manager Name</label>
+          <input>
+        </div>
+        <div class="field">
+          <label>Manager Email</label>
+          <input>
+        </div>
+      </div>
+    </div>
+
+    <div class="group">
+      <h4 class="group-title">Employee Details</h4>
+      <div class="grid">
+        <div class="field">
+          <label>Employee UID</label>
+          <input>
+        </div>
+        <div class="field">
+          <label>Employee Name</label>
+          <input>
+        </div>
+        <div class="field">
+          <label>Employee Email</label>
+          <input>
+        </div>
+        <div class="field">
+          <label>Position</label>
+          <input>
+        </div>
+        <div class="field">
+          <label>Department</label>
+          <input>
+        </div>
+      </div>
+    </div>
+
+    <div class="group">
+      <h4 class="group-title">HRBP Details</h4>
+      <div class="grid">
+        <div class="field">
+          <label>HRBP UID</label>
+          <input>
+        </div>
+        <div class="field">
+          <label>HRBP Name</label>
+          <input>
+        </div>
+        <div class="field">
+          <label>HRBP Email</label>
+          <input>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="section">
+    <h3 class="section-title">Performance Improvement Program Recommendation</h3>
+
+    <div class="field full">
+      <label>Rationale for Performance Improvement Program Recommendation</label>
+      <textarea></textarea>
+    </div>
+
+    <button class="add-btn">+ Add Performance Issue</button>
+
+    <div class="issue-box">
+      <div class="issue-grid">
+        <div class="field">
+          <label>Timeline</label>
+          <input>
+        </div>
+        <div class="field full">
+          <label>Performance Issue</label>
+          <textarea></textarea>
+        </div>
+        <div class="field full">
+          <label>Performance Standards / Goal</label>
+          <textarea></textarea>
+        </div>
+        <div class="field full">
+          <label>Current Performance Assessment</label>
+          <textarea></textarea>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="actions">
+    <button class="save">Save</button>
+    <button class="submit">Submit</button>
+    <button class="cancel">Cancel</button>
+  </div>
+
+</div>
+
+.pip-container {
+  margin: 20px;
+  padding: 20px;
+  background: #fff;
+  font-family: Arial, sans-serif;
+  border: 1px solid #ccc;
+}
+
+.pip-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.pip-tabs button {
+  padding: 8px 16px;
+  border: none;
+  background: #e6cfc4;
+}
+
+.pip-tabs .active {
+  background: #7b2d1b;
+  color: white;
+}
+
+.section {
+  border: 1px solid #000;
+  margin-bottom: 25px;
+}
+
+.section-title {
+  background: #7b2d1b;
+  color: white;
+  padding: 8px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.group {
+  padding: 15px;
+}
+
+.group-title {
+  color: #7b2d1b;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+}
+
+.field label {
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.field input,
+.field textarea {
+  border: 1px solid #999;
+  padding: 6px;
+}
+
+.field textarea {
+  min-height: 70px;
+}
+
+.full {
+  grid-column: span 2;
+}
+
+.add-btn {
+  margin: 10px 15px;
+  background: #005eb8;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+}
+
+.issue-box {
+  margin: 15px;
+  padding: 15px;
+  border: 1px solid #000;
+}
+
+.issue-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.actions button {
+  padding: 8px 20px;
+  border: none;
+}
+
+.save,
+.submit {
+  background: #006b47;
+  color: white;
+}
+
+.cancel {
+  background: #7b2d1b;
+  color: white;
+}
+
+
+
+
 <div class="pip-container">
 
   <div class="pip-tabs">
