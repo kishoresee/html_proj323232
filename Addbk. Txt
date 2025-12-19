@@ -11,6 +11,258 @@
     <h3 class="section-title">Details</h3>
 
     <div class="group">
+      <h4>Manager Details</h4>
+      <div class="grid">
+        <div class="field"><label>Manager UID</label><input></div>
+        <div class="field"><label>Manager Name</label><input></div>
+        <div class="field"><label>Manager Email</label><input></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <h4>Employee Details</h4>
+      <div class="grid">
+        <div class="field"><label>Employee UID</label><input></div>
+        <div class="field"><label>Employee Name</label><input></div>
+        <div class="field"><label>Employee Email</label><input></div>
+        <div class="field"><label>Position</label><input></div>
+        <div class="field"><label>Department</label><input></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <h4>HRBP Details</h4>
+      <div class="grid">
+        <div class="field"><label>HRBP UID</label><input></div>
+        <div class="field"><label>HRBP Name</label><input></div>
+        <div class="field"><label>HRBP Email</label><input></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h3 class="section-title">Performance Improvement Program Recommendation</h3>
+
+    <div class="field full-width">
+      <label>Rationale for PIP Recommendation</label>
+      <textarea></textarea>
+    </div>
+
+    <button class="add-btn">+ Add Performance Issue</button>
+
+    <!-- Performance Issue Block -->
+    <div class="issue-card">
+      <button class="close-btn">✕</button>
+
+      <div class="issue-grid">
+        <div class="field">
+          <label>Timeline</label>
+          <input>
+        </div>
+
+        <div class="field full-width">
+          <label>Performance Issue</label>
+          <textarea></textarea>
+        </div>
+
+        <div class="field full-width">
+          <label>Performance Standards / Goal</label>
+          <textarea></textarea>
+        </div>
+
+        <div class="field full-width">
+          <label>Current Performance Assessment</label>
+          <textarea></textarea>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="actions">
+    <button class="save">Save</button>
+    <button class="submit">Submit</button>
+    <button class="cancel">Cancel</button>
+  </div>
+
+</div>
+
+
+
+:root {
+  --primary: #0a66c2;
+  --border: #d0d7de;
+  --bg: #f8fafc;
+}
+
+* {
+  box-sizing: border-box;
+  font-family: "Segoe UI", sans-serif;
+}
+
+.pip-container {
+  padding: 20px;
+  background: var(--bg);
+}
+
+.pip-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.pip-tabs button {
+  padding: 10px 18px;
+  border: 1px solid var(--border);
+  background: white;
+  cursor: pointer;
+}
+
+.pip-tabs .active {
+  background: var(--primary);
+  color: white;
+}
+
+.section {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 15px;
+  margin-bottom: 25px;
+}
+
+.section-title {
+  color: var(--primary);
+  margin-bottom: 15px;
+}
+
+.group {
+  margin-bottom: 20px;
+}
+
+.group h4 {
+  color: var(--primary);
+  margin-bottom: 10px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 15px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+}
+
+.field label {
+  font-size: 13px;
+  margin-bottom: 5px;
+}
+
+.field input,
+.field textarea {
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 70px;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.add-btn {
+  margin: 10px 0;
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.issue-card {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 15px;
+  margin-top: 15px;
+  background: #ffffff;
+}
+
+.close-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  cursor: pointer;
+}
+
+.issue-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 15px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: center;
+}
+
+.actions button {
+  padding: 10px 22px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.save,
+.submit {
+  background: var(--primary);
+  color: white;
+}
+
+.cancel {
+  background: #6b7280;
+  color: white;
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .pip-tabs {
+    flex-direction: column;
+  }
+}
+
+
+
+
+<div class="pip-container">
+
+  <div class="pip-tabs">
+    <button class="active">PIP Details</button>
+    <button>PIP Check-in Dates</button>
+    <button>Check-in Documentation</button>
+  </div>
+
+  <div class="section">
+    <h3 class="section-title">Details</h3>
+
+    <div class="group">
       <h4 class="group-title">Manager Details</h4>
       <div class="grid">
         <div class="field">
