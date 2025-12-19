@@ -1,3 +1,6 @@
+npm install @angular/platform-browser@17 --save
+
+
 
 <form [formGroup]="pipForm" class="pip-container">
 
