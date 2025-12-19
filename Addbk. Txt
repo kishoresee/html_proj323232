@@ -12,6 +12,219 @@
     <div class="group">
       <h4>Manager Details</h4>
       <div class="grid">
+        <div class="field">
+          <label>Manager UID</label>
+          <input>
+        </div>
+        <div class="field">
+          <label>Manager Name</label>
+          <input>
+        </div>
+        <div class="field">
+          <label>Manager Email</label>
+          <input>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h3 class="section-title">Performance Improvement Program Recommendation</h3>
+
+    <div class="field full-width">
+      <label>Rationale for PIP Recommendation</label>
+      <textarea></textarea>
+    </div>
+
+    <button class="add-btn" (click)="addIssue()">+ Add Performance Issue</button>
+
+    <div
+      class="issue-box"
+      *ngFor="let issue of performanceIssues; let i = index"
+    >
+      <button class="close-btn" (click)="removeIssue(i)">✕</button>
+
+      <div class="issue-grid">
+        <div class="field">
+          <label>Timeline</label>
+          <input>
+        </div>
+
+        <div class="field full-width">
+          <label>Performance Issue</label>
+          <textarea></textarea>
+        </div>
+
+        <div class="field full-width">
+          <label>Performance Standards / Goal</label>
+          <textarea></textarea>
+        </div>
+
+        <div class="field full-width">
+          <label>Current Performance Assessment</label>
+          <textarea></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="save">Save</button>
+    <button class="submit">Submit</button>
+    <button class="cancel">Cancel</button>
+  </div>
+
+</div>
+
+
+
+.pip-container {
+  margin: 20px;
+  padding: 20px;
+  background: white;
+  font-family: Arial, sans-serif;
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.pip-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.pip-tabs button {
+  padding: 8px 16px;
+  border: none;
+  background: #e0e0e0;
+}
+
+.pip-tabs .active {
+  background: #006b47;
+  color: white;
+}
+
+.section {
+  border: 1px solid #ccc;
+  margin-bottom: 20px;
+}
+
+.section-title {
+  background: #006b47;
+  color: white;
+  padding: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.group {
+  padding: 15px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+}
+
+.field label {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.field input,
+.field textarea {
+  padding: 6px;
+  border: 1px solid #b5b5b5;
+  border-radius: 3px;
+}
+
+.field textarea {
+  min-height: 70px;
+  resize: vertical;
+}
+
+.full-width {
+  grid-column: span 2;
+}
+
+.add-btn {
+  margin: 10px 15px;
+  background: #00875a;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+}
+
+.issue-box {
+  margin: 15px;
+  padding: 15px;
+  border: 1px solid #ccc;
+  position: relative;
+  border-radius: 4px;
+}
+
+.issue-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+}
+
+.close-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #8b4a2f;
+  color: white;
+  border: none;
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.actions button {
+  padding: 8px 20px;
+  border: none;
+}
+
+.save,
+.submit {
+  background: #006b47;
+  color: white;
+}
+
+.cancel {
+  background: #8b4a2f;
+  color: white;
+}
+
+
+<div class="pip-container">
+
+  <div class="pip-tabs">
+    <button class="active">PIP Details</button>
+    <button>PIP Check-in Dates</button>
+    <button>Check-in Documentation</button>
+  </div>
+
+  <div class="section">
+    <h3 class="section-title">Details</h3>
+
+    <div class="group">
+      <h4>Manager Details</h4>
+      <div class="grid">
         <input placeholder="Manager UID">
         <input placeholder="Manager Name">
         <input placeholder="Manager Email">
