@@ -1,3 +1,316 @@
+Based on the images provided, I have reconstructed your Angular code for the PIP Workflow form. I have updated the styling to use PrimeNG components to give it a more professional, polished look.
+1. Component TypeScript (pipform.component.ts)
+This file handles the reactive form logic, including the FormArray for performance issues.
+import { Component, OnInit, HostBinding } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
+// PrimeNG Imports
+import { InputTextModule } from 'primeng/inputtext';
+import { InputTextareaModule } from 'primeng/inputtextarea';
+import { CalendarModule } from 'primeng/calendar';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { TabViewModule } from 'primeng/tabview';
+
+@Component({
+  selector: 'app-pipform',
+  standalone: true,
+  imports: [
+    CommonModule, 
+    ReactiveFormsModule, 
+    InputTextModule, 
+    InputTextareaModule, 
+    CalendarModule, 
+    ButtonModule, 
+    CardModule, 
+    TabViewModule
+  ],
+  templateUrl: './pipform.component.html',
+  styleUrl: './pipform.component.css'
+})
+export class PIPFormComponent implements OnInit {
+  pipForm!: FormGroup;
+  tabs = ['PIP Details', 'Check-in Dates', 'Documentation'];
+  selectedTab = 0;
+
+  @HostBinding('style.--active-index')
+  get activeIndex() {
+    return this.selectedTab;
+  }
+
+  constructor(private fb: FormBuilder) {}
+
+  ngOnInit(): void {
+    this.pipForm = this.fb.group({
+      manager: this.fb.group({
+        uid: ['', Validators.required],
+        name: ['', Validators.required],
+        email: ['', [Validators.required, Validators.email]],
+      }),
+      employee: this.fb.group({
+        uid: ['', Validators.required],
+        name: ['', Validators.required],
+        email: ['', [Validators.required, Validators.email]],
+        department: ['', Validators.required],
+        position: ['', Validators.required],
+      }),
+      hrbp: this.fb.group({
+        uid: [''],
+        name: [''],
+        email: ['', Validators.email],
+      }),
+      pipRationale: ['', Validators.required],
+      performanceIssues: this.fb.array([])
+    });
+
+    this.addIssue(); // Initialize with one issue card
+  }
+
+  get performanceIssues(): FormArray {
+    return this.pipForm.get('performanceIssues') as FormArray;
+  }
+
+  private createIssue(): FormGroup {
+    return this.fb.group({
+      issue: ['', Validators.required],
+      timeline: ['', Validators.required],
+      standard: ['', Validators.required],
+      currentAssessment: ['', Validators.required],
+    });
+  }
+
+  addIssue(): void {
+    this.performanceIssues.push(this.createIssue());
+  }
+
+  removeIssue(index: number): void {
+    this.performanceIssues.removeAt(index);
+  }
+
+  onSubmit(): void {
+    if (this.pipForm.valid) {
+      console.log('Form Value ->', this.pipForm.value);
+    }
+  }
+}
+
+2. Component HTML (pipform.component.html)
+Using PrimeNG’s pInputText, pButton, and p-card for a cleaner UI.
+<form [formGroup]="pipForm" class="pip-container" (ngSubmit)="onSubmit()">
+  
+  <div class="pip-tabs">
+    <button type="button" 
+            *ngFor="let tab of tabs; let i = index" 
+            [class.active]="selectedTab === i"
+            (click)="selectedTab = i">
+      {{ tab }}
+    </button>
+    <span class="tab-indicator"></span>
+  </div>
+
+  <div class="section" formGroupName="manager">
+    <h3 class="section-title">Manager Details</h3>
+    <div class="grid">
+      <div class="field">
+        <label>Manager UID</label>
+        <input pInputText type="text" formControlName="uid" />
+      </div>
+      <div class="field">
+        <label>Manager Name</label>
+        <input pInputText type="text" formControlName="name" />
+      </div>
+      <div class="field">
+        <label>Manager Email</label>
+        <input pInputText type="email" formControlName="email" />
+      </div>
+    </div>
+  </div>
+
+  <div class="section" formGroupName="employee">
+    <h3 class="section-title">Employee Details</h3>
+    <div class="grid">
+      <div class="field">
+        <label>Employee UID</label>
+        <input pInputText type="text" formControlName="uid" />
+      </div>
+      <div class="field">
+        <label>Employee Name</label>
+        <input pInputText type="text" formControlName="name" />
+      </div>
+      <div class="field">
+        <label>Employee Email</label>
+        <input pInputText type="email" formControlName="email" />
+      </div>
+      <div class="field">
+        <label>Department</label>
+        <input pInputText type="text" formControlName="department" />
+      </div>
+      <div class="field">
+        <label>Position</label>
+        <input pInputText type="text" formControlName="position" />
+      </div>
+    </div>
+  </div>
+
+  <div class="section" formArrayName="performanceIssues">
+    <h3 class="section-title">Performance Issues</h3>
+    <div *ngFor="let issue of performanceIssues.controls; let i = index" [formGroupName]="i" class="issue-card-wrapper">
+      <p-card styleClass="issue-card">
+        <button pButton icon="pi pi-times" class="p-button-rounded p-button-danger close-btn" (click)="removeIssue(i)"></button>
+        
+        <div class="issue-grid">
+          <div class="field">
+            <label>Performance Issue</label>
+            <textarea pInputTextarea rows="2" formControlName="issue"></textarea>
+          </div>
+          <div class="field">
+            <label>Timeline</label>
+            <input pInputText type="date" formControlName="timeline" />
+          </div>
+          <div class="field">
+            <label>Performance Standard</label>
+            <textarea pInputTextarea rows="2" formControlName="standard"></textarea>
+          </div>
+          <div class="field">
+            <label>Current Assessment</label>
+            <textarea pInputTextarea rows="2" formControlName="currentAssessment"></textarea>
+          </div>
+        </div>
+      </p-card>
+    </div>
+    <button pButton type="button" label="Add Performance Issue" icon="pi pi-plus" class="p-button-outlined add-btn" (click)="addIssue()"></button>
+  </div>
+
+  <div class="actions">
+    <button pButton type="button" label="Cancel" class="p-button-secondary cancel"></button>
+    <button pButton type="button" label="Save" class="p-button-info save"></button>
+    <button pButton type="submit" label="Submit" [disabled]="pipForm.invalid" class="p-button-primary submit"></button>
+  </div>
+</form>
+
+3. Component CSS (pipform.component.css)
+Updated to incorporate PrimeNG design patterns while keeping your layout.
+:host {
+    display: block;
+    background: #f4f7fa;
+    padding: 20px;
+}
+
+* { box-sizing: border-box; font-family: "Segoe UI", Arial, sans-serif; }
+
+.pip-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Tab Styling */
+.pip-tabs {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 24px;
+    border-bottom: 2px solid #d6dde6;
+    position: relative;
+}
+
+.pip-tabs button {
+    flex: 1;
+    padding: 12px 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.pip-tabs button.active {
+    color: #00875a;
+    border-bottom: 3px solid #00875a;
+}
+
+/* Sections */
+.section {
+    background: #ffffff;
+    border: 1px solid #d6dde6;
+    border-radius: 8px;
+    padding: 25px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.section-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 20px;
+    border-left: 4px solid #0a66c2;
+    padding-left: 10px;
+}
+
+/* Grid System */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.field label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+}
+
+/* Issue Card Styling */
+.issue-card-wrapper {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.issue-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.close-btn {
+    position: absolute !important;
+    top: -10px;
+    right: -10px;
+    z-index: 10;
+}
+
+/* Actions */
+.actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 30px;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 600px) {
+    .grid, .issue-grid { grid-template-columns: 1fr; }
+    .actions { flex-direction: column; }
+}
+
+Next Steps
+Would you like me to help you set up the PrimeNG Icons or configure a specific PrimeNG Theme (like Aura or Lara) in your angular.json to match these styles?
+
+
+
+
+
+
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 
