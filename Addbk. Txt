@@ -1,3 +1,160 @@
+.pip-container {
+  padding: 20px;
+}
+
+.pip-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.pip-tabs button {
+  padding: 10px 18px;
+  border: 1px solid var(--border);
+  background: white;
+  cursor: pointer;
+}
+
+.pip-tabs .active {
+  background: var(--primary);
+  color: white;
+}
+
+.section {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 15px;
+  margin-bottom: 25px;
+}
+
+.section-title {
+  color: var(--primary);
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+.group {
+  margin-bottom: 20px;
+}
+
+.group h4 {
+  color: var(--primary);
+  margin-bottom: 10px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 15px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+}
+
+.field label {
+  font-size: 13px;
+  margin-bottom: 5px;
+  color: #374151;
+}
+
+.field input,
+.field textarea {
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 70px;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.add-btn {
+  margin: 10px 0;
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.issue-card {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 15px;
+  margin-top: 15px;
+  background: white;
+}
+
+.close-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  cursor: pointer;
+}
+
+.issue-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 15px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: center;
+}
+
+.actions button {
+  padding: 10px 22px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.save,
+.submit {
+  background: var(--primary);
+  color: white;
+}
+
+.cancel {
+  background: #6b7280;
+  color: white;
+}
+
+@media (max-width: 600px) {
+  .pip-tabs {
+    flex-direction: column;
+  }
+}
+
+
+
+
+
+
+
+
+
 
 <div class="pip-container">
 
