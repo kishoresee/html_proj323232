@@ -1,3 +1,261 @@
+
+Good, you’re thinking exactly in the right direction 👍
+What you want for Check-in Dates is the SAME PATTERN as Performance Issues, implemented cleanly with a FormArray, max 8 items, add (+) and remove (×), PrimeNG inputs, validations, and inline errors.
+
+Below is a drop-in, production-ready solution that does NOT disturb your existing form.
+
+⸻
+
+✅ WHAT YOU WILL ADD (OVERVIEW)
+	•	New FormArray → checkInSessions
+	•	Each session = FormGroup
+	•	Max sessions = 8
+	•	Fields:
+	•	Session PIP ID (same validation as UID)
+	•	Session Date
+	•	Session Time (date+time)
+	•	Participants
+	•	Check-in Notes (textarea)
+	•	+ Add Session button (disabled at 8)
+	•	X remove button aligned top-right
+	•	Inline validation errors (on submit + touch)
+
+⸻
+
+✅ 1️⃣ UPDATE .ts (ONLY ADD THIS — DON’T REMOVE EXISTING)
+
+Add these validators
+
+private uidPattern = /^[A-Za-z0-9]{6}$/;
+private namePattern = /^[A-Za-z ]+$/;
+
+
+⸻
+
+Add this inside ngOnInit()
+
+checkInSessions: this.fb.array([])
+
+
+⸻
+
+Add these methods to the component
+
+get checkInSessions(): FormArray {
+  return this.pipForm.get('checkInSessions') as FormArray;
+}
+
+createCheckInSession(): FormGroup {
+  return this.fb.group({
+    sessionPipId: ['', [
+      Validators.required,
+      Validators.pattern(this.uidPattern)
+    ]],
+    sessionDate: ['', Validators.required],
+    sessionDateTime: ['', Validators.required],
+    participants: ['', [
+      Validators.required,
+      Validators.minLength(3),
+      Validators.pattern(this.namePattern)
+    ]],
+    checkInNotes: ['', [
+      Validators.required,
+      Validators.minLength(10)
+    ]]
+  });
+}
+
+addSession(): void {
+  if (this.checkInSessions.length < 8) {
+    this.checkInSessions.push(this.createCheckInSession());
+  }
+}
+
+removeSession(index: number): void {
+  this.checkInSessions.removeAt(index);
+}
+
+isInvalid(control: any): boolean {
+  return control && control.invalid && (control.touched || this.pipForm.submitted);
+}
+
+
+⸻
+
+Ensure onSubmit() marks controls touched
+
+onSubmit(): void {
+  this.pipForm.markAllAsTouched();
+  if (this.pipForm.invalid) return;
+
+  console.log(this.pipForm.value);
+}
+
+
+⸻
+
+✅ 2️⃣ ADD THIS TAB IN .html (CHECK-IN DATES TAB)
+
+👉 Do NOT change your existing tabs
+👉 Just ADD this inside <p-tabView>
+
+<p-tabPanel header="Check-in Dates">
+
+  <p-card header="Check-in Sessions">
+    <div formArrayName="checkInSessions">
+
+      <div
+        *ngFor="let session of checkInSessions.controls; let i = index"
+        [formGroupName]="i"
+        class="issue-card-wrapper">
+
+        <p-card class="issue-card">
+
+          <button
+            pButton
+            type="button"
+            icon="pi pi-times"
+            class="close-btn"
+            (click)="removeSession(i)">
+          </button>
+
+          <div class="issue-grid">
+
+            <div class="field">
+              <label>Session PIP ID *</label>
+              <input
+                pInputText
+                formControlName="sessionPipId"
+                [class.p-invalid]="isInvalid(session.get('sessionPipId'))">
+              <small class="p-error" *ngIf="isInvalid(session.get('sessionPipId'))">
+                6 character alphanumeric ID required
+              </small>
+            </div>
+
+            <div class="field">
+              <label>Session Date *</label>
+              <p-calendar
+                formControlName="sessionDate"
+                dateFormat="dd/mm/yy"
+                [showIcon]="true"
+                [class.p-invalid]="isInvalid(session.get('sessionDate'))">
+              </p-calendar>
+              <small class="p-error" *ngIf="isInvalid(session.get('sessionDate'))">
+                Session date required
+              </small>
+            </div>
+
+            <div class="field">
+              <label>Session Date & Time *</label>
+              <p-calendar
+                formControlName="sessionDateTime"
+                showTime="true"
+                hourFormat="24"
+                [showIcon]="true"
+                [class.p-invalid]="isInvalid(session.get('sessionDateTime'))">
+              </p-calendar>
+              <small class="p-error" *ngIf="isInvalid(session.get('sessionDateTime'))">
+                Date & time required
+              </small>
+            </div>
+
+            <div class="field">
+              <label>Participants *</label>
+              <input
+                pInputText
+                formControlName="participants"
+                [class.p-invalid]="isInvalid(session.get('participants'))">
+              <small class="p-error" *ngIf="isInvalid(session.get('participants'))">
+                Alphabets only, minimum 3 characters
+              </small>
+            </div>
+
+            <div class="field full-width">
+              <label>Check-in Notes *</label>
+              <textarea
+                pInputTextarea
+                rows="3"
+                formControlName="checkInNotes"
+                [class.p-invalid]="isInvalid(session.get('checkInNotes'))">
+              </textarea>
+              <small class="p-error" *ngIf="isInvalid(session.get('checkInNotes'))">
+                Minimum 10 characters required
+              </small>
+            </div>
+
+          </div>
+
+        </p-card>
+
+      </div>
+
+    </div>
+
+    <button
+      pButton
+      type="button"
+      label="Add Session"
+      icon="pi pi-plus"
+      class="add-btn"
+      (click)="addSession()"
+      [disabled]="checkInSessions.length >= 8">
+    </button>
+
+  </p-card>
+
+</p-tabPanel>
+
+
+⸻
+
+✅ 3️⃣ CSS (YOU ALREADY HAVE MOST — ONLY ENSURE THIS EXISTS)
+
+.issue-card-wrapper {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.close-btn {
+  position: absolute !important;
+  top: -10px;
+  right: -10px;
+  z-index: 10;
+}
+
+.issue-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.full-width {
+  grid-column: span 2;
+}
+
+
+⸻
+
+✅ FINAL RESULT (WHAT YOU GET)
+
+✔ Same UX as Performance Issues
+✔ Max Session 1 → Session 8
+✔ Proper date & date-time pickers
+✔ Inline validation messages
+✔ Enterprise-ready PrimeNG UI
+✔ Easy POST to SharePoint later
+
+⸻
+
+If you want next:
+	•	Auto-label “Session 1 / Session 2”
+	•	Disable submit if any tab invalid
+	•	SharePoint list schema for sessions
+	•	Read-only mode for managers
+
+Say the word 👍
+
+
+
 You’re right 👍 — performance metrics (Performance Issues section) must NOT be removed.
 Let’s fix this cleanly without changing your structure, tabs, or CSS.
 
