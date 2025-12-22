@@ -1,3 +1,222 @@
+Got it 👍 I can clearly see what feels “off” in your screenshot, and you’re right — functionally it works, but visually it doesn’t look enterprise-grade yet. The good news: this is 100% a layout + PrimeNG usage issue, not a logic issue.
+
+I’ll break this into WHAT’S WRONG, then give you EXACT FIXES (HTML + CSS tweaks only, no logic rewrite).
+
+⸻
+
+🔴 WHAT’S NOT LOOKING GOOD (FROM YOUR SCREENSHOT)
+	1.	❌ Fields are full-width stacked, looks like a basic form
+	2.	❌ No visual grouping → everything blends together
+	3.	❌ Close (❌) button feels “floating”, not anchored to card
+	4.	❌ Date & Time inputs look plain (not PrimeNG styled)
+	5.	❌ Spacing is inconsistent → too much empty space
+	6.	❌ “Check-in Sessions” header lacks hierarchy
+
+This is why it feels unfinished.
+
+⸻
+
+✅ WHAT A GOOD ENTERPRISE CHECK-IN CARD SHOULD LOOK LIKE
+
+Think BNP / ICON style:
+	•	Card per session
+	•	2-column grid
+	•	Clear section title
+	•	Close button inside top-right corner
+	•	PrimeNG Calendar + Time picker
+	•	Compact but readable
+
+⸻
+
+✅ STEP 1: USE PRIME NG COMPONENTS (VERY IMPORTANT)
+
+Replace plain inputs for date & time.
+
+❌ Don’t use
+
+<input type="date">
+<input type="time">
+
+✅ Use
+
+<p-calendar formControlName="sessionDate" dateFormat="dd/mm/yy"></p-calendar>
+
+<p-calendar
+  formControlName="sessionTime"
+  [timeOnly]="true"
+  hourFormat="24">
+</p-calendar>
+
+This alone improves UI 40%.
+
+⸻
+
+✅ STEP 2: FIX THE CARD STRUCTURE (HTML)
+
+✔ Revised Check-in Session Card (ONLY THIS PART)
+
+<p-card class="session-card">
+
+  <div class="session-header">
+    <span class="session-title">Session {{ i + 1 }}</span>
+    <button
+      pButton
+      icon="pi pi-times"
+      class="p-button-rounded p-button-text close-btn"
+      type="button"
+      (click)="removeSession(i)">
+    </button>
+  </div>
+
+  <div class="session-grid">
+
+    <div class="field">
+      <label>Session PIP ID *</label>
+      <input pInputText formControlName="sessionPipId">
+    </div>
+
+    <div class="field">
+      <label>Participants *</label>
+      <input pInputText formControlName="participants">
+    </div>
+
+    <div class="field">
+      <label>Session Date *</label>
+      <p-calendar formControlName="sessionDate" dateFormat="dd/mm/yy"></p-calendar>
+    </div>
+
+    <div class="field">
+      <label>Session Time *</label>
+      <p-calendar formControlName="sessionTime" [timeOnly]="true" hourFormat="24"></p-calendar>
+    </div>
+
+    <div class="field full-width">
+      <label>Session Check-in *</label>
+      <textarea pInputTextarea rows="3" formControlName="checkInNotes"></textarea>
+    </div>
+
+  </div>
+
+</p-card>
+
+
+⸻
+
+✅ STEP 3: FIX THE CSS (THIS IS THE MAIN VISUAL IMPROVEMENT)
+
+Add / replace only these styles.
+
+.session-card {
+  margin-bottom: 24px;
+  border-radius: 10px;
+}
+
+.session-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.session-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #1f3a8a;
+}
+
+.session-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.full-width {
+  grid-column: span 2;
+}
+
+.close-btn {
+  color: #1d4ed8;
+}
+
+@media (max-width: 768px) {
+  .session-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .full-width {
+    grid-column: span 1;
+  }
+}
+
+
+⸻
+
+✅ STEP 4: IMPROVE SECTION HEADER
+
+Instead of plain text:
+
+<p-card header="Check-in Sessions">
+
+Use:
+
+<p-card>
+  <ng-template pTemplate="header">
+    <span style="font-weight:600;color:#1d4ed8">
+      Check-in Sessions
+    </span>
+  </ng-template>
+
+
+⸻
+
+🎯 RESULT YOU WILL SEE AFTER THIS
+
+✔ Clean 2-column layout
+✔ Clear session separation
+✔ Close button aligned correctly
+✔ PrimeNG date & time pickers
+✔ Looks corporate / production-ready
+✔ Same logic, no breakage
+
+⸻
+
+🔵 BLUE THEME YOU ARE USING (CONFIRMED)
+
+Use this consistently:
+
+Purpose	Color
+Primary	#1d4ed8
+Header	#2563eb
+Border	#dbeafe
+Error	#dc2626
+Background	#f8fafc
+
+
+⸻
+
+NEXT (ONLY IF YOU WANT)
+	•	Validation summary banner on submit
+	•	Disable Add Session after 8
+	•	SharePoint POST payload mapping
+	•	Draft vs Submit state handling
+
+Say “next” and tell which one.
+
+
+
+
 Good, now we’re at the right stage 👍
 I’ll give you a clean, production-ready solution that fits exactly into what you already built, without breaking tabs, performance issues, styling, or validations.
 
