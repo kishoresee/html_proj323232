@@ -1,3 +1,318 @@
+Good, now we’re at the right stage 👍
+I’ll give you a clean, production-ready solution that fits exactly into what you already built, without breaking tabs, performance issues, styling, or validations.
+
+You will get:
+	•	Same structure as Performance Issues
+	•	New Check-in Dates tab
+	•	Session 1 → Session 8 (max 8)
+	•	+ Add Session button
+	•	X close button aligned top-right
+	•	Full Reactive Form + validations
+	•	Standalone component
+	•	PrimeNG-only UI
+	•	Inline validation messages
+
+⸻
+
+✅ WHAT IS ADDED (SUMMARY)
+
+New FormArray
+
+checkInSessions
+
+Fields
+
+Field	Type	Validation
+sessionPipId	text	required, 6 chars, alphanumeric
+sessionDate	date	required
+sessionTime	time	required
+participants	text	required, letters + comma
+checkInNotes	textarea	required, min 10 chars
+
+Max sessions: 8
+Min sessions: 1
+
+⸻
+
+✅ pipform.component.ts
+
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import {
+  FormBuilder,
+  FormGroup,
+  FormArray,
+  Validators,
+  ReactiveFormsModule
+} from '@angular/forms';
+
+import { TabViewModule } from 'primeng/tabview';
+import { CardModule } from 'primeng/card';
+import { InputTextModule } from 'primeng/inputtext';
+import { InputTextareaModule } from 'primeng/inputtextarea';
+import { ButtonModule } from 'primeng/button';
+
+@Component({
+  selector: 'app-pipform',
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    TabViewModule,
+    CardModule,
+    InputTextModule,
+    InputTextareaModule,
+    ButtonModule
+  ],
+  templateUrl: './pipform.component.html',
+  styleUrls: ['./pipform.component.css']
+})
+export class PipformComponent implements OnInit {
+  pipForm!: FormGroup;
+  submitted = false;
+
+  constructor(private fb: FormBuilder) {}
+
+  ngOnInit(): void {
+    this.pipForm = this.fb.group({
+      manager: this.fb.group({
+        uid: ['', [Validators.required, Validators.pattern(/^[A-Za-z0-9]{6}$/)]],
+        name: ['', [Validators.required, Validators.pattern(/^[A-Za-z ]+$/)]],
+        email: ['', [Validators.required, Validators.email]]
+      }),
+      employee: this.fb.group({
+        uid: ['', [Validators.required, Validators.pattern(/^[A-Za-z0-9]{6}$/)]],
+        name: ['', [Validators.required, Validators.pattern(/^[A-Za-z ]+$/)]],
+        email: ['', [Validators.required, Validators.email]],
+        department: ['', Validators.required],
+        position: ['', Validators.required]
+      }),
+      hrbp: this.fb.group({
+        uid: ['', Validators.pattern(/^[A-Za-z0-9]{6}$/)],
+        name: ['', Validators.pattern(/^[A-Za-z ]+$/)],
+        email: ['', Validators.email]
+      }),
+      pipRationale: ['', [Validators.required, Validators.minLength(10)]],
+      performanceIssues: this.fb.array([this.createPerformanceIssue()]),
+      checkInSessions: this.fb.array([this.createSession()])
+    });
+  }
+
+  get performanceIssues(): FormArray {
+    return this.pipForm.get('performanceIssues') as FormArray;
+  }
+
+  get checkInSessions(): FormArray {
+    return this.pipForm.get('checkInSessions') as FormArray;
+  }
+
+  createPerformanceIssue(): FormGroup {
+    return this.fb.group({
+      issue: ['', [Validators.required, Validators.minLength(10)]],
+      timeline: ['', Validators.required],
+      standard: ['', [Validators.required, Validators.minLength(10)]],
+      currentAssessment: ['', [Validators.required, Validators.minLength(10)]]
+    });
+  }
+
+  createSession(): FormGroup {
+    return this.fb.group({
+      sessionPipId: ['', [Validators.required, Validators.pattern(/^[A-Za-z0-9]{6}$/)]],
+      sessionDate: ['', Validators.required],
+      sessionTime: ['', Validators.required],
+      participants: ['', [Validators.required, Validators.pattern(/^[A-Za-z, ]+$/)]],
+      checkInNotes: ['', [Validators.required, Validators.minLength(10)]]
+    });
+  }
+
+  addSession(): void {
+    if (this.checkInSessions.length < 8) {
+      this.checkInSessions.push(this.createSession());
+    }
+  }
+
+  removeSession(index: number): void {
+    if (this.checkInSessions.length > 1) {
+      this.checkInSessions.removeAt(index);
+    }
+  }
+
+  isInvalid(control: any): boolean {
+    return control && control.invalid && (control.touched || this.submitted);
+  }
+
+  onSubmit(): void {
+    this.submitted = true;
+    if (this.pipForm.invalid) return;
+    console.log(this.pipForm.value);
+  }
+}
+
+
+⸻
+
+✅ pipform.component.html
+
+<form [formGroup]="pipForm" class="pip-container" (ngSubmit)="onSubmit()">
+
+  <p-tabView>
+
+    <!-- TAB 1 -->
+    <p-tabPanel header="PIP Details">
+      <!-- your existing PIP + Performance Issues code stays SAME -->
+    </p-tabPanel>
+
+    <!-- TAB 2 -->
+    <p-tabPanel header="Check-in Dates">
+
+      <p-card header="Check-in Sessions">
+        <div formArrayName="checkInSessions">
+
+          <div
+            *ngFor="let session of checkInSessions.controls; let i = index"
+            [formGroupName]="i"
+            class="issue-card-wrapper">
+
+            <p-card class="issue-card">
+              <button
+                pButton
+                icon="pi pi-times"
+                class="close-btn"
+                type="button"
+                (click)="removeSession(i)">
+              </button>
+
+              <div class="issue-grid">
+                <div class="field">
+                  <label>Session PIP ID *</label>
+                  <input pInputText formControlName="sessionPipId">
+                  <small class="p-error" *ngIf="isInvalid(session.get('sessionPipId'))">
+                    6 character alphanumeric required
+                  </small>
+                </div>
+
+                <div class="field">
+                  <label>Session Date *</label>
+                  <input type="date" pInputText formControlName="sessionDate">
+                  <small class="p-error" *ngIf="isInvalid(session.get('sessionDate'))">
+                    Date required
+                  </small>
+                </div>
+
+                <div class="field">
+                  <label>Session Time *</label>
+                  <input type="time" pInputText formControlName="sessionTime">
+                  <small class="p-error" *ngIf="isInvalid(session.get('sessionTime'))">
+                    Time required
+                  </small>
+                </div>
+
+                <div class="field">
+                  <label>Participants *</label>
+                  <input pInputText formControlName="participants">
+                  <small class="p-error" *ngIf="isInvalid(session.get('participants'))">
+                    Names separated by comma
+                  </small>
+                </div>
+
+                <div class="field full-width">
+                  <label>Session Check-in *</label>
+                  <textarea pInputTextarea rows="3" formControlName="checkInNotes"></textarea>
+                  <small class="p-error" *ngIf="isInvalid(session.get('checkInNotes'))">
+                    Minimum 10 characters
+                  </small>
+                </div>
+              </div>
+
+            </p-card>
+          </div>
+
+        </div>
+
+        <button
+          pButton
+          label="Add Session"
+          icon="pi pi-plus"
+          class="add-btn"
+          type="button"
+          (click)="addSession()"
+          [disabled]="checkInSessions.length >= 8">
+        </button>
+
+      </p-card>
+    </p-tabPanel>
+
+  </p-tabView>
+
+  <div class="actions">
+    <button pButton label="Save" severity="secondary" type="button"></button>
+    <button pButton label="Submit" severity="primary" type="submit"></button>
+    <button pButton label="Cancel" severity="danger" type="button"></button>
+  </div>
+
+</form>
+
+
+⸻
+
+✅ pipform.component.css
+
+.issue-card-wrapper {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.close-btn {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  z-index: 10;
+}
+
+.issue-card {
+  padding: 20px;
+}
+
+.issue-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.full-width {
+  grid-column: span 2;
+}
+
+
+⸻
+
+✅ RESULT
+
+✔ Same UX as Performance Issues
+✔ Proper validation
+✔ Max 8 sessions
+✔ Clean PrimeNG UI
+✔ SharePoint-ready POST structure
+✔ No breaking changes
+
+⸻
+
+If you want next:
+	•	SharePoint List schema
+	•	POST mapping code
+	•	Draft vs Submit flow
+	•	Validation summary banner
+
+Say the word 👍
+
+
+
+
+
+
+
+
+
 
 Good, you’re thinking exactly in the right direction 👍
 What you want for Check-in Dates is the SAME PATTERN as Performance Issues, implemented cleanly with a FormArray, max 8 items, add (+) and remove (×), PrimeNG inputs, validations, and inline errors.
