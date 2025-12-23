@@ -1,3 +1,197 @@
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule
+} from '@angular/forms';
+
+import { InputTextModule } from 'primeng/inputtext';
+import { InputTextareaModule } from 'primeng/inputtextarea';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { DropdownModule } from 'primeng/dropdown';
+
+import { SharePointService } from '../../services/sharepoint.service';
+
+@Component({
+  selector: 'app-pipform',
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    InputTextModule,
+    InputTextareaModule,
+    ButtonModule,
+    CardModule,
+    DropdownModule
+  ],
+  templateUrl: './pipform.component.html',
+  styleUrls: ['./pipform.component.css']
+})
+export class PIPFormComponent implements OnInit {
+
+  pipForm!: FormGroup;
+  employees: any[] = [];
+  submitted = false;
+
+  constructor(
+    private fb: FormBuilder,
+    private sp: SharePointService
+  ) {}
+
+  ngOnInit(): void {
+    this.buildForm();
+    this.identifyManager();
+  }
+
+  // KEEP YOUR FORM STRUCTURE AS IS
+  private buildForm(): void {
+    this.pipForm = this.fb.group({
+      manager: this.fb.group({
+        uid: [''],
+        name: [''],
+        email: ['']
+      }),
+      employee: this.fb.group({
+        uid: ['', Validators.required],
+        name: [''],
+        email: ['']
+      }),
+      hrbp: this.fb.group({
+        uid: [''],
+        name: [''],
+        email: ['']
+      }),
+      pipRationale: ['', Validators.required]
+    });
+  }
+
+  // ================================
+  // ONLY NEW / MODIFIED PART STARTS
+  // ================================
+  private identifyManager(): void {
+    this.sp.getCurrentUser().subscribe({
+      next: user => {
+        console.log('SharePoint Current User:', user);
+
+        const loginUid = user?.LoginName?.split('|')?.pop();
+        console.log('Extracted UID:', loginUid);
+
+        if (!loginUid) {
+          alert('Unable to detect logged-in user UID');
+          return;
+        }
+
+        this.sp.getEmployeeByUid(loginUid).subscribe({
+          next: res => {
+            console.log('EmployeeList response:', res);
+
+            if (!res?.d?.results?.length) {
+              alert('You are not authorized to raise PIP');
+              return;
+            }
+
+            const manager = res.d.results[0];
+            console.log('Matched Manager Row:', manager);
+
+            this.pipForm.patchValue({
+              manager: {
+                uid: manager.UID,
+                name: manager.NAME,
+                email: manager.EMAIL
+              }
+            });
+
+            // Disable manager fields so they are read-only
+            this.pipForm.get('manager')?.disable();
+          },
+          error: err => {
+            console.error('EmployeeList API error:', err);
+          }
+        });
+      },
+      error: err => {
+        console.error('CurrentUser API error:', err);
+      }
+    });
+  }
+  // ================================
+  // ONLY NEW / MODIFIED PART ENDS
+  // ================================
+
+  // KEEP EXISTING METHODS UNTOUCHED
+  onEmployeeChange(employeeUid: string): void {
+    if (!employeeUid) return;
+
+    this.sp.getEmployeeByUid(employeeUid).subscribe({
+      next: res => {
+        if (!res?.d?.results?.length) return;
+
+        const emp = res.d.results[0];
+
+        this.pipForm.patchValue({
+          employee: {
+            uid: emp.UID,
+            name: emp.NAME,
+            email: emp.EMAIL
+          },
+          hrbp: {
+            uid: emp.HRBP_UID,
+            name: emp.HRBP,
+            email: emp.HRBP_EMAIL
+          }
+        });
+
+        this.pipForm.get('hrbp')?.disable();
+      }
+    });
+  }
+
+  onSubmit(): void {
+    this.submitted = true;
+
+    if (this.pipForm.invalid) {
+      this.pipForm.markAllAsTouched();
+      return;
+    }
+
+    const data = this.pipForm.getRawValue();
+
+    const payload = {
+      __metadata: { type: 'SP.Data.PIPDetailsListItem' },
+      Title: data.employee.name,
+      ManagerUID: data.manager.uid,
+      ManagerName: data.manager.name,
+      ManagerEmail: data.manager.email,
+      EmployeeUID: data.employee.uid,
+      EmployeeName: data.employee.name,
+      EmployeeEmail: data.employee.email,
+      HRBPUID: data.hrbp.uid,
+      HRBPName: data.hrbp.name,
+      HRBPEmail: data.hrbp.email,
+      PipRationale: data.pipRationale
+    };
+
+    this.sp.savePIP(payload).subscribe({
+      next: () => {
+        alert('PIP raised successfully');
+        this.pipForm.reset();
+        this.submitted = false;
+      },
+      error: () => {
+        alert('Error while saving PIP');
+      }
+    });
+  }
+}
+
+
+
+
+
+
 Perfect 👍
 I’ll now explain VERY CLEARLY, FILE BY FILE, LINE BY LINE, WHERE to add WHAT, so you don’t get confused.
 We will ONLY verify manager auto-population from SharePoint. Nothing else.
