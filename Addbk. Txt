@@ -1,3 +1,273 @@
+Perfect 👍
+I’ll now explain VERY CLEARLY, FILE BY FILE, LINE BY LINE, WHERE to add WHAT, so you don’t get confused.
+We will ONLY verify manager auto-population from SharePoint. Nothing else.
+
+⸻
+
+🧭 WHAT WE ARE DOING (SCOPE)
+
+✔ Angular app (standalone)
+✔ SharePoint 2016
+✔ Verify service works
+✔ Verify manager details auto-populate
+
+❌ No employee logic
+❌ No HRBP
+❌ No submit
+❌ No save
+
+⸻
+
+📁 YOUR PROJECT STRUCTURE (EXPECTED)
+
+src/
+ ├── app/
+ │    ├── services/
+ │    │     └── sharepoint.service.ts
+ │    ├── pages/
+ │    │     └── pipform/
+ │    │           ├── pipform.component.ts
+ │    │           ├── pipform.component.html
+ │    │           └── pipform.component.css
+ └── main.ts
+
+
+⸻
+
+🟢 STEP 1 — ENABLE HTTP CLIENT (MANDATORY)
+
+📄 src/main.ts
+
+➡️ Open this file
+➡️ Ensure this code exists exactly
+
+import { bootstrapApplication } from '@angular/platform-browser';
+import { AppComponent } from './app/app.component';
+import { provideHttpClient } from '@angular/common/http';
+
+bootstrapApplication(AppComponent, {
+  providers: [provideHttpClient()]
+});
+
+✅ This allows Angular to call SharePoint REST APIs.
+
+⸻
+
+🟢 STEP 2 — SHAREPOINT SERVICE (ALL SP CALLS GO HERE)
+
+📄 src/app/services/sharepoint.service.ts
+
+➡️ Create this file if not present
+➡️ Paste FULL code below
+
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+@Injectable({ providedIn: 'root' })
+export class SharePointService {
+
+  private siteUrl =
+    'https://YOUR-SHAREPOINT-SITE-URL';
+
+  constructor(private http: HttpClient) {}
+
+  private headers() {
+    return {
+      headers: new HttpHeaders({
+        Accept: 'application/json;odata=verbose'
+      })
+    };
+  }
+
+  getCurrentUser(): Observable<any> {
+    return this.http.get(
+      `${this.siteUrl}/_api/web/currentuser`,
+      this.headers()
+    );
+  }
+
+  getEmployeeByUid(uid: string): Observable<any> {
+    return this.http.get(
+      `${this.siteUrl}/_api/web/lists/getbytitle('EmployeeList')/items?$filter=UID eq '${uid}'`,
+      this.headers()
+    );
+  }
+}
+
+⚠️ Replace YOUR-SHAREPOINT-SITE-URL with real site URL.
+
+⸻
+
+🟢 STEP 3 — PIP COMPONENT (TS FILE)
+
+📄 src/app/pages/pipform/pipform.component.ts
+
+➡️ Open this file
+➡️ Replace content with ONLY this (manager logic only)
+
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+
+import { InputTextModule } from 'primeng/inputtext';
+import { CardModule } from 'primeng/card';
+
+import { SharePointService } from '../../services/sharepoint.service';
+
+@Component({
+  selector: 'app-pipform',
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    InputTextModule,
+    CardModule
+  ],
+  templateUrl: './pipform.component.html',
+  styleUrls: ['./pipform.component.css']
+})
+export class PIPFormComponent implements OnInit {
+
+  pipForm!: FormGroup;
+
+  constructor(
+    private fb: FormBuilder,
+    private sp: SharePointService
+  ) {}
+
+  ngOnInit(): void {
+    this.buildForm();
+    this.identifyManager();
+  }
+
+  private buildForm(): void {
+    this.pipForm = this.fb.group({
+      manager: this.fb.group({
+        uid: [''],
+        name: [''],
+        email: ['']
+      })
+    });
+  }
+
+  private identifyManager(): void {
+    this.sp.getCurrentUser().subscribe(user => {
+      console.log('Current User:', user);
+
+      const uid = user.LoginName?.split('|')?.pop();
+      console.log('Extracted UID:', uid);
+
+      this.sp.getEmployeeByUid(uid!).subscribe(res => {
+        console.log('Employee List Response:', res);
+
+        if (!res?.d?.results?.length) {
+          alert('You are not authorized');
+          return;
+        }
+
+        const manager = res.d.results[0];
+        console.log('Manager Matched:', manager);
+
+        this.pipForm.patchValue({
+          manager: {
+            uid: manager.UID,
+            name: manager.NAME,
+            email: manager.EMAIL
+          }
+        });
+
+        this.pipForm.get('manager')?.disable();
+      });
+    });
+  }
+}
+
+
+⸻
+
+🟢 STEP 4 — HTML (MANAGER ONLY)
+
+📄 src/app/pages/pipform/pipform.component.html
+
+➡️ Replace everything with ONLY this
+
+<form [formGroup]="pipForm" class="pip-container">
+
+  <p-card header="Manager Details">
+    <div formGroupName="manager" class="grid">
+
+      <div class="field">
+        <label>Manager UID</label>
+        <input pInputText formControlName="uid" disabled />
+      </div>
+
+      <div class="field">
+        <label>Manager Name</label>
+        <input pInputText formControlName="name" disabled />
+      </div>
+
+      <div class="field">
+        <label>Manager Email</label>
+        <input pInputText formControlName="email" disabled />
+      </div>
+
+    </div>
+  </p-card>
+
+</form>
+
+
+⸻
+
+🟢 STEP 5 — RUN & VERIFY
+
+Run app
+
+ng serve
+
+Open browser → Press F12 → Console
+
+You MUST SEE logs like:
+
+Current User: { LoginName: "...|12345" }
+Extracted UID: 12345
+Employee List Response: { d: { results: [...] } }
+Manager Matched: { UID: "12345", NAME: "...", EMAIL: "..." }
+
+UI Result
+
+✔ Manager UID auto-filled
+✔ Manager Name auto-filled
+✔ Manager Email auto-filled
+✔ Fields disabled
+
+⸻
+
+❌ IF IT FAILS — CHECK THESE
+
+Problem	Reason
+No console logs	Service not injected
+UID undefined	LoginName format different
+Empty results	Column internal name mismatch
+403 error	SharePoint permission
+
+
+⸻
+
+🟢 CONFIRMATION REQUIRED FROM YOU
+
+Please reply ONLY ONE of these:
+
+✅ “Manager auto population works”
+❌ Paste console output here
+
+Only after this, we will move to Employee dropdown → HRBP → Save PIP.
+
+This is exactly how real enterprise apps are built — step by step 👍
+
+
+
 
 <form [formGroup]="pipForm" (ngSubmit)="onSubmit()" class="pip-container">
 
