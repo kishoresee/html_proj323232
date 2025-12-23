@@ -1,3 +1,122 @@
+
+<form [formGroup]="pipForm" (ngSubmit)="onSubmit()" class="pip-container">
+
+  <!-- ================= MANAGER DETAILS ================= -->
+  <p-card header="Manager Details">
+    <div formGroupName="manager" class="grid">
+
+      <div class="field">
+        <label>Manager UID</label>
+        <input pInputText formControlName="uid" disabled />
+      </div>
+
+      <div class="field">
+        <label>Manager Name</label>
+        <input pInputText formControlName="name" disabled />
+      </div>
+
+      <div class="field">
+        <label>Manager Email</label>
+        <input pInputText formControlName="email" disabled />
+      </div>
+
+    </div>
+  </p-card>
+
+  <!-- ================= EMPLOYEE SELECTION ================= -->
+  <p-card header="Select Employee">
+    <div class="grid">
+
+      <div class="field">
+        <label>Employee</label>
+        <select class="select"
+                (change)="onEmployeeChange($event.target.value)">
+          <option value="">Select Employee</option>
+          <option *ngFor="let e of employees" [value]="e.UID">
+            {{ e.NAME }}
+          </option>
+        </select>
+      </div>
+
+    </div>
+  </p-card>
+
+  <!-- ================= EMPLOYEE DETAILS ================= -->
+  <p-card header="Employee Details">
+    <div formGroupName="employee" class="grid">
+
+      <div class="field">
+        <label>Employee UID</label>
+        <input pInputText formControlName="uid" readonly />
+      </div>
+
+      <div class="field">
+        <label>Employee Name</label>
+        <input pInputText formControlName="name" readonly />
+      </div>
+
+      <div class="field">
+        <label>Employee Email</label>
+        <input pInputText formControlName="email" readonly />
+      </div>
+
+    </div>
+  </p-card>
+
+  <!-- ================= HRBP DETAILS ================= -->
+  <p-card header="HRBP Details">
+    <div formGroupName="hrbp" class="grid">
+
+      <div class="field">
+        <label>HRBP UID</label>
+        <input pInputText formControlName="uid" disabled />
+      </div>
+
+      <div class="field">
+        <label>HRBP Name</label>
+        <input pInputText formControlName="name" disabled />
+      </div>
+
+      <div class="field">
+        <label>HRBP Email</label>
+        <input pInputText formControlName="email" disabled />
+      </div>
+
+    </div>
+  </p-card>
+
+  <!-- ================= PIP RATIONALE ================= -->
+  <p-card header="PIP Recommendation">
+    <div class="field">
+      <label>Rationale for PIP</label>
+      <textarea pInputTextarea
+                rows="4"
+                formControlName="pipRationale">
+      </textarea>
+
+      <small class="error"
+             *ngIf="submitted && pipForm.get('pipRationale')?.invalid">
+        PIP rationale is required
+      </small>
+    </div>
+  </p-card>
+
+  <!-- ================= ACTIONS ================= -->
+  <div class="actions">
+    <button pButton
+            type="submit"
+            label="Submit"
+            severity="primary">
+    </button>
+  </div>
+
+</form>
+
+
+
+
+
+
 Got it 👍
 You are 100% right — your current project is using Angular standalone components, and the code I gave earlier was written in the NgModule-style mindset.
 
