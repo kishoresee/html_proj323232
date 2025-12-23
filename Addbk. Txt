@@ -1,4 +1,196 @@
 
+Okay. Stop everything for a moment.
+We are resetting to a known-working baseline.
+Right now you’re stuck because too many things changed at once (tabs, PrimeNG, SharePoint, strict mode, proxy).
+
+I will do this the only safe way professionals do it in real projects.
+
+⸻
+
+🔴 ROOT CAUSE (IMPORTANT)
+
+Your app is failing because of 3 simultaneous problems:
+
+1️⃣ Angular strict template typing
+2️⃣ CORS when calling SharePoint directly
+3️⃣ UI code (TabView / PrimeNG) added before backend connectivity was stable
+
+👉 Rule:
+
+First make SharePoint API work, THEN UI, THEN forms.
+
+You skipped step 1.
+
+⸻
+
+✅ PHASE 1 — VERIFY SHAREPOINT CONNECTIVITY (NO UI, NO FORM)
+
+STEP 1: CREATE PROXY (MANDATORY)
+
+📁 Where to create
+
+At project root (same level as angular.json)
+
+📄 proxy.conf.json
+
+{
+  "/_api": {
+    "target": "https://sp-apps-apac-cib.dev.echonet/sites/PIPWorkflow",
+    "secure": true,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+}
+
+📄 angular.json → serve options
+
+"serve": {
+  "options": {
+    "proxyConfig": "proxy.conf.json"
+  }
+}
+
+▶ Run
+
+ng serve
+
+⚠️ If you don’t use proxy → SharePoint will NEVER work locally
+
+⸻
+
+✅ PHASE 2 — FIX SHAREPOINT SERVICE (MINIMAL, SAFE)
+
+📄 sharepoint.service.ts (REPLACE FULL FILE)
+
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+@Injectable({ providedIn: 'root' })
+export class SharePointService {
+
+  private headers = {
+    headers: new HttpHeaders({
+      'Accept': 'application/json;odata=verbose'
+    }),
+    withCredentials: true
+  };
+
+  constructor(private http: HttpClient) {}
+
+  getCurrentUser(): Observable<any> {
+    return this.http.get('/_api/web/currentuser', this.headers);
+  }
+
+  getEmployeeByUid(uid: string): Observable<any> {
+    return this.http.get(
+      `/_api/web/lists/getbytitle('EmployeeList')/items?$filter=UID eq '${uid}'`,
+      this.headers
+    );
+  }
+}
+
+⚠️ DO NOT use full SharePoint URL here
+⚠️ Proxy handles it
+
+⸻
+
+✅ PHASE 3 — TEST SERVICE WITHOUT UI
+
+📄 TEMP TEST COMPONENT
+
+In any component, paste this in ngOnInit():
+
+this.sp.getCurrentUser().subscribe({
+  next: res => console.log('SP USER OK', res),
+  error: err => console.error('SP ERROR', err)
+});
+
+✔ Expected result
+	•	Browser console shows your SharePoint user
+	•	NO CORS error
+
+❌ If this fails → STOP, don’t touch UI
+
+⸻
+
+✅ PHASE 4 — MINIMAL PIP COMPONENT (NO TABS, NO PRIMENG)
+
+📄 pipform.component.ts (SAFE VERSION)
+
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { SharePointService } from '../../services/sharepoint.service';
+
+@Component({
+  selector: 'app-pipform',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule],
+  templateUrl: './pipform.component.html'
+})
+export class PIPFormComponent implements OnInit {
+
+  pipForm!: FormGroup;
+
+  constructor(private fb: FormBuilder, private sp: SharePointService) {}
+
+  ngOnInit(): void {
+    this.pipForm = this.fb.group({
+      managerUid: [''],
+      managerName: [''],
+      managerEmail: ['']
+    });
+
+    this.sp.getCurrentUser().subscribe({
+      next: user => {
+        const uid = user.LoginName.split('|').pop();
+        this.pipForm.patchValue({ managerUid: uid });
+      }
+    });
+  }
+}
+
+
+⸻
+
+📄 pipform.component.html
+
+<form [formGroup]="pipForm">
+  <input formControlName="managerUid" readonly />
+  <input formControlName="managerName" readonly />
+  <input formControlName="managerEmail" readonly />
+</form>
+
+
+⸻
+
+🔥 IF THIS DOES NOT WORK
+
+Then one of these is true:
+
+❌ Proxy not applied
+❌ VM browser not authenticated to SharePoint
+❌ SCA permissions missing
+❌ Wrong site URL
+
+⸻
+
+🚨 ANSWER THIS EXACTLY (NO GUESSING)
+
+Reply with only this:
+
+1️⃣ ng serve output (last 10 lines)
+2️⃣ Browser console error (copy text)
+3️⃣ Does https://sp-apps-apac-cib.dev.echonet/sites/PIPWorkflow/_api/web/currentuser
+open in same browser as Angular? (YES/NO)
+
+I will not move to UI until this is 100% green.
+
+This is how real enterprise Angular + SharePoint apps are built.
+
+
+
 Got it 👍
 You’re right to be frustrated — thanks for your patience.
 Now I’ll do this properly and completely, exactly matching what you already have (tabs, cards, performance issues, check-in sessions, buttons, etc.), NOT half code, and WITH TabViewModule added.
