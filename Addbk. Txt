@@ -1,3 +1,79 @@
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class SharePointService {
+
+  private siteUrl =
+    'https://sp-apps-apac-cib.dev.echonet/sites/PIPWorkflow';
+
+  constructor(private http: HttpClient) {}
+
+  // 🔹 Common headers + credentials
+  private getOptions() {
+    return {
+      headers: new HttpHeaders({
+        'Accept': 'application/json;odata=verbose'
+      }),
+      withCredentials: true
+    };
+  }
+
+  // =========================================================
+  // 1️⃣ Get current logged-in SharePoint user
+  // =========================================================
+  getCurrentUser(): Observable<any> {
+    return this.http.get(
+      `${this.siteUrl}/_api/web/currentuser`,
+      this.getOptions()
+    );
+  }
+
+  // =========================================================
+  // 2️⃣ Get employee row by UID (Employee List)
+  // =========================================================
+  getEmployeeByUid(uid: string): Observable<any> {
+    return this.http.get(
+      `${this.siteUrl}/_api/web/lists/getbytitle('EmployeeList')/items?$filter=UID eq '${uid}'`,
+      this.getOptions()
+    );
+  }
+
+  // =========================================================
+  // 3️⃣ Get employees under a manager
+  // MANAGER1 column is matched with manager UID
+  // =========================================================
+  getEmployeesByManager(managerUid: string): Observable<any> {
+    return this.http.get(
+      `${this.siteUrl}/_api/web/lists/getbytitle('EmployeeList')/items?$filter=MANAGER1 eq '${managerUid}'`,
+      this.getOptions()
+    );
+  }
+
+  // =========================================================
+  // 4️⃣ Save PIP Details
+  // =========================================================
+  savePIP(payload: any): Observable<any> {
+    return this.http.post(
+      `${this.siteUrl}/_api/web/lists/getbytitle('PIPDetails')/items`,
+      payload,
+      {
+        headers: new HttpHeaders({
+          'Accept': 'application/json;odata=verbose',
+          'Content-Type': 'application/json;odata=verbose'
+        }),
+        withCredentials: true
+      }
+    );
+  }
+}
+
+
+
+
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
