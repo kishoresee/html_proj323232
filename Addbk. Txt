@@ -1,3 +1,268 @@
+I get your frustration 👍 — let’s stop everything else and do ONLY ONE THING correctly:
+
+✅ Auto-populate ONLY Manager UID
+from EmployeesList → MANAGERUID column
+using logged-in SharePoint user
+❌ Do NOT touch employee, HRBP, performance, sessions, etc.
+
+Below is a clean, minimal, WORKING baseline.
+Once this works, we will add manager name/email later.
+
+⸻
+
+🔴 Root cause of all your errors (important)
+	1.	CORS / 404 / wrong URL issues
+	•	You must NOT call full SharePoint URL directly in Angular
+	•	You must use proxy.conf.json
+	•	And call relative path like /_api/...
+	2.	Wrong LoginName parsing
+	•	SharePoint returns:
+
+i:0#.w|apac\h59604
+
+
+	•	Your EmployeesList stores MANAGERUID = h59604
+	•	So we must extract ONLY h59604
+
+	3.	We will NOT query by UID first
+	•	Instead:
+	•	Get current user
+	•	Extract h59604
+	•	Patch it directly into manager.uid
+
+⸻
+
+✅ STEP 1: proxy.conf.json (MANDATORY)
+
+📁 Create this file in project root (same level as angular.json)
+
+proxy.conf.json
+
+{
+  "/_api": {
+    "target": "https://sp-apps-apac-cib.dev.echonet/sites/PIPWorkflow",
+    "secure": true,
+    "changeOrigin": true,
+    "withCredentials": true
+  }
+}
+
+Update angular.json
+
+"serve": {
+  "options": {
+    "proxyConfig": "proxy.conf.json"
+  }
+}
+
+Restart Angular
+
+ng serve
+
+
+⸻
+
+✅ STEP 2: SharePointService (ONLY what we need)
+
+📁 src/app/Services/sharepoint.service.ts
+
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable, map } from 'rxjs';
+
+@Injectable({ providedIn: 'root' })
+export class SharePointService {
+
+  constructor(private http: HttpClient) {}
+
+  private options = {
+    headers: new HttpHeaders({
+      Accept: 'application/json;odata=verbose'
+    }),
+    withCredentials: true
+  };
+
+  // ✅ Get logged-in SharePoint user
+  getCurrentUser(): Observable<any> {
+    return this.http.get(
+      '/_api/web/currentuser?$select=LoginName',
+      this.options
+    ).pipe(
+      map((res: any) => res.d) // unwrap odata
+    );
+  }
+}
+
+⚠️ Nothing else in service for now
+We are deliberately keeping it simple.
+
+⸻
+
+✅ STEP 3: PIP Form Component (ONLY Manager UID logic)
+
+📁 src/app/Pages/pipform/pipform.component.ts
+
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule
+} from '@angular/forms';
+
+import { SharePointService } from '../../Services/sharepoint.service';
+
+@Component({
+  selector: 'app-pipform',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule],
+  templateUrl: './pipform.component.html'
+})
+export class PIPFormComponent implements OnInit {
+
+  pipForm!: FormGroup;
+
+  constructor(
+    private fb: FormBuilder,
+    private sp: SharePointService
+  ) {}
+
+  ngOnInit(): void {
+    this.buildForm();
+    this.loadManagerUID();
+  }
+
+  // 🔹 Keep entire form structure
+  private buildForm(): void {
+    this.pipForm = this.fb.group({
+      manager: this.fb.group({
+        uid: [{ value: '', disabled: true }],
+        name: [''],
+        email: ['']
+      }),
+
+      employee: this.fb.group({
+        uid: [''],
+        name: [''],
+        email: ['']
+      }),
+
+      hrbp: this.fb.group({
+        uid: [''],
+        name: [''],
+        email: ['']
+      }),
+
+      pipRationale: ['', Validators.required],
+
+      performanceIssues: this.fb.array([]),
+      checkInSessions: this.fb.array([])
+    });
+  }
+
+  // ✅ ONLY THIS LOGIC MATTERS NOW
+  private loadManagerUID(): void {
+    this.sp.getCurrentUser().subscribe({
+      next: user => {
+        console.log('SP Current User:', user);
+
+        /**
+         * Example LoginName:
+         * i:0#.w|apac\h59604
+         */
+        const loginName: string = user.LoginName;
+
+        // Step 1: split by |
+        const afterPipe = loginName.split('|').pop(); // apac\h59604
+
+        // Step 2: split by \
+        const managerUid = afterPipe?.split('\\').pop(); // h59604
+
+        if (!managerUid) {
+          alert('Unable to extract Manager UID');
+          return;
+        }
+
+        console.log('Manager UID extracted:', managerUid);
+
+        // ✅ Auto-populate ONLY Manager UID
+        this.pipForm.patchValue({
+          manager: {
+            uid: managerUid
+          }
+        });
+      },
+      error: err => {
+        console.error('CurrentUser API failed', err);
+        alert('Failed to load SharePoint user');
+      }
+    });
+  }
+}
+
+
+⸻
+
+✅ STEP 4: Minimal HTML (ONLY to verify)
+
+📁 pipform.component.html
+
+<form [formGroup]="pipForm">
+
+  <h3>Manager Details</h3>
+
+  <div formGroupName="manager">
+    <label>Manager UID</label>
+    <input type="text" formControlName="uid" />
+  </div>
+
+</form>
+
+
+⸻
+
+✅ WHAT YOU SHOULD SEE NOW
+
+✔ No CORS error
+✔ No 404
+✔ No split of undefined
+✔ Manager UID auto-filled like:
+
+h59604
+
+
+⸻
+
+❗ DO NOT DO YET
+	•	❌ Do not load employee list
+	•	❌ Do not filter by MANAGERUID
+	•	❌ Do not touch HRBP
+	•	❌ Do not add TabView yet
+
+⸻
+
+Next (ONLY after you confirm)
+
+1️⃣ Validate manager UID matches EmployeesList → MANAGERUID
+2️⃣ Fetch manager name & email
+3️⃣ Load employees under that manager
+4️⃣ Restore TabView & dynamic sections safely
+
+👉 Reply with:
+
+“Manager UID is auto-populating correctly”
+
+Then we move to step 2 calmly.
+
+
+
+
+
+
+
+
+
 
 Okay. Stop everything for a moment.
 We are resetting to a known-working baseline.
