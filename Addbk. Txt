@@ -1,3 +1,162 @@
+
+Got it 👍
+I’ll only give working code to READ a SharePoint LIST (no manager logic, no current user, no extra assumptions).
+
+Below is the cleanest + safest SharePoint REST code that works when Angular runs inside SharePoint domain.
+
+⸻
+
+✅ GOAL
+
+Read data from EmployeesList using SharePoint REST API.
+
+⸻
+
+1️⃣ sharepoint.service.ts (LIST READ – CORRECT WAY)
+
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable, map } from 'rxjs';
+
+@Injectable({ providedIn: 'root' })
+export class SharePointService {
+
+  private siteUrl =
+    'https://sp-apps-apac-cib.dev.echonet/sites/PIPWorkflow';
+
+  constructor(private http: HttpClient) {}
+
+  private options = {
+    headers: new HttpHeaders({
+      Accept: 'application/json;odata=nometadata'
+    }),
+    withCredentials: true
+  };
+
+  /** ✅ READ EmployeesList (top 10 items) */
+  getEmployees(): Observable<any[]> {
+    const url =
+      `${this.siteUrl}/_api/web/lists/getbytitle('EmployeesList')/items?$top=10`;
+
+    return this.http.get<any>(url, this.options).pipe(
+      map(res => res.value ?? [])
+    );
+  }
+
+  /** ✅ READ ONLY ONE COLUMN (example: MANAGERUID) */
+  getManagerUIDs(): Observable<string[]> {
+    const url =
+      `${this.siteUrl}/_api/web/lists/getbytitle('EmployeesList')/items?$select=MANAGERUID`;
+
+    return this.http.get<any>(url, this.options).pipe(
+      map(res => (res.value ?? []).map((x: any) => x.MANAGERUID))
+    );
+  }
+}
+
+
+⸻
+
+2️⃣ pipform.component.ts (SIMPLE READ & DISPLAY)
+
+import { Component, OnInit } from '@angular/core';
+import { SharePointService } from '../../Services/sharepoint.service';
+
+@Component({
+  selector: 'app-pipform',
+  standalone: true,
+  templateUrl: './pipform.component.html',
+  styleUrls: ['./pipform.component.css']
+})
+export class PIPFormComponent implements OnInit {
+
+  employees: any[] = [];
+  managerUIDs: string[] = [];
+
+  constructor(private sp: SharePointService) {}
+
+  ngOnInit(): void {
+    this.loadEmployees();
+    this.loadManagerUIDs();
+  }
+
+  loadEmployees(): void {
+    this.sp.getEmployees().subscribe({
+      next: data => {
+        console.log('EmployeesList items:', data);
+        this.employees = data;
+      },
+      error: err => console.error('List read error', err)
+    });
+  }
+
+  loadManagerUIDs(): void {
+    this.sp.getManagerUIDs().subscribe({
+      next: data => {
+        console.log('ManagerUIDs:', data);
+        this.managerUIDs = data;
+      },
+      error: err => console.error('ManagerUID read error', err)
+    });
+  }
+}
+
+
+⸻
+
+3️⃣ pipform.component.html (MINIMAL DISPLAY)
+
+<p-card header="Employees List">
+  <pre>{{ employees | json }}</pre>
+</p-card>
+
+<p-card header="ManagerUID Column">
+  <ul>
+    <li *ngFor="let uid of managerUIDs">
+      {{ uid }}
+    </li>
+  </ul>
+</p-card>
+
+
+⸻
+
+✅ IMPORTANT RULES (READ CAREFULLY)
+
+✔ Column name MUST match exactly
+✔ MANAGERUID must be:
+	•	Single line of text OR
+	•	Number
+
+❌ This will NOT work:
+	•	Person column without /Title or /EMail
+	•	Running from localhost
+
+⸻
+
+🔴 If you still get 400 / 500
+
+Test directly in browser:
+
+https://sp-apps-apac-cib.dev.echonet/sites/PIPWorkflow/_api/web/lists/getbytitle('EmployeesList')/items?$select=MANAGERUID
+
+If browser fails → column name is wrong
+If browser works → Angular must run inside SharePoint
+
+⸻
+
+✅ THIS IS THE FINAL, CORRECT, CLEAN LIST-READ CODE
+
+Say:
+	•	NEXT → we auto-fill manager UID
+	•	COLUMN ISSUE → I’ll fix select/filter syntax
+	•	PERSON COLUMN → I’ll show correct REST format
+
+
+
+
+
+
 Okay. Let’s reset everything and do ONLY ONE THING, correctly and safely:
 
 ✅ Read CURRENT USER from the SharePoint URL you already opened in browser
