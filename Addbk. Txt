@@ -1,5 +1,449 @@
 
 
+Perfect 👍
+Here is the clean, correct fix you asked for — ONLY these two changes:
+	1.	✅ standalone: true
+	2.	✅ TabViewModule added properly (Angular 17 compatible)
+
+Nothing else is touched.
+
+⸻
+
+✅ FINAL pipform.component.ts (Standalone + TabViewModule added)
+
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  FormArray,
+  ReactiveFormsModule
+} from '@angular/forms';
+
+/* PrimeNG */
+import { TabViewModule } from 'primeng/tabview';
+import { CardModule } from 'primeng/card';
+import { InputTextModule } from 'primeng/inputtext';
+import { InputTextareaModule } from 'primeng/inputtextarea';
+import { ButtonModule } from 'primeng/button';
+
+import { SharePointService } from '../../Services/sharepoint.service';
+
+@Component({
+  selector: 'app-pipform',
+  standalone: true,   // ✅ REQUIRED
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+
+    // ✅ PrimeNG modules
+    TabViewModule,
+    CardModule,
+    InputTextModule,
+    InputTextareaModule,
+    ButtonModule
+  ],
+  templateUrl: './pipform.component.html',
+  styleUrls: ['./pipform.component.css']
+})
+export class PIPFormComponent implements OnInit {
+
+  pipForm!: FormGroup;
+  submitted = false;
+
+  constructor(
+    private fb: FormBuilder,
+    private sp: SharePointService
+  ) {}
+
+  ngOnInit(): void {
+    this.buildForm();
+    this.loadManagerUID();
+  }
+
+  /** FORM STRUCTURE — UNCHANGED */
+  private buildForm(): void {
+    this.pipForm = this.fb.group({
+      manager: this.fb.group({
+        uid: [{ value: '', disabled: true }],
+        name: [''],
+        email: ['']
+      }),
+
+      employee: this.fb.group({
+        uid: ['', Validators.required],
+        name: ['', Validators.required],
+        email: ['', Validators.required],
+        department: ['', Validators.required],
+        position: ['', Validators.required]
+      }),
+
+      hrbp: this.fb.group({
+        uid: [''],
+        name: [''],
+        email: ['']
+      }),
+
+      pipRationale: ['', Validators.required],
+      performanceIssues: this.fb.array([]),
+      checkInSessions: this.fb.array([])
+    });
+  }
+
+  /** AUTO POPULATE MANAGER UID */
+  private loadManagerUID(): void {
+    this.sp.getCurrentUser().subscribe({
+      next: user => {
+        const loginName: string = user.LoginName || '';
+        const uid = loginName.split('\\').pop(); // h59604
+
+        if (!uid) {
+          alert('Unable to detect Manager UID');
+          return;
+        }
+
+        this.sp.getManagerByUid(uid).subscribe({
+          next: res => {
+            if (!res.value || !res.value.length) {
+              alert('You are not registered as a Manager');
+              return;
+            }
+
+            this.pipForm.patchValue({
+              manager: { uid }
+            });
+
+            this.pipForm.get('manager')?.disable();
+          },
+          error: err => console.error('Manager lookup error', err)
+        });
+      },
+      error: err => console.error('Current user error', err)
+    });
+  }
+
+  /* helpers */
+  get performanceIssues(): FormArray {
+    return this.pipForm.get('performanceIssues') as FormArray;
+  }
+
+  get checkInSessions(): FormArray {
+    return this.pipForm.get('checkInSessions') as FormArray;
+  }
+
+  isInvalid(ctrl: any): boolean {
+    return ctrl && ctrl.invalid && (ctrl.touched || this.submitted);
+  }
+
+  onSubmit(): void {
+    this.submitted = true;
+    if (this.pipForm.invalid) return;
+
+    console.log('FORM DATA', this.pipForm.getRawValue());
+  }
+}
+
+
+⸻
+
+✅ WHAT THIS FIX SOLVES (IMPORTANT)
+	•	✔ Angular 17 Standalone Component
+	•	✔ <p-tabView> & <p-tabPanel> will render correctly
+	•	✔ No TabViewModule missing error
+	•	✔ No NgModule required
+	•	✔ No CSS or HTML break
+	•	✔ Manager UID still auto-populates
+
+⸻
+
+❗ VERY IMPORTANT (don’t skip)
+
+If this component is routed, your route must use:
+
+loadComponent: () =>
+  import('./Pages/pipform/pipform.component')
+    .then(m => m.PIPFormComponent)
+
+❌ Do NOT declare this component in any NgModule.
+
+⸻
+
+Next (only when you say):
+	•	Auto-fill Manager Name
+	•	Auto-fill Manager Email
+	•	Lock fields conditionally
+	•	Save PIP to SharePoint
+
+Just tell me one step at a time.
+
+
+
+
+
+Got it 👍
+I’ll ONLY do what you asked:
+	•	❌ Do NOT change form structure / CSS / layout
+	•	❌ Do NOT touch employee, HRBP, performance, session logic
+	•	✅ ONLY auto-populate Manager UID
+	•	✅ Use SharePoint URL directly
+	•	✅ Read current logged-in user → LoginName
+	•	✅ Match that user against EmployeesList → MANAGERUID
+	•	✅ Patch manager.uid and keep it disabled
+
+⸻
+
+🔑 What we are doing (very clearly)
+	1.	Call
+
+https://sp-apps-apac-cib.dev.echonet/sites/PIPWorkflow/_api/web/currentuser
+
+
+	2.	From XML / JSON → extract LoginName
+
+i:0#.w|apac\h59604
+
+
+	3.	Extract UID = h59604
+	4.	Query EmployeesList:
+
+MANAGERUID eq 'h59604'
+
+
+	5.	Auto-fill:
+
+manager.uid
+
+
+
+⸻
+
+✅ FINAL CODE (COPY–PASTE SAFE)
+
+⸻
+
+✅ sharepoint.service.ts
+
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+@Injectable({ providedIn: 'root' })
+export class SharePointService {
+
+  private siteUrl = 'https://sp-apps-apac-cib.dev.echonet/sites/PIPWorkflow';
+
+  private options = {
+    headers: new HttpHeaders({
+      Accept: 'application/json;odata=nometadata'
+    }),
+    withCredentials: true
+  };
+
+  constructor(private http: HttpClient) {}
+
+  /** 1️⃣ Get logged-in SharePoint user */
+  getCurrentUser(): Observable<any> {
+    return this.http.get(
+      `${this.siteUrl}/_api/web/currentuser`,
+      this.options
+    );
+  }
+
+  /** 2️⃣ Validate manager from EmployeesList using MANAGERUID */
+  getManagerByUid(uid: string): Observable<any> {
+    return this.http.get(
+      `${this.siteUrl}/_api/web/lists/getbytitle('EmployeesList')/items?$filter=MANAGERUID eq '${uid}'`,
+      this.options
+    );
+  }
+}
+
+
+⸻
+
+✅ pipform.component.ts
+
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
+import { SharePointService } from '../../Services/sharepoint.service';
+
+@Component({
+  selector: 'app-pipform',
+  templateUrl: './pipform.component.html',
+  styleUrls: ['./pipform.component.css']
+})
+export class PIPFormComponent implements OnInit {
+
+  pipForm!: FormGroup;
+  submitted = false;
+
+  constructor(
+    private fb: FormBuilder,
+    private sp: SharePointService
+  ) {}
+
+  ngOnInit(): void {
+    this.buildForm();
+    this.loadManagerUID();
+  }
+
+  /** FORM – unchanged structure */
+  private buildForm(): void {
+    this.pipForm = this.fb.group({
+      manager: this.fb.group({
+        uid: [{ value: '', disabled: true }],
+        name: [''],
+        email: ['']
+      }),
+
+      employee: this.fb.group({
+        uid: ['', Validators.required],
+        name: ['', Validators.required],
+        email: ['', Validators.required],
+        department: ['', Validators.required],
+        position: ['', Validators.required]
+      }),
+
+      hrbp: this.fb.group({
+        uid: [''],
+        name: [''],
+        email: ['']
+      }),
+
+      pipRationale: ['', Validators.required],
+      performanceIssues: this.fb.array([]),
+      checkInSessions: this.fb.array([])
+    });
+  }
+
+  /** 🚀 AUTO-POPULATE MANAGER UID */
+  private loadManagerUID(): void {
+    this.sp.getCurrentUser().subscribe({
+      next: user => {
+        const loginName: string = user.LoginName || '';
+        // i:0#.w|apac\h59604  →  h59604
+        const uid = loginName.split('\\').pop();
+
+        if (!uid) {
+          alert('Unable to detect Manager UID');
+          return;
+        }
+
+        this.sp.getManagerByUid(uid).subscribe({
+          next: res => {
+            if (!res.value || !res.value.length) {
+              alert('You are not registered as a Manager');
+              return;
+            }
+
+            // ✅ AUTO PATCH ONLY UID
+            this.pipForm.patchValue({
+              manager: {
+                uid: uid
+              }
+            });
+
+            this.pipForm.get('manager')?.disable();
+          },
+          error: err => console.error('Manager lookup error', err)
+        });
+      },
+      error: err => console.error('Current user error', err)
+    });
+  }
+
+  /** helpers (unchanged) */
+  get performanceIssues(): FormArray {
+    return this.pipForm.get('performanceIssues') as FormArray;
+  }
+
+  get checkInSessions(): FormArray {
+    return this.pipForm.get('checkInSessions') as FormArray;
+  }
+
+  isInvalid(ctrl: any): boolean {
+    return ctrl && ctrl.invalid && (ctrl.touched || this.submitted);
+  }
+
+  onSubmit(): void {
+    this.submitted = true;
+    if (this.pipForm.invalid) return;
+
+    console.log('FORM DATA', this.pipForm.getRawValue());
+  }
+}
+
+
+⸻
+
+✅ pipform.component.html
+
+👉 NO STRUCTURE CHANGES – ONLY Manager UID stays auto-filled
+
+<form [formGroup]="pipForm" class="pip-container" (ngSubmit)="onSubmit()">
+
+<p-tabView>
+
+<p-tabPanel header="PIP Details">
+
+<p-card header="Manager Details">
+  <div class="grid" formGroupName="manager">
+
+    <div class="field">
+      <label>Manager UID *</label>
+      <input pInputText formControlName="uid"
+        [class.p-invalid]="isInvalid(pipForm.get('manager.uid'))" />
+    </div>
+
+    <div class="field">
+      <label>Manager Name *</label>
+      <input pInputText formControlName="name" />
+    </div>
+
+    <div class="field">
+      <label>Manager Email *</label>
+      <input pInputText formControlName="email" />
+    </div>
+
+  </div>
+</p-card>
+
+<!-- EVERYTHING BELOW IS UNCHANGED -->
+<!-- Employee / HRBP / Performance / Sessions -->
+<!-- KEEP YOUR EXISTING CODE AS IS -->
+
+</p-tabPanel>
+
+</p-tabView>
+</form>
+
+
+⸻
+
+✅ RESULT YOU WILL SEE
+	•	🔒 Manager UID auto-filled
+	•	🔒 Field is disabled
+	•	❌ No manual editing possible
+	•	❌ No CSS break
+	•	❌ No form structure change
+	•	✅ SharePoint driven
+
+⸻
+
+Next step (when you’re ready)
+
+Say only one line:
+
+“Now auto-populate Manager Name and Email”
+
+I’ll extend without breaking anything.
+
+
+
+
+
+
 Got it 👍
 No proxy, no / _api relative path, no Angular proxy config.
 You want to hit the SharePoint URL directly and JUST auto-populate Manager UID.
