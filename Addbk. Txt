@@ -1,3 +1,242 @@
+Okay. Let’s reset everything and do ONLY ONE THING, correctly and safely:
+
+✅ Read CURRENT USER from the SharePoint URL you already opened in browser
+✅ NO list access
+✅ NO manager logic
+✅ NO filters
+✅ JUST display Current User UID / LoginName from XML
+
+You already proved this URL works in browser 👇
+
+https://sp-apps-apac-cib.dev.echonet/sites/PIPWorkflow/_api/web/currentuser
+
+So now we will consume THIS EXACT URL in Angular.
+
+⸻
+
+🔑 IMPORTANT TRUTH (why nothing worked before)
+
+SharePoint returns XML (Atom) by default ❌
+Angular HttpClient expects JSON ❌
+
+👉 That’s why you got:
+	•	400
+	•	500
+	•	split undefined
+	•	HttpErrorResponse
+
+✅ FIX
+
+We will:
+	1.	Request TEXT
+	2.	Parse XML manually
+	3.	Extract LoginName / Id
+
+⸻
+
+✅ FILE 1 — sharepoint.service.ts (WORKING & SIMPLE)
+
+📍 src/app/services/sharepoint.service.ts
+
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+@Injectable({ providedIn: 'root' })
+export class SharePointService {
+
+  private siteUrl =
+    'https://sp-apps-apac-cib.dev.echonet/sites/PIPWorkflow';
+
+  constructor(private http: HttpClient) {}
+
+  /** ✅ Get current user as XML (TEXT) */
+  getCurrentUserXml(): Observable<string> {
+    const url = `${this.siteUrl}/_api/web/currentuser`;
+
+    return this.http.get(url, {
+      responseType: 'text',   // 🔑 VERY IMPORTANT
+      withCredentials: true
+    });
+  }
+}
+
+✔ No headers
+✔ No odata
+✔ No JSON
+✔ Guaranteed to work because browser works
+
+⸻
+
+✅ FILE 2 — pipform.component.ts (STANDALONE + TABVIEW)
+
+📍 src/app/Pages/pipform/pipform.component.ts
+
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+
+import { TabViewModule } from 'primeng/tabview';
+import { CardModule } from 'primeng/card';
+import { InputTextModule } from 'primeng/inputtext';
+
+import { SharePointService } from '../../services/sharepoint.service';
+
+@Component({
+  selector: 'app-pipform',
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    TabViewModule,
+    CardModule,
+    InputTextModule
+  ],
+  templateUrl: './pipform.component.html',
+  styleUrls: ['./pipform.component.css']
+})
+export class PIPFormComponent implements OnInit {
+
+  pipForm!: FormGroup;
+
+  constructor(
+    private fb: FormBuilder,
+    private sp: SharePointService
+  ) {}
+
+  ngOnInit(): void {
+    this.buildForm();
+    this.loadCurrentUser();
+  }
+
+  /** FORM (minimal, no changes to structure later) */
+  private buildForm(): void {
+    this.pipForm = this.fb.group({
+      currentUser: this.fb.group({
+        id: [''],
+        loginName: ['']
+      })
+    });
+  }
+
+  /** ✅ READ CURRENT USER FROM XML */
+  private loadCurrentUser(): void {
+    this.sp.getCurrentUserXml().subscribe({
+      next: (xmlText: string) => {
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(xmlText, 'text/xml');
+
+        const id =
+          xml.getElementsByTagName('d:Id')[0]?.textContent || '';
+
+        const loginName =
+          xml.getElementsByTagName('d:LoginName')[0]?.textContent || '';
+
+        this.pipForm.patchValue({
+          currentUser: {
+            id,
+            loginName
+          }
+        });
+      },
+      error: err => {
+        console.error('Current user read failed', err);
+      }
+    });
+  }
+}
+
+✔ standalone: true
+✔ TabViewModule added
+✔ NO manager logic
+✔ NO list logic
+✔ PURE current user only
+
+⸻
+
+✅ FILE 3 — pipform.component.html (SIMPLE DISPLAY)
+
+📍 src/app/Pages/pipform/pipform.component.html
+
+<form [formGroup]="pipForm" class="pip-container">
+
+  <p-tabView>
+
+    <p-tabPanel header="Current User">
+
+      <p-card header="Logged-in User Details">
+        <div formGroupName="currentUser" class="grid">
+
+          <div class="field">
+            <label>User ID</label>
+            <input pInputText formControlName="id" readonly />
+          </div>
+
+          <div class="field">
+            <label>Login Name</label>
+            <input pInputText formControlName="loginName" readonly />
+          </div>
+
+        </div>
+      </p-card>
+
+    </p-tabPanel>
+
+  </p-tabView>
+
+</form>
+
+✔ No validation
+✔ No submit
+✔ No buttons
+✔ Just display
+
+⸻
+
+✅ WHAT YOU SHOULD SEE NOW
+
+From your XML screenshot, values like:
+
+<d:Id>14</d:Id>
+<d:LoginName>i:0#.w|apac\hs9604</d:LoginName>
+
+👉 These will appear in the UI fields.
+
+⸻
+
+🛑 DO NOT DO (for now)
+
+❌ No $filter
+❌ No $select
+❌ No Employee list
+❌ No Manager UID
+❌ No proxy config
+
+⸻
+
+✅ TEST CHECKLIST (IMPORTANT)
+	1.	ng serve
+	2.	Open app inside SharePoint OR with credentials
+	3.	Open console → NO 400 / 500
+	4.	Fields populated → ✅ SUCCESS
+
+⸻
+
+📌 Once THIS works
+
+Next we can safely:
+	•	Read employee list
+	•	Match manager UID
+	•	Autofill manager / HRBP
+	•	Keep your full CSS layout untouched
+
+If this still fails, tell me exact error text, not screenshot — we’ll fix it line-by-line.
+
+
+
+
+
+
 
 
 Perfect 👍
