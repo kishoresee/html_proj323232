@@ -1,3 +1,62 @@
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, map } from 'rxjs';
+
+export interface ManagerInfo {
+  uid: string;
+  name: string;
+  email: string;
+}
+
+@Injectable({ providedIn: 'root' })
+export class UserInfoService {
+
+  private userInfoUrl =
+    'https://ssc-ecm-api.dev.echonet/userinfo/api/user';
+
+  constructor(private http: HttpClient) {}
+
+  getManagerInfo(): Observable<ManagerInfo> {
+    return this.http.get(this.userInfoUrl, {
+      responseType: 'text',     // 🔴 MUST be text
+      withCredentials: true
+    }).pipe(
+      map(response => {
+        console.log('RAW XML RESPONSE:', response); // 🔍 IMPORTANT
+
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(response, 'application/xml');
+
+        const uid =
+          xml.getElementsByTagName('UID')?.[0]?.textContent?.trim() || '';
+
+        const firstName =
+          xml.getElementsByTagName('FirstName')?.[0]?.textContent?.trim() || '';
+
+        const lastName =
+          xml.getElementsByTagName('LastName')?.[0]?.textContent?.trim() || '';
+
+        const email =
+          xml.getElementsByTagName('Email')?.[0]?.textContent?.trim() || '';
+
+        const result = {
+          uid,
+          name: `${firstName} ${lastName}`.trim(),
+          email
+        };
+
+        console.log('PARSED MANAGER INFO:', result); // 🔍 IMPORTANT
+
+        return result;
+      })
+    );
+  }
+}
+
+
+
+
+
 Alright. Resetting everything and regenerating clean, minimal, WORKING code based exactly on what you proved with the XML.
 
 We will do ONLY this (nothing extra):
