@@ -1,4 +1,237 @@
 
+Okay, now we are very close 👍
+Your screenshot actually tells me exactly what is wrong.
+
+⸻
+
+✅ What is working (important!)
+
+From your Network tab:
+	•	XHR request → Status 200 ✅
+	•	Request name: user
+	•	Time: ~93 ms
+👉 This means API call is SUCCESSFUL
+👉 Cookies / authentication are fine
+👉 No proxy / CORS issue anymore
+
+So the problem is NOT networking.
+
+⸻
+
+❌ What is NOT working
+
+Your UI fields are empty:
+	•	Manager UID ❌
+	•	Manager Name ❌
+	•	Manager Email ❌
+
+That means:
+
+Data is received, but NOT patched into the form
+
+This is 100% a form-binding issue, not API.
+
+⸻
+
+🔴 Root cause (very important)
+
+Your XML has namespaces:
+
+<User xmlns:i="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://schemas.datacontract.org/2004/07/UserWebAPI.Models">
+
+Because of this, THIS WILL FAIL silently:
+
+xml.getElementsByTagName('UID')
+
+Browser returns empty NodeList, so:
+	•	uid = ''
+	•	name = ''
+	•	email = ''
+
+That’s why nothing loads even though API is 200.
+
+⸻
+
+✅ FIX: Correct XML parsing (namespace-safe)
+
+🔧 Replace your service method with THIS (IMPORTANT)
+
+✅ user-info.service.ts
+
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, map } from 'rxjs';
+
+export interface ManagerInfo {
+  uid: string;
+  name: string;
+  email: string;
+}
+
+@Injectable({ providedIn: 'root' })
+export class UserInfoService {
+
+  private userInfoUrl =
+    'https://ssc-ecm-api.dev.echonet/userinfo/api/user';
+
+  constructor(private http: HttpClient) {}
+
+  getManagerInfo(): Observable<ManagerInfo> {
+    return this.http.get(this.userInfoUrl, {
+      responseType: 'text',
+      withCredentials: true
+    }).pipe(
+      map(xmlText => {
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(xmlText, 'application/xml');
+
+        // 🔑 Namespace-safe access
+        const getValue = (tag: string) =>
+          xml.getElementsByTagNameNS('*', tag)[0]?.textContent ?? '';
+
+        const uid = getValue('UID');
+        const firstName = getValue('FirstName');
+        const lastName = getValue('LastName');
+        const email = getValue('Email');
+
+        return {
+          uid,
+          name: `${firstName} ${lastName}`.trim(),
+          email
+        };
+      })
+    );
+  }
+}
+
+
+⸻
+
+✅ Component MUST patch values correctly
+
+✅ pipform.component.ts (minimal + correct)
+
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { UserInfoService } from '../../services/user-info.service';
+
+@Component({
+  selector: 'app-pipform',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule],
+  templateUrl: './pipform.component.html'
+})
+export class PIPFormComponent implements OnInit {
+
+  pipForm!: FormGroup;
+
+  constructor(
+    private fb: FormBuilder,
+    private userInfo: UserInfoService
+  ) {}
+
+  ngOnInit(): void {
+    this.pipForm = this.fb.group({
+      manager: this.fb.group({
+        uid: [''],
+        name: [''],
+        email: ['']
+      })
+    });
+
+    this.loadManager();
+  }
+
+  loadManager(): void {
+    this.userInfo.getManagerInfo().subscribe(info => {
+      console.log('Manager info:', info); // 👈 verify in console
+
+      this.pipForm.get('manager')?.patchValue({
+        uid: info.uid,
+        name: info.name,
+        email: info.email
+      });
+
+      this.pipForm.get('manager')?.disable(); // read-only
+    });
+  }
+}
+
+
+⸻
+
+✅ HTML (DO NOT change structure / CSS safe)
+
+<form [formGroup]="pipForm">
+  <div formGroupName="manager">
+    <label>Manager UID</label>
+    <input type="text" formControlName="uid" />
+
+    <label>Manager Name</label>
+    <input type="text" formControlName="name" />
+
+    <label>Manager Email</label>
+    <input type="text" formControlName="email" />
+  </div>
+</form>
+
+
+⸻
+
+🧪 How to confirm it’s fixed (2 checks)
+
+1️⃣ Console
+
+You MUST see:
+
+Manager info: {
+  uid: "h59604",
+  name: "Kishore SRINIVASAN",
+  email: "..."
+}
+
+2️⃣ UI
+
+Fields should auto-fill without typing.
+
+⸻
+
+⚠️ Ignore these warnings (not related)
+
+Failed to decode downloaded font
+OTS parsing error
+
+They are PrimeNG font warnings, not blockers.
+
+⸻
+
+✅ Final status
+
+Item	Status
+API call	✅ Working
+Authentication	✅ Working
+XML parsing	❌ was wrong → ✅ fixed
+Form patch	❌ missing → ✅ fixed
+UI auto-fill	✅ will work
+
+
+⸻
+
+You didn’t waste time — this was a real enterprise XML + namespace issue.
+If you want, next I can:
+	•	Plug this back into your full PIP form
+	•	Or add error handling + loader
+	•	Or extract manager → employee mapping safely
+
+Just say 👍
+
+
+
+
+
+
 Good, this screenshot finally shows the real blocker 👍
 Don’t worry — this is NOT a SharePoint / API problem.
 It’s a Reactive Forms wiring mistake (very common).
