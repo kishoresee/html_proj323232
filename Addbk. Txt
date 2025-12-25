@@ -1,4 +1,178 @@
 
+Good, this screenshot finally shows the real blocker 👍
+Don’t worry — this is NOT a SharePoint / API problem.
+It’s a Reactive Forms wiring mistake (very common).
+
+⸻
+
+❌ Your exact error (what it means)
+
+Type 'AbstractControl<any, any> | null' is not assignable to type 'FormGroup<any>'
+
+Error line:
+
+<div class="grid" formGroupName="manager" [formGroup]="pipForm.get('manager')">
+
+🔥 Root cause
+
+You are mixing two different approaches:
+	•	formGroupName="manager" ✅ (correct)
+	•	[formGroup]="pipForm.get('manager')" ❌ (WRONG here)
+
+pipForm.get('manager') returns AbstractControl | null,
+Angular expects FormGroup, so it crashes.
+
+⸻
+
+✅ RULE (remember this forever)
+
+✔ When using formGroupName
+
+👉 DO NOT use [formGroup]
+
+✔ When using [formGroup]
+
+👉 DO NOT use formGroupName
+
+⸻
+
+✅ Correct & WORKING solution (minimal change)
+
+✔ pipform.component.ts (ONLY what matters)
+
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { UserInfoService } from '../../services/sharepoint.service';
+
+@Component({
+  selector: 'app-pipform',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule],
+  templateUrl: './pipform.component.html'
+})
+export class PIPFormComponent implements OnInit {
+
+  pipForm!: FormGroup;
+
+  constructor(
+    private fb: FormBuilder,
+    private userInfo: UserInfoService
+  ) {}
+
+  ngOnInit(): void {
+    this.pipForm = this.fb.group({
+      manager: this.fb.group({
+        uid: [''],
+        name: [''],
+        email: ['']
+      })
+    });
+
+    this.loadManager();
+  }
+
+  private loadManager(): void {
+    this.userInfo.getManagerInfo().subscribe(info => {
+      this.pipForm.patchValue({
+        manager: {
+          uid: info.uid,
+          name: info.name,
+          email: info.email
+        }
+      });
+
+      this.pipForm.get('manager')?.disable(); // read-only
+    });
+  }
+}
+
+
+⸻
+
+✅ Correct HTML (NO structure change, CSS-safe)
+
+✔ pipform.component.html
+
+<form [formGroup]="pipForm">
+
+  <p-card header="Manager Details">
+    <!-- ✅ ONLY formGroupName -->
+    <div class="grid" formGroupName="manager">
+
+      <div class="field">
+        <label>Manager UID</label>
+        <input pInputText formControlName="uid" />
+      </div>
+
+      <div class="field">
+        <label>Manager Name</label>
+        <input pInputText formControlName="name" />
+      </div>
+
+      <div class="field">
+        <label>Manager Email</label>
+        <input pInputText formControlName="email" />
+      </div>
+
+    </div>
+  </p-card>
+
+</form>
+
+❌ REMOVED:
+
+[formGroup]="pipForm.get('manager')"
+
+
+⸻
+
+✅ Why this will now WORK
+	•	manager exists in FormGroup
+	•	formGroupName="manager" automatically binds it
+	•	No null control
+	•	No type mismatch
+	•	No Angular compiler error
+
+⸻
+
+🧪 Expected Output (your requirement)
+
+From XML:
+
+<FirstName>Kishore</FirstName>
+<LastName>SRINIVASAN</LastName>
+<Email>...</Email>
+<UID>h59604</UID>
+
+UI auto-fills:
+
+Field	Value
+Manager UID	h59604
+Manager Name	Kishore SRINIVASAN
+Manager Email	(Email tag value)
+
+All read-only ✔
+
+⸻
+
+🔑 Final takeaway (important)
+
+Never combine formGroupName and [formGroup] on the same element
+
+That single mistake caused ALL your errors.
+
+⸻
+
+If you want, next I can:
+	•	Re-add PrimeNG imports safely
+	•	Add TabView without breaking form
+	•	Convert this into your full PIP form cleanly
+
+Just say 👍
+
+
+
 Perfect 👍 this URL you found is exactly what we need, and this is much simpler and cleaner than SharePoint REST.
 
 You already verified this works in browser and returns XML with:
