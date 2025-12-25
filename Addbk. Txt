@@ -1,4 +1,215 @@
 
+Perfect 👍 this URL you found is exactly what we need, and this is much simpler and cleaner than SharePoint REST.
+
+You already verified this works in browser and returns XML with:
+
+<UID>h59604</UID>
+<Email>...</Email>
+<FirstName>...</FirstName>
+<LastName>...</LastName>
+
+So now we will:
+
+✅ Call that URL directly
+✅ Parse XML → values
+✅ Auto-populate ONLY:
+	•	Manager UID = UID
+	•	Manager Name = FirstName + LastName
+	•	Manager Email = Email
+❌ Touch nothing else
+✅ standalone: true
+✅ Simple + stable (no SharePoint list headaches)
+
+⸻
+
+🔹 1️⃣ SharePoint / User API Service
+
+user-info.service.ts
+
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, map } from 'rxjs';
+
+export interface ManagerInfo {
+  uid: string;
+  name: string;
+  email: string;
+}
+
+@Injectable({ providedIn: 'root' })
+export class UserInfoService {
+
+  // ✅ YOUR WORKING URL
+  private userInfoUrl =
+    'https://ssc-ecm-api.dev.echonet/userinfo/api/user';
+
+  constructor(private http: HttpClient) {}
+
+  /** 🔹 Read XML and extract UID, Name, Email */
+  getManagerInfo(): Observable<ManagerInfo> {
+    return this.http.get(this.userInfoUrl, {
+      responseType: 'text',
+      withCredentials: true
+    }).pipe(
+      map(xmlText => {
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(xmlText, 'text/xml');
+
+        const uid =
+          xml.getElementsByTagName('UID')[0]?.textContent ?? '';
+
+        const firstName =
+          xml.getElementsByTagName('FirstName')[0]?.textContent ?? '';
+
+        const lastName =
+          xml.getElementsByTagName('LastName')[0]?.textContent ?? '';
+
+        const email =
+          xml.getElementsByTagName('Email')[0]?.textContent ?? '';
+
+        return {
+          uid,
+          name: `${firstName} ${lastName}`.trim(),
+          email
+        };
+      })
+    );
+  }
+}
+
+
+⸻
+
+🔹 2️⃣ Component TS
+
+pipform.component.ts
+
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { UserInfoService } from '../../Services/user-info.service';
+
+// PrimeNG (only what is used)
+import { CardModule } from 'primeng/card';
+import { InputTextModule } from 'primeng/inputtext';
+
+@Component({
+  selector: 'app-pipform',
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    CardModule,
+    InputTextModule
+  ],
+  templateUrl: './pipform.component.html'
+})
+export class PIPFormComponent implements OnInit {
+
+  pipForm!: FormGroup;
+
+  constructor(
+    private fb: FormBuilder,
+    private userInfo: UserInfoService
+  ) {}
+
+  ngOnInit(): void {
+    this.buildForm();
+    this.loadManager();
+  }
+
+  /** ✅ KEEP FORM SIMPLE – ONLY MANAGER */
+  private buildForm(): void {
+    this.pipForm = this.fb.group({
+      manager: this.fb.group({
+        uid: [''],
+        name: [''],
+        email: ['']
+      })
+    });
+  }
+
+  /** ✅ AUTO POPULATE MANAGER FIELDS */
+  private loadManager(): void {
+    this.userInfo.getManagerInfo().subscribe({
+      next: manager => {
+        this.pipForm.get('manager')?.patchValue({
+          uid: manager.uid,
+          name: manager.name,
+          email: manager.email
+        });
+      },
+      error: err => console.error('User API error', err)
+    });
+  }
+}
+
+
+⸻
+
+🔹 3️⃣ HTML
+
+pipform.component.html
+
+⚠️ Structure untouched, only manager section shown
+Works with your existing CSS
+
+<p-card header="Manager Details">
+  <div class="grid" formGroupName="manager" [formGroup]="pipForm.get('manager')">
+
+    <div class="field">
+      <label>Manager UID</label>
+      <input pInputText formControlName="uid" readonly />
+    </div>
+
+    <div class="field">
+      <label>Manager Name</label>
+      <input pInputText formControlName="name" readonly />
+    </div>
+
+    <div class="field">
+      <label>Manager Email</label>
+      <input pInputText formControlName="email" readonly />
+    </div>
+
+  </div>
+</p-card>
+
+
+⸻
+
+✅ WHAT THIS SOLUTION FIXES (IMPORTANT)
+
+✔ No SharePoint REST issues
+✔ No $select, $filter, $expand pain
+✔ XML parsing handled correctly
+✔ Works because you already proved the URL works
+✔ Safe for localhost + hosted
+✔ Clean, minimal, stable
+
+⸻
+
+🔥 FINAL RESULT
+
+Field	Source
+Manager UID	<UID>
+Manager Name	<FirstName> + <LastName>
+Manager Email	<Email>
+
+
+⸻
+
+If you want next:
+	•	🔁 Use this UID to fetch employee list
+	•	🔐 Error handling UI
+	•	🧩 Plug back into your full PIP form
+
+Just say NEXT 👍
+
+
+
+
+
 Got it 👍
 I’ll only give working code to READ a SharePoint LIST (no manager logic, no current user, no extra assumptions).
 
