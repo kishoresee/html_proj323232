@@ -1,4 +1,154 @@
+
+<form [formGroup]="pipForm" class="pip-container" (ngSubmit)="onSubmit()">
+
+  <p-tabView>
+
+    <p-tabPanel header="PIP Details">
+
+      <p-card header="Manager Details">
+        <div class="grid" formGroupName="manager">
+          <div class="field">
+            <label>Manager UID *</label>
+            <input pInputText formControlName="uid" [class.p-invalid]="isInvalid(pipForm.get('manager.uid'))" />
+          </div>
+          <div class="field">
+            <label>Manager Name *</label>
+            <input pInputText formControlName="name" [class.p-invalid]="isInvalid(pipForm.get('manager.name'))" />
+          </div>
+          <div class="field">
+            <label>Manager Email *</label>
+            <input pInputText formControlName="email" [class.p-invalid]="isInvalid(pipForm.get('manager.email'))" />
+          </div>
+        </div>
+      </p-card>
+
+      <p-card header="Employee Details">
+        <div class="grid" formGroupName="employee">
+          <div class="field">
+            <label>Employee UID *</label>
+            <input pInputText formControlName="uid" [class.p-invalid]="isInvalid(pipForm.get('employee.uid'))" />
+          </div>
+          <div class="field">
+            <label>Employee Name *</label>
+            <input pInputText formControlName="name" [class.p-invalid]="isInvalid(pipForm.get('employee.name'))" />
+          </div>
+          <div class="field">
+            <label>Employee Email *</label>
+            <input pInputText formControlName="email" />
+          </div>
+          <div class="field">
+            <label>Department *</label>
+            <input pInputText formControlName="department" />
+          </div>
+          <div class="field">
+            <label>Position *</label>
+            <input pInputText formControlName="position" />
+          </div>
+        </div>
+      </p-card>
+
+      <p-card header="HRBP Details">
+        <div class="grid" formGroupName="hrbp">
+          <div class="field">
+            <label>HRBP UID *</label>
+            <input pInputText formControlName="uid" />
+          </div>
+          <div class="field">
+            <label>HRBP Name *</label>
+            <input pInputText formControlName="name" />
+          </div>
+          <div class="field">
+            <label>HRBP Email *</label>
+            <input pInputText formControlName="email" />
+          </div>
+        </div>
+      </p-card>
+
+      <p-card header="Performance Issues">
+        <div formArrayName="performanceIssues">
+          <div *ngFor="let issue of performanceIssues.controls; let i = index" [formGroupName]="i" class="issue-card">
+            <div class="grid">
+              <div class="field">
+                <label>Performance Issue *</label>
+                <textarea pInputTextarea rows="2" formControlName="issue"></textarea>
+              </div>
+              <div class="field">
+                <label>Timeline *</label>
+                <input type="date" pInputText formControlName="timeline" />
+              </div>
+              <div class="field">
+                <label>Performance Standard / Goal *</label>
+                <textarea pInputTextarea rows="2" formControlName="standard"></textarea>
+              </div>
+              <div class="field">
+                <label>Current Assessment *</label>
+                <textarea pInputTextarea rows="2" formControlName="currentAssessment"></textarea>
+              </div>
+              <div class="field">
+                <label>Supporting Evidence</label>
+                <textarea pInputTextarea rows="2" formControlName="supporting"></textarea>
+              </div>
+            </div>
+            <button pButton icon="pi pi-times" severity="danger" type="button" (click)="removeIssue(i)"></button>
+          </div>
+        </div>
+
+        <button pButton label="Add Performance Issue" type="button" (click)="addIssue()"></button>
+      </p-card>
+
+      <div class="actions">
+        <button pButton label="Save" severity="secondary" type="button"></button>
+        <button pButton label="Submit" severity="primary" type="submit"></button>
+        <button pButton label="Cancel" severity="danger" type="button"></button>
+      </div>
+
+    </p-tabPanel>
+
+    <p-tabPanel header="Session Details">
+      <p-card header="Check-in Sessions">
+        <div formArrayName="checkInSessions">
+          <div *ngFor="let sess of checkInSessions.controls; let i = index" [formGroupName]="i" class="session-card">
+            <div class="grid">
+              <div class="field">
+                <label>Session PIP UID *</label>
+                <input pInputText formControlName="sessionPipId" />
+              </div>
+              <div class="field">
+                <label>Session Date *</label>
+                <input type="date" pInputText formControlName="sessionDate" />
+              </div>
+              <div class="field">
+                <label>Session Time *</label>
+                <input type="time" pInputText formControlName="sessionTime" />
+              </div>
+              <div class="field">
+                <label>Participants *</label>
+                <input pInputText formControlName="participants" />
+              </div>
+            </div>
+            <button pButton icon="pi pi-times" severity="danger" type="button" (click)="removeSession(i)"></button>
+          </div>
+        </div>
+
+        <button pButton label="Add Session" icon="pi pi-plus" type="button" (click)="addSession()" [disabled]="checkInSessions.length >= 8"></button>
+      </p-card>
+    </p-tabPanel>
+
+    <p-tabPanel header="Documentation"></p-tabPanel>
+
+  </p-tabView>
+</form>
+
+
+
+
+
+
 Understood.
+
+
+
+
 Below is a clean, corrected, end-to-end version aligned with your EmployesList columns, SharePoint REST, PrimeNG, standalone component, and your screenshots.
 
 No comments.
