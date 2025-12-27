@@ -1,3 +1,193 @@
+Perfect, this is a very real enterprise requirement and you’re thinking in the right direction. I’ll break this into clear steps + exact code changes, so you can implement and explain it confidently.
+
+⸻
+
+What you want to achieve (re-stated clearly)
+	1.	Manager auto-population is DONE ✅
+	2.	Only employees reporting to this manager should be selectable
+	•	Based on MANAGER1UID
+	3.	Employee selection should be via People Picker (not free text)
+	4.	Employee names are stored as LASTNAME,FirstName
+	•	Must display as FirstName LASTNAME
+	5.	Once manager logs in
+	•	Employee picker shows only employees under that manager
+
+This is exactly how PIP systems work in corporates.
+
+⸻
+
+High-level architecture (tell this to your lead)
+
+“Manager is resolved first. Using the manager UID, I dynamically load all employees reporting to that manager from SharePoint. These employees are bound to a People Picker–style dropdown, ensuring the manager can only select valid direct reports.”
+
+⸻
+
+STEP 1: Format employee name correctly
+
+Utility function (add once)
+
+formatEmployeeName(rawName: string): string {
+  if (!rawName) return '';
+  const parts = rawName.split(',');
+  if (parts.length !== 2) return rawName;
+  return `${parts[1].trim()} ${parts[0].trim()}`;
+}
+
+Example
+SRINIVASAN,Kishore → Kishore SRINIVASAN
+
+⸻
+
+STEP 2: SharePoint service – get employees under a manager
+
+sharepoint.service.ts
+
+getEmployeesByManagerUID(managerUid: string) {
+  const url =
+    `${this.siteUrl}/_api/web/lists/getbytitle('EmployeesList')/items` +
+    `?$filter=MANAGER1UID eq '${managerUid}'` +
+    `&$select=EmpUID,NAME,Email`;
+
+  return this.http.get<any>(url, {
+    headers: { Accept: 'application/json;odata=verbose' },
+    withCredentials: true
+  }).pipe(
+    map(r => r.d?.results ?? [])
+  );
+}
+
+✔ Filtered
+✔ Threshold-safe
+✔ Only required columns
+
+⸻
+
+STEP 3: Component – load employees after manager is confirmed
+
+Interface (top of pipform.component.ts)
+
+interface EmployeeOption {
+  uid: string;
+  name: string;
+  email: string;
+}
+
+
+⸻
+
+Component property
+
+employeeOptions: EmployeeOption[] = [];
+
+
+⸻
+
+After manager auto-populates (IMPORTANT)
+
+const managerUid = this.pipForm.get('manager.uid')?.value;
+
+this.sp.getEmployeesByManagerUID(managerUid).subscribe(rows => {
+  console.log('Employees under manager:', rows);
+
+  this.employeeOptions = rows.map(e => ({
+    uid: e.EmpUID,
+    name: this.formatEmployeeName(e.NAME),
+    email: e.Email
+  }));
+});
+
+Now the manager only sees their own team.
+
+⸻
+
+STEP 4: Convert Employee Name field to People Picker (Dropdown)
+
+You DO NOT change CSS classes — only the input type.
+
+Replace Employee Name input in HTML
+
+<p-dropdown
+  [options]="employeeOptions"
+  optionLabel="name"
+  optionValue="uid"
+  placeholder="Select Employee"
+  formControlName="uid"
+  (onChange)="onEmployeeSelected($event.value)">
+</p-dropdown>
+
+✔ Looks like people picker
+✔ Controlled
+✔ No manual typing
+
+⸻
+
+STEP 5: Auto-fill employee details on selection
+
+Add method in component
+
+onEmployeeSelected(empUid: string) {
+  const emp = this.employeeOptions.find(e => e.uid === empUid);
+  if (!emp) return;
+
+  this.pipForm.patchValue({
+    employee: {
+      uid: emp.uid,
+      name: emp.name,
+      email: emp.email
+    }
+  });
+
+  console.log('Employee selected:', emp);
+}
+
+
+⸻
+
+STEP 6: Disable manual editing (important control)
+
+<input pInputText formControlName="email" readonly />
+
+Same for UID and name if needed.
+
+⸻
+
+Final behavior (what actually happens)
+	1.	Manager logs in
+	2.	Manager UID is validated
+	3.	Employees list is filtered by MANAGER1UID
+	4.	Employee picker shows only valid employees
+	5.	Name displayed as
+👉 Kishore SRINIVASAN
+	6.	Selecting employee auto-fills details
+	7.	Manager cannot submit PIP for others
+
+This is production-grade logic.
+
+⸻
+
+How to explain this in one line (very important)
+
+“Employee selection is dynamically constrained based on the reporting hierarchy using SharePoint data, ensuring managers can only initiate PIP for their direct reports.”
+
+⸻
+
+If you want next:
+	•	Multi-select employee picker
+	•	MANAGER2 fallback
+	•	Server-side validation idea
+	•	How to justify not using SharePoint People Picker control
+
+Just tell me 🔥
+
+
+
+
+
+
+
+
+
+
 const currentUid = formattedUid;
 console.log('Current UID:', currentUid);
 
