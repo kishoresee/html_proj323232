@@ -1,3 +1,22 @@
+const currentUid = formattedUid;
+
+this.sp.getAllManagerUIDsFromTestList().subscribe(rows => {
+  if (!rows || rows.length === 0) return;
+
+  const matchedManager = rows.find(
+    r => r.MANAGER1UID?.toLowerCase() === currentUid.toLowerCase()
+  );
+
+  if (!matchedManager) return;
+
+  this.pipForm.get('manager.uid')?.setValue(matchedManager.MANAGER1UID);
+  this.pipForm.get('manager.name')?.setValue(matchedManager.NAME);
+  this.pipForm.get('manager.email')?.setValue(matchedManager.Email);
+});
+
+
+
+
 Good question 👍
 This is the correct and simplest way to verify that you are able to load the PIPWorkflow → EmployeesList → MANAGER1UID column.
 
