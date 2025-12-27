@@ -1,7 +1,48 @@
 const currentUid = formattedUid;
+console.log('Current UID:', currentUid);
+
+this.sp.getAllManagerUIDsFromTestList().subscribe((rows: ManagerRow[]) => {
+  console.log('Manager rows from SharePoint:', rows);
+
+  if (!rows.length) {
+    console.warn('No rows returned from EmployeListTest');
+    return;
+  }
+
+  const matchedManager = rows.find(
+    (r: ManagerRow) =>
+      r.MANAGER1UID?.toLowerCase() === currentUid.toLowerCase()
+  );
+
+  console.log('Matched Manager Row:', matchedManager);
+
+  if (!matchedManager) {
+    console.warn('Current UID not found in MANAGER1UID list');
+    return;
+  }
+
+  this.pipForm.get('manager.uid')?.setValue(matchedManager.MANAGER1UID);
+  this.pipForm.get('manager.name')?.setValue(matchedManager.NAME);
+  this.pipForm.get('manager.email')?.setValue(matchedManager.Email);
+
+  console.log('Manager fields populated in form');
+});
+
+
+
+
+
+
+
+
+
+
+const currentUid = formattedUid;
 
 this.sp.getAllManagerUIDsFromTestList().subscribe(rows => {
-  if (!rows || rows.length === 0) return;
+  
+
+if (!rows || rows.length === 0) return;
 
   const matchedManager = rows.find(
     r => r.MANAGER1UID?.toLowerCase() === currentUid.toLowerCase()
