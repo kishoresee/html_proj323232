@@ -1,3 +1,108 @@
+Good question 👍
+This is the correct and simplest way to verify that you are able to load the PIPWorkflow → EmployeesList → MANAGER1UID column.
+
+⸻
+
+✅ Step 1: Test directly in browser (most important)
+
+Open this URL in the same browser where you are logged into SharePoint:
+
+https://sp-apps-apac-cib.dev.echonet/sites/PIPWorkflow/_api/web/lists/getbytitle('EmployeesList')/items?$top=1&$select=EmpUID,MANAGER1UID
+
+✅ Expected result
+
+You should see JSON like:
+
+{
+  "d": {
+    "results": [
+      {
+        "EmpUID": "h59604",
+        "MANAGER1UID": "h77490"
+      }
+    ]
+  }
+}
+
+✔ If you see this → column is readable
+❌ If you get 401/403 → permission issue
+❌ If MANAGER1UID missing → column internal name mismatch
+
+⸻
+
+✅ Step 2: Verify column internal name (very important)
+
+In SharePoint List Settings → MANAGER1UID column → check URL:
+
+Field=MANAGER1UID
+
+If it is:
+	•	MANAGER1UID → use exactly that
+	•	Manager1UID / MANAGER_x0020_UID → must match exactly
+
+⸻
+
+✅ Step 3: Minimal Angular service test
+
+Add only this method to your sharepoint.service.ts:
+
+getEmployeeByEmpUID(uid: string) {
+  const url =
+    `${this.siteUrl}/_api/web/lists/getbytitle('EmployeesList')/items` +
+    `?$filter=EmpUID eq '${uid}'&$select=EmpUID,MANAGER1UID,NAME,Email`;
+
+  return this.http.get<any>(url, {
+    headers: { Accept: 'application/json;odata=verbose' },
+    withCredentials: true
+  }).pipe(
+    map(r => r.d?.results?.[0])
+  );
+}
+
+
+⸻
+
+✅ Step 4: Log in component to confirm
+
+this.sp.getEmployeeByEmpUID(formattedUid).subscribe(emp => {
+  console.log('Employee row from SP:', emp);
+  console.log('Manager UID:', emp?.MANAGER1UID);
+});
+
+✅ Expected console output
+
+Employee row from SP: { EmpUID: "h59604", MANAGER1UID: "h77490", ... }
+Manager UID: h77490
+
+
+⸻
+
+✅ Final confirmation logic
+
+If ALL below are true, then you are 100% loading MANAGER1UID correctly:
+
+✔ Browser API URL returns MANAGER1UID
+✔ Console logs show MANAGER1UID
+✔ No CORS / 401 / 403 errors
+✔ withCredentials: true used
+
+⸻
+
+🧠 One-line explanation for lead
+
+“I verified EmployeesList access by directly querying MANAGER1UID via SharePoint REST API and consuming it in Angular with authenticated requests.”
+
+⸻
+
+If you want next:
+	•	Validate MANAGER1UID vs logged-in UID
+	•	Add MANAGER2 fallback
+	•	Lock manager fields automatically
+
+Just tell me.
+
+
+
 
 <form [formGroup]="pipForm" class="pip-container" (ngSubmit)="onSubmit()">
 
