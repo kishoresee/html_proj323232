@@ -1,3 +1,201 @@
+Good progress 👍 You’re very close. Let’s fix the errors cleanly and complete the employee-under-manager flow step by step.
+
+⸻
+
+1️⃣ Why you are getting these errors
+
+❌ Error 1
+
+Property 'formatEmployeeName' does not exist on type 'PIPFormComponent'
+
+👉 You are calling a function that you never defined in the component.
+
+⸻
+
+❌ Error 2
+
+Parameter 'e' implicitly has an 'any' type
+
+👉 TypeScript strict mode requires explicit typing for map(e => ...).
+
+⸻
+
+❌ Error 3
+
+Argument of type 'void | undefined' is not assignable to parameter of type 'string'
+
+👉 managerUid can be undefined, but your service expects a string.
+
+⸻
+
+2️⃣ Final working design (what we are implementing)
+
+✔ Manager auto-populates
+✔ Manager can see only employees under him
+✔ Employee picker shows formatted names:
+SRINIVASAN,Kishore → Kishore SRINIVASAN
+✔ Selecting employee auto-fills UID, name, email
+✔ No backend changes
+
+⸻
+
+3️⃣ Add these interfaces (TOP of pipform.component.ts)
+
+interface EmployeeRow {
+  EmpUID: string;
+  NAME: string;
+  Email: string;
+}
+
+interface EmployeeOption {
+  uid: string;
+  name: string;
+  email: string;
+}
+
+
+⸻
+
+4️⃣ Add these properties inside PIPFormComponent
+
+employeeOptions: EmployeeOption[] = [];
+
+
+⸻
+
+5️⃣ ADD THIS FUNCTION (this fixes your main error)
+
+✅ formatEmployeeName (VERY IMPORTANT)
+
+formatEmployeeName(raw: string): string {
+  if (!raw) return '';
+  const parts = raw.split(',');
+  if (parts.length === 2) {
+    return `${parts[1].trim()} ${parts[0].trim()}`;
+  }
+  return raw;
+}
+
+✔ Fixes TS2339
+✔ Converts SharePoint name format correctly
+
+⸻
+
+6️⃣ FIX this block (employees under manager)
+
+❌ Your current buggy code
+
+this.sp.getEmployeesByManagerUID(managerUid).subscribe(rows => {
+  this.employeeOptions = rows.map(e => ({
+    uid: e.EmpUID,
+    name: this.formatEmployeeName(e.NAME),
+    email: e.Email
+  }));
+});
+
+
+⸻
+
+✅ Replace with this SAFE + TYPED version
+
+if (!managerUid) {
+  console.warn('Manager UID is missing, cannot load employees');
+  return;
+}
+
+this.sp.getEmployeesByManagerUID(managerUid).subscribe(
+  (rows: EmployeeRow[]) => {
+    console.log('Employees under manager:', rows);
+
+    this.employeeOptions = rows.map((e: EmployeeRow) => ({
+      uid: e.EmpUID,
+      name: this.formatEmployeeName(e.NAME),
+      email: e.Email
+    }));
+
+    console.log('Employee picker options:', this.employeeOptions);
+  }
+);
+
+✔ Fixes void | undefined error
+✔ Fixes implicit any
+✔ Adds useful logs for demo/explanation
+
+⸻
+
+7️⃣ Add this handler (Employee selection logic)
+
+📍 Place this inside PIPFormComponent
+
+onEmployeeSelected(empUid: string): void {
+  const emp = this.employeeOptions.find(e => e.uid === empUid);
+  if (!emp) return;
+
+  this.pipForm.patchValue({
+    employee: {
+      uid: emp.uid,
+      name: emp.name,
+      email: emp.email
+    }
+  });
+
+  console.log('Employee selected:', emp);
+}
+
+
+⸻
+
+8️⃣ HTML – Employee People Picker (simple dropdown)
+
+<select
+  formControlName="uid"
+  (change)="onEmployeeSelected($event.target.value)"
+>
+  <option value="">Select Employee</option>
+  <option *ngFor="let e of employeeOptions" [value]="e.uid">
+    {{ e.name }}
+  </option>
+</select>
+
+👉 This behaves like a People Picker (logical equivalent) without SPFx complexity.
+
+⸻
+
+9️⃣ Why this is CORRECT architecturally (for your lead)
+
+You can explain confidently:
+
+✔ Manager identity is auto-resolved
+✔ Employees are filtered server-side by MANAGER1UID
+✔ UI restricts selection to valid employees
+✔ Name normalization handled in UI layer
+✔ Fully extensible to SharePoint People Picker / SPFx later
+
+⸻
+
+🔟 Summary – What you fixed today 💪
+
+✔ Type safety issues
+✔ Manager → Employee hierarchy logic
+✔ Name formatting
+✔ People picker behavior
+✔ Clean separation of concerns
+
+⸻
+
+If you want next:
+	•	Convert dropdown → Angular Material Autocomplete
+	•	Replace with actual SharePoint People Picker
+	•	Lock employee field for non-managers
+	•	Validation rules
+
+Just tell me 👍
+
+
+
+
+
+
 Perfect, this is a very real enterprise requirement and you’re thinking in the right direction. I’ll break this into clear steps + exact code changes, so you can implement and explain it confidently.
 
 ⸻
