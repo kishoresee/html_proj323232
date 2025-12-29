@@ -1,3 +1,178 @@
+
+Good catch — this error is 100% Angular setup + event binding, not your logic. Let’s fix it cleanly.
+
+⸻
+
+❌ Why this error is happening
+
+You are using <p-dropdown> (PrimeNG) but:
+
+1️⃣ [options] error
+
+Angular says:
+
+Can’t bind to options since it isn’t a known property of p-dropdown
+
+👉 Meaning: PrimeNG DropdownModule is NOT imported in this component.
+
+⸻
+
+2️⃣ (onChange)="onEmployeeSelected($event.value)" error
+
+Angular says:
+
+Property value does not exist on type Event
+
+👉 Because PrimeNG emits a custom event, not a normal DOM event.
+
+⸻
+
+✅ FIX STEP BY STEP
+
+⸻
+
+✅ STEP 1: Import DropdownModule properly
+
+If your component is standalone (Angular 15+)
+
+In pipform.component.ts:
+
+import { DropdownModule } from 'primeng/dropdown';
+import { ReactiveFormsModule } from '@angular/forms';
+
+Then in @Component:
+
+@Component({
+  selector: 'app-pipform',
+  standalone: true,
+  imports: [
+    ReactiveFormsModule,
+    DropdownModule
+  ],
+  templateUrl: './pipform.component.html'
+})
+
+
+⸻
+
+If NOT standalone (NgModule based)
+
+In your module (app.module.ts or feature module):
+
+import { DropdownModule } from 'primeng/dropdown';
+
+@NgModule({
+  imports: [
+    ReactiveFormsModule,
+    DropdownModule
+  ]
+})
+export class AppModule {}
+
+
+⸻
+
+✅ STEP 2: Fix HTML event binding
+
+❌ Wrong (what you have now)
+
+(onChange)="onEmployeeSelected($event.value)"
+
+✅ Correct for PrimeNG
+
+(onChange)="onEmployeeSelected($event.value)"
+
+⚠️ This is correct ONLY AFTER DropdownModule is imported
+Otherwise Angular treats it as a normal DOM event.
+
+⸻
+
+✅ STEP 3: Correct HTML dropdown code (FINAL)
+
+<p-dropdown
+  [options]="employeeOptions"
+  optionLabel="name"
+  optionValue="uid"
+  placeholder="Select Employee"
+  formControlName="uid"
+  (onChange)="onEmployeeSelected($event.value)">
+</p-dropdown>
+
+
+⸻
+
+✅ STEP 4: Component method (NO CHANGE needed)
+
+onEmployeeSelected(empUid: string): void {
+  const emp = this.employeeOptions.find(e => e.uid === empUid);
+  if (!emp) return;
+
+  this.pipForm.patchValue({
+    employee: {
+      uid: emp.uid,
+      name: emp.name,
+      email: emp.email
+    }
+  });
+
+  console.log('Employee selected:', emp);
+}
+
+
+⸻
+
+✅ STEP 5: Confirm data structure
+
+Your employeeOptions must look like this:
+
+this.employeeOptions = [
+  { uid: 'h59604', name: 'Kishore SRINIVASAN', email: 'kishore@...' }
+];
+
+
+⸻
+
+🔎 Why this failed before (important for explanation)
+
+Error	Reason
+[options] not known	PrimeNG module not imported
+$event.value invalid	Angular treated event as DOM event
+Everything breaks	Component schema incomplete
+
+
+⸻
+
+🧠 How to explain this to your lead
+
+We are using PrimeNG dropdown, which emits custom change events.
+The error occurred because the DropdownModule was not imported in the component scope.
+After importing it properly, the dropdown binds options and emits selected UID correctly.
+
+⸻
+
+✅ You’re now at production-grade People Picker logic
+
+✔ Manager-restricted employee list
+✔ Name normalization
+✔ Controlled selection
+✔ No unauthorized access
+
+If you want next:
+	•	PrimeNG AutoComplete (searchable people picker)
+	•	Disable manual typing
+	•	Show UID + name together
+	•	Multi-select employees
+
+Just say 👍
+
+
+
+
+
+
+
+
+
 Good progress 👍 You’re very close. Let’s fix the errors cleanly and complete the employee-under-manager flow step by step.
 
 ⸻
