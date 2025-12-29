@@ -1,3 +1,360 @@
+Perfect, now I’m 100% clear 👍
+I will NOT touch:
+	•	✅ Manager-related logic
+	•	✅ getAllManagerUIDsFromTestList()
+	•	✅ addIssue(), removeIssue(), sessions, submit, etc.
+	•	✅ imports
+	•	✅ standalone: true
+
+I will ONLY FIX EMPLOYEE FLOW and still give you FULL FILES so you can copy-paste safely.
+
+⸻
+
+✅ WHAT IS FIXED (EMPLOYEE ONLY)
+
+✔ Employees loaded ONLY from EmployeeListTest
+✔ Filtered by MANAGER1UID = logged-in UID
+✔ Handles multiple employees under same manager
+✔ Fixes trim() error
+✔ Dropdown populated correctly
+✔ onEmployeeSelected() auto-populates employee fields
+
+⸻
+
+✅ sharepoint.service.ts (FULL FILE – employee logic corrected)
+
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable, map } from 'rxjs';
+
+@Injectable({ providedIn: 'root' })
+export class SharePointService {
+
+  private siteUrl = 'https://sp-apps-apac-cib.dev.echonet/sites/PIPWorkflow';
+
+  constructor(private http: HttpClient) {}
+
+  private opts() {
+    return {
+      headers: new HttpHeaders({
+        Accept: 'application/json;odata=verbose'
+      }),
+      withCredentials: true
+    };
+  }
+
+  /* ================= EXISTING METHODS (UNCHANGED) ================= */
+
+  getCurrentUser(): Observable<any> {
+    return this.http
+      .get<any>(`${this.siteUrl}/_api/web/currentuser`, this.opts())
+      .pipe(map(r => r.d));
+  }
+
+  formatUid(loginName: string): string {
+    if (!loginName) return '';
+    return loginName.replace(/^.*\\/, '').replace(/^tech/i, 'h');
+  }
+
+  getUserProfile(formattedUid: string): Observable<any> {
+    const url =
+      `https://ssc-ecm-api.uat.staging.echonet/sp-governance/api/v1/userprofile` +
+      `?UserName=${formattedUid}&IsExcludeOPSProfiles=true&IsActive=true&IsDashBoardPermission=true`;
+
+    return this.http.get<any[]>(url).pipe(map(arr => arr?.[0]));
+  }
+
+  getEmployeeByEmpUID(uid: string): Observable<any> {
+    return this.http
+      .get<any>(
+        `${this.siteUrl}/_api/web/lists/getbytitle('EmployeesList')/items?$filter=EmpUID eq '${uid}'`,
+        this.opts()
+      )
+      .pipe(map(r => r.d?.results?.[0]));
+  }
+
+  getHRBPByUID(uid: string): Observable<any> {
+    return this.http
+      .get<any>(
+        `${this.siteUrl}/_api/web/lists/getbytitle('EmployeesList')/items?$filter=HRBPUIDs eq '${uid}'`,
+        this.opts()
+      )
+      .pipe(map(r => r.d?.results?.[0]));
+  }
+
+  /* ================= REQUIRED: KEEP THIS METHOD ================= */
+
+  getAllManagerUIDsFromTestList(): Observable<any[]> {
+    const url =
+      `${this.siteUrl}/_api/web/lists/getbytitle('EmployeeListTest')/items?$select=MANAGER1UID`;
+
+    return this.http
+      .get<any>(url, this.opts())
+      .pipe(map(r => r.d?.results ?? []));
+  }
+
+  /* ================= 🔹 FIXED EMPLOYEE METHOD ONLY ================= */
+
+  getEmployeesByManagerUID(managerUid: string): Observable<any[]> {
+    const url =
+      `${this.siteUrl}/_api/web/lists/getbytitle('EmployeeListTest')/items` +
+      `?$filter=MANAGER1UID eq '${managerUid}'` +
+      `&$select=EmpUID,NAME,Email`;
+
+    return this.http
+      .get<any>(url, this.opts())
+      .pipe(map(r => r.d?.results ?? []));
+  }
+}
+
+
+⸻
+
+✅ pipform.component.ts (FULL FILE – only employee logic changed)
+
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import {
+  FormBuilder,
+  FormGroup,
+  FormArray,
+  ReactiveFormsModule,
+  Validators
+} from '@angular/forms';
+
+import { TabViewModule } from 'primeng/tabview';
+import { CardModule } from 'primeng/card';
+import { InputTextModule } from 'primeng/inputtext';
+import { InputTextareaModule } from 'primeng/inputtextarea';
+import { ButtonModule } from 'primeng/button';
+import { DropdownModule } from 'primeng/dropdown';
+
+import { SharePointService } from '../../Services/sharepoint.service';
+
+/* ================= INTERFACES ================= */
+
+export interface managerrow {
+  MANAGER1UID: string;
+}
+
+interface EmployeeOption {
+  uid: string;
+  name: string;
+  email: string;
+}
+
+interface EmployeeRow {
+  EmpUID: string;
+  NAME?: string;
+  Email?: string;
+}
+
+@Component({
+  selector: 'app-pipform',
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    TabViewModule,
+    CardModule,
+    InputTextModule,
+    InputTextareaModule,
+    DropdownModule,
+    ButtonModule
+  ],
+  templateUrl: './pipform.component.html',
+  styleUrls: ['./pipform.component.css']
+})
+export class PIPFormComponent implements OnInit {
+
+  employeeOptions: EmployeeOption[] = [];
+  pipForm!: FormGroup;
+  submitted = false;
+
+  constructor(private fb: FormBuilder, private sp: SharePointService) {}
+
+  ngOnInit(): void {
+    this.buildForm();
+    this.loadLoggedInUser();
+  }
+
+  buildForm(): void {
+    this.pipForm = this.fb.group({
+      manager: this.fb.group({
+        uid: [''],
+        name: [''],
+        email: ['']
+      }),
+      employee: this.fb.group({
+        uid: [''],
+        name: [''],
+        email: [''],
+        department: [''],
+        position: ['']
+      }),
+      hrbp: this.fb.group({
+        uid: [''],
+        name: [''],
+        email: ['']
+      }),
+      performanceIssues: this.fb.array([]),
+      checkInSessions: this.fb.array([])
+    });
+
+    this.addIssue();
+    this.addSession();
+  }
+
+  /* ================= 🔹 SAFE NAME FORMATTER ================= */
+
+  formatEmployeeName(raw?: string): string {
+    if (!raw || typeof raw !== 'string') return '';
+    const parts = raw.split(',');
+    return parts.length === 2
+      ? `${parts[1].trim()} ${parts[0].trim()}`
+      : raw;
+  }
+
+  /* ================= MANAGER LOGIC (UNCHANGED) ================= */
+
+  loadLoggedInUser(): void {
+    this.sp.getCurrentUser().subscribe(u => {
+      const formattedUid = this.sp.formatUid(u.LoginName);
+      console.log('Current UID:', formattedUid);
+
+      this.sp.getUserProfile(formattedUid).subscribe(profile => {
+        if (!profile) return;
+
+        /* ===== manager population untouched ===== */
+        this.pipForm.get('manager.uid')?.setValue(formattedUid);
+        this.pipForm.get('manager.name')?.setValue(profile.displayName);
+        this.pipForm.get('manager.email')?.setValue(profile.emailId);
+
+        /* ===== EMPLOYEE FIX STARTS HERE ===== */
+        this.loadEmployeesUnderManager(formattedUid);
+
+        /* ===== rest remains unchanged ===== */
+        this.pipForm.get('employee.department')?.setValue(profile.department);
+        this.pipForm.get('employee.position')?.setValue(profile.title);
+
+        this.sp.getEmployeeByEmpUID(formattedUid).subscribe(emp => {
+          if (!emp) return;
+
+          this.pipForm.get('hrbp.uid')?.setValue(emp.HRBPUIDs);
+          this.sp.getHRBPByUID(emp.HRBPUIDs).subscribe(hr => {
+            if (!hr) return;
+            this.pipForm.get('hrbp.name')?.setValue(hr.NAME);
+            this.pipForm.get('hrbp.email')?.setValue(hr.Email);
+          });
+        });
+      });
+    });
+  }
+
+  /* ================= 🔹 EMPLOYEE FIX ================= */
+
+  loadEmployeesUnderManager(managerUid: string): void {
+    this.sp.getEmployeesByManagerUID(managerUid).subscribe(rows => {
+      console.log('Employees under manager:', rows);
+
+      this.employeeOptions = rows.map((r: EmployeeRow) => ({
+        uid: r.EmpUID,
+        name: this.formatEmployeeName(r.NAME),
+        email: r.Email ?? ''
+      }));
+
+      console.log('Employee picker options:', this.employeeOptions);
+    });
+  }
+
+  onEmployeeSelected(empUid: string): void {
+    const emp = this.employeeOptions.find(e => e.uid === empUid);
+    if (!emp) return;
+
+    this.pipForm.patchValue({
+      employee: {
+        uid: emp.uid,
+        name: emp.name,
+        email: emp.email
+      }
+    });
+
+    console.log('Employee selected:', emp);
+  }
+
+  /* ================= BELOW METHODS UNTOUCHED ================= */
+
+  get performanceIssues(): FormArray {
+    return this.pipForm.get('performanceIssues') as FormArray;
+  }
+
+  addIssue(): void {
+    this.performanceIssues.push(
+      this.fb.group({
+        issue: ['', Validators.required],
+        timeline: ['', Validators.required],
+        standards: ['', Validators.required],
+        currentAssessment: ['', Validators.required],
+        supporting: ['', Validators.required]
+      })
+    );
+  }
+
+  removeIssue(i: number): void {
+    this.performanceIssues.removeAt(i);
+  }
+
+  get checkInSessions(): FormArray {
+    return this.pipForm.get('checkInSessions') as FormArray;
+  }
+
+  addSession(): void {
+    this.checkInSessions.push(
+      this.fb.group({
+        sessionPipId: [''],
+        sessionDate: ['', Validators.required],
+        sessionTime: ['', Validators.required],
+        participants: ['', Validators.required]
+      })
+    );
+  }
+
+  removeSession(i: number): void {
+    this.checkInSessions.removeAt(i);
+  }
+
+  onSubmit(): void {
+    this.submitted = true;
+    if (this.pipForm.invalid) return;
+    console.log(this.pipForm.value);
+  }
+}
+
+
+⸻
+
+✅ FINAL RESULT YOU SHOULD SEE
+
+✔ Manager auto-populated
+✔ Both employees under h59604 appear in dropdown
+✔ No console errors
+✔ Selecting employee fills UID / Name / Email
+✔ All existing logic preserved
+
+⸻
+
+If you want, next I can:
+	•	validate manager against getAllManagerUIDsFromTestList()
+	•	auto-select when only one employee
+	•	add loading spinner / error handling
+
+Just say 👍
+
+
+
+
+
+
 Got it 👍
 I went through all screenshots + console logs + SharePoint list structure.
 I’ll be very clear and fix the logic end-to-end without changing imports or standalone: true.
