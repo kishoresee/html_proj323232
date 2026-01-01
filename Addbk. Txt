@@ -1,3 +1,17 @@
+const url = `${this.siteUrl}/_api/web/lists/getbytitle('${this.pipDetailsList}')/items(${itemId})` +
+  `?$select=Id,ReportPipID,
+    ManagerUID,ManagerNameId,ManagerName/Title,ManagerName/Email,ManagerEmail,
+    EmployeeUID,EmployeeNameId,EmployeeName/Title,EmployeeName/Email,EmployeeEmail,
+    EmployeeDepartment,EmployeePosition,
+    HRBPUID,HRBPNameId,HRBPName/Title,HRBPName/Email,HRBPEmail,
+    Status
+   &$expand=ManagerName,EmployeeName,HRBPName`;
+
+
+
+
+
+
 Perfect, now I’m 100% clear 👍
 I will NOT touch:
 	•	✅ Manager-related logic
