@@ -1,3 +1,71 @@
+/* ================================
+   PRIME NG INPUT VISIBILITY FIX
+   (does NOT touch buttons)
+================================ */
+
+/* Text input */
+:host ::ng-deep .p-inputtext {
+  background-color: #ffffff !important;
+  border: 1px solid #cfd6d1 !important;
+  border-radius: 6px;
+  height: 38px;
+  padding: 6px 10px;
+  color: #2e2e2e;
+}
+
+/* Dropdown */
+:host ::ng-deep .p-dropdown {
+  background-color: #ffffff !important;
+  border: 1px solid #cfd6d1 !important;
+  border-radius: 6px;
+  height: 38px;
+}
+
+/* Dropdown label text */
+:host ::ng-deep .p-dropdown-label {
+  color: #2e2e2e;
+}
+
+/* Textarea */
+:host ::ng-deep textarea,
+:host ::ng-deep .p-inputtextarea {
+  background-color: #ffffff !important;
+  border: 1px solid #cfd6d1 !important;
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: #2e2e2e;
+}
+
+/* Readonly fields */
+:host ::ng-deep input[readonly] {
+  background-color: #f1f4f3 !important;
+  border: 1px solid #d3dad6 !important;
+  color: #666;
+}
+
+/* ================================
+   FOCUS (BNP GREEN – subtle)
+================================ */
+:host ::ng-deep .p-inputtext:focus,
+:host ::ng-deep .p-dropdown.p-focus,
+:host ::ng-deep textarea:focus {
+  border-color: rgba(0,145,90,1) !important;
+  box-shadow: 0 0 0 1px rgba(0,145,90,0.2);
+}
+
+/* ================================
+   INVALID STATE
+================================ */
+:host ::ng-deep .p-invalid .p-inputtext,
+:host ::ng-deep .p-invalid .p-dropdown,
+:host ::ng-deep .p-invalid textarea {
+  border-color: #d32f2f !important;
+}
+
+
+
+
+
 Thanks for the screenshots — now the problem is 100% clear 👍
 You’re right to be frustrated; let’s fix this properly and concretely.
 
