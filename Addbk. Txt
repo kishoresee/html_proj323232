@@ -1,3 +1,246 @@
+
+/* =========================
+   THEME VARIABLES
+========================= */
+:root {
+  --primary-green: rgba(0,145,90,1);
+  --primary-green-dark: rgba(0,120,75,1);
+  --primary-green-light: rgba(0,145,90,0.08);
+  --border-color: #dcdcdc;
+  --text-dark: #2e2e2e;
+  --text-muted: #6b6b6b;
+  --bg-light: #f7f9f8;
+  --card-bg: #ffffff;
+  --danger: #d32f2f;
+}
+
+/* =========================
+   PAGE BACKGROUND
+========================= */
+body {
+  background: var(--bg-light);
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+/* =========================
+   FORM CONTAINER
+========================= */
+.pip-container {
+  max-width: 1200px;
+  margin: 24px auto;
+  padding: 0;
+}
+
+/* =========================
+   TAB VIEW (PIP DETAILS / SESSION DETAILS)
+========================= */
+.p-tabview .p-tabview-nav {
+  background: #ffffff;
+  border-bottom: 2px solid var(--primary-green);
+}
+
+.p-tabview .p-tabview-nav li .p-tabview-nav-link {
+  color: var(--text-muted);
+  font-weight: 600;
+  padding: 14px 20px;
+}
+
+.p-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link {
+  color: var(--primary-green);
+  border-bottom: 3px solid var(--primary-green);
+}
+
+/* =========================
+   CARD STYLE (SECTIONS)
+========================= */
+.p-card {
+  background: var(--card-bg);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.p-card .p-card-header {
+  background: var(--primary-green);
+  color: #fff;
+  font-weight: 600;
+  font-size: 15px;
+  padding: 12px 16px;
+  border-radius: 8px 8px 0 0;
+}
+
+.p-card .p-card-body {
+  padding: 20px;
+}
+
+/* =========================
+   GRID & FIELD LAYOUT
+========================= */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px 20px;
+}
+
+@media (max-width: 1100px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+}
+
+/* =========================
+   LABELS
+========================= */
+.field label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 6px;
+}
+
+/* =========================
+   INPUTS & DROPDOWNS
+========================= */
+.p-inputtext,
+.p-dropdown {
+  height: 40px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  font-size: 14px;
+}
+
+.p-inputtext:enabled:focus,
+.p-dropdown:not(.p-disabled).p-focus {
+  border-color: var(--primary-green);
+  box-shadow: 0 0 0 2px var(--primary-green-light);
+}
+
+/* Read-only fields */
+input[readonly] {
+  background: #f2f4f3;
+  color: var(--text-muted);
+}
+
+/* =========================
+   TEXTAREA
+========================= */
+textarea.p-inputtextarea {
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  font-size: 14px;
+}
+
+textarea.p-inputtextarea:focus {
+  border-color: var(--primary-green);
+  box-shadow: 0 0 0 2px var(--primary-green-light);
+}
+
+/* =========================
+   VALIDATION ERRORS
+========================= */
+.p-invalid .p-inputtext,
+.p-invalid .p-dropdown,
+.p-invalid textarea {
+  border-color: var(--danger);
+}
+
+.p-error {
+  font-size: 12px;
+  color: var(--danger);
+  margin-top: 4px;
+}
+
+/* =========================
+   PERFORMANCE ISSUE CARDS
+========================= */
+.issue-card {
+  border: 1px dashed var(--primary-green);
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 12px;
+  background: #fcfffd;
+}
+
+/* =========================
+   BUTTONS
+========================= */
+button.p-button {
+  height: 38px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+/* Primary */
+.p-button.p-button-primary {
+  background: var(--primary-green);
+  border-color: var(--primary-green);
+}
+
+.p-button.p-button-primary:hover {
+  background: var(--primary-green-dark);
+}
+
+/* Secondary */
+.p-button.p-button-secondary {
+  background: #ffffff;
+  color: var(--primary-green);
+  border: 1px solid var(--primary-green);
+}
+
+.p-button.p-button-secondary:hover {
+  background: var(--primary-green-light);
+}
+
+/* Danger */
+.p-button.p-button-danger {
+  background: #d32f2f;
+  border-color: #d32f2f;
+}
+
+/* =========================
+   ACTION BUTTON BAR
+========================= */
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
+}
+
+/* =========================
+   ADD / REMOVE ICON BUTTONS
+========================= */
+.p-button-icon-only {
+  width: 36px;
+  height: 36px;
+}
+
+/* =========================
+   GLOBAL SPACING FIX
+========================= */
+.p-card + .p-card {
+  margin-top: 24px;
+}
+
+
+
+
+
+
 const url = `${this.siteUrl}/_api/web/lists/getbytitle('${this.pipDetailsList}')/items(${itemId})` +
   `?$select=Id,ReportPipID,
     ManagerUID,ManagerNameId,ManagerName/Title,ManagerName/Email,ManagerEmail,
