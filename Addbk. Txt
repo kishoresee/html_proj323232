@@ -1,3 +1,145 @@
+Perfect 👍 since you are using PrimeNG, DO NOT use raw <button> + icons.
+PrimeNG already gives you exactly the UI used in your 3rd image.
+
+Below is the correct PrimeNG way — clean, professional, minimal CSS.
+
+⸻
+
+✅ WHAT TO CHANGE (ONLY Action column)
+
+🔴 CURRENT (your manual buttons)
+
+You are rendering custom <button> HTML → looks bad.
+
+⸻
+
+✅ PRIME NG CORRECT SOLUTION
+
+Use PrimeNG Button with icon-only + textless style
+
+⸻
+
+1️⃣ Change Action column renderer (TypeScript)
+
+✅ Replace your cellRenderer with this
+
+cellRenderer: (params: any) => {
+  const isClosed = ['closed', 'submitted'].includes(
+    (params.data.Status || '').toLowerCase()
+  );
+
+  const id = params.data.Id;
+
+  const viewBtn = `
+    <button 
+      pButton 
+      type="button"
+      class="p-button-text p-button-rounded p-button-success action-btn"
+      icon="pi pi-eye"
+      data-id="${id}">
+    </button>
+  `;
+
+  const editBtn = isClosed
+    ? ''
+    : `
+      <button 
+        pButton 
+        type="button"
+        class="p-button-text p-button-rounded p-button-warning action-btn"
+        icon="pi pi-pencil"
+        data-id="${id}">
+      </button>
+    `;
+
+  return `<div class="action-wrapper">${viewBtn}${editBtn}</div>`;
+}
+
+
+⸻
+
+2️⃣ REQUIRED PrimeNG imports (IMPORTANT)
+
+In your module:
+
+import { ButtonModule } from 'primeng/button';
+
+And ensure icons are loaded (usually already):
+
+"styles": [
+  "node_modules/primeicons/primeicons.css"
+]
+
+
+⸻
+
+3️⃣ Minimal CSS (ONLY alignment – no ugly styling)
+
+.action-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+/* override AG Grid cell padding */
+.ag-cell {
+  display: flex;
+  align-items: center;
+}
+
+
+⸻
+
+4️⃣ Why this EXACTLY matches your 3rd image
+
+Feature	Result
+Icon-only buttons	✅
+Rounded	✅
+No borders	✅
+PrimeNG hover	✅
+Green / yellow semantic colors	✅
+Enterprise look	✅
+
+PrimeNG already follows Material + Enterprise UI, so no custom CSS headache.
+
+⸻
+
+5️⃣ OPTIONAL (if you want exact green rgba(0,145,90,1))
+
+.p-button-success {
+  color: rgba(0,145,90,1) !important;
+}
+
+.p-button-success:hover {
+  background: rgba(0,145,90,0.12) !important;
+}
+
+
+⸻
+
+✅ FINAL RESULT
+
+You will get:
+	•	Same layout as 3rd image
+	•	Clean icons
+	•	Proper hover
+	•	No ugly boxes
+	•	Future-proof PrimeNG UI
+
+⸻
+
+If you want next:
+	•	🔥 Convert Action column to Angular component renderer
+	•	🎯 Disable Edit button visually (instead of hiding)
+	•	🧩 Use p-tooltip like SharePoint
+
+Just say next 👍
+
+
+
+
+
 /* ================================
    PRIME NG INPUT VISIBILITY FIX
    (does NOT touch buttons)
