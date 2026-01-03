@@ -1,4 +1,113 @@
 /* =========================================================
+   GRID – header, rows, cells (AG-Grid)
+   ========================================================= */
+
+.custom-grid ::ng-deep .ag-root-wrapper {
+  border: none;
+  box-shadow: none;
+}
+
+/* ---------- HEADER ---------- */
+.custom-grid ::ng-deep .ag-header {
+  background-color: var(--primary-green);
+  color: #fff;
+  border-bottom: none;
+}
+
+.custom-grid ::ng-deep .ag-header-cell {
+  font-weight: 600;
+  font-size: 14px;
+  color: #fff;
+  border-right: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.custom-grid ::ng-deep .ag-header-cell:last-child {
+  border-right: none;
+}
+
+.custom-grid ::ng-deep .ag-header-cell-label {
+  justify-content: center;
+}
+
+/* ---------- ROWS ---------- */
+.custom-grid ::ng-deep .ag-row {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  transition: background-color 0.15s ease;
+}
+
+.custom-grid ::ng-deep .ag-row-hover {
+  background-color: var(--primary-green-hover) !important;
+}
+
+/* optional subtle striping */
+.custom-grid ::ng-deep .ag-row:nth-child(even) {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* ---------- CELLS ---------- */
+.custom-grid ::ng-deep .ag-cell {
+  padding: 0.5rem 0.75rem;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  border-right: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.custom-grid ::ng-deep .ag-cell:last-child {
+  border-right: none;
+}
+
+/* ---------- STATUS COLUMN ---------- */
+.custom-grid ::ng-deep .ag-cell[col-id="Status"] {
+  font-weight: 600;
+  color: var(--primary-green);
+}
+
+/* =========================================================
+   ACTION BUTTONS (👁️ / ✏️)
+   ========================================================= */
+
+.actionBtn {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary-green);
+  transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+.actionBtn:hover {
+  background-color: var(--primary-green-light);
+  transform: scale(1.05);
+}
+
+/* spacing between icons */
+.editBtn {
+  margin-left: 6px;
+}
+
+/* =========================================================
+   POLISH
+   ========================================================= */
+
+.custom-grid ::ng-deep .ag-cell-focus,
+.custom-grid ::ng-deep .ag-cell:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+
+
+
+
+/* =========================================================
    AG-GRID – ENTERPRISE GREEN THEME (MATCHING IMAGE)
    ========================================================= */
 
