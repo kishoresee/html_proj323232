@@ -1,3 +1,169 @@
+This is a very common AG-Grid + PrimeNG pitfall 👍
+Nothing is wrong with your styles.css.
+
+❌ Root cause (IMPORTANT)
+
+You are rendering PrimeNG buttons (pButton, pi pi-eye) as raw HTML strings inside:
+
+cellRenderer: (params) => ` <button pButton icon="pi pi-eye"> `
+
+➡️ Angular does NOT compile directives inside AG-Grid string renderers
+So:
+	•	pButton ❌ ignored
+	•	pi pi-eye ❌ not applied
+	•	Result = small blank dashes (what you see now)
+
+⸻
+
+✅ WHY ICONS ARE NOT VISIBLE
+
+Thing	Reason
+PrimeIcons CSS	✅ loaded (correct)
+PrimeNG Button	❌ not compiled
+pButton	❌ Angular directive
+AG-Grid cellRenderer	❌ plain DOM only
+
+👉 PrimeNG components will NEVER work inside string HTML
+
+⸻
+
+✅ CORRECT FIX (2 WORKING OPTIONS)
+
+⸻
+
+✅ OPTION 1 (FAST & RECOMMENDED): Use PrimeIcons ONLY (no pButton)
+
+🔹 Change your Action column renderer to this 👇
+
+cellRenderer: (params: any) => {
+  const isClosed = ['closed', 'submitted'].includes(
+    (params.data.Status || '').toLowerCase()
+  );
+
+  const id = params.data.Id;
+
+  const viewIcon = `
+    <span class="pi pi-eye action-icon view" data-id="${id}" title="View"></span>
+  `;
+
+  const editIcon = isClosed
+    ? ''
+    : `
+      <span class="pi pi-pencil action-icon edit" data-id="${id}" title="Edit"></span>
+    `;
+
+  return `<div class="action-wrapper">${viewIcon}${editIcon}</div>`;
+};
+
+
+⸻
+
+🔹 Add THIS CSS (THIS makes it look like your 3rd image)
+
+.action-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+}
+
+.action-icon {
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: rgba(0,145,90,1);
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.action-icon:hover {
+  transform: scale(1.2);
+  color: rgba(0,120,75,1);
+}
+
+✅ Icons WILL appear immediately
+
+⸻
+
+✅ OPTION 2 (ENTERPRISE / ANGULAR WAY): cellRendererFramework
+
+If you want real PrimeNG buttons, this is the only correct way.
+
+🔹 Create component
+
+ng generate component action-cell
+
+action-cell.component.html
+
+<button
+  pButton
+  icon="pi pi-eye"
+  class="p-button-text p-button-rounded p-button-success"
+  (click)="view()">
+</button>
+
+<button
+  *ngIf="!isClosed"
+  pButton
+  icon="pi pi-pencil"
+  class="p-button-text p-button-rounded p-button-warning"
+  (click)="edit()">
+</button>
+
+In columnDefs
+
+{
+  headerName: 'Action',
+  field: 'action',
+  cellRendererFramework: ActionCellComponent
+}
+
+✅ This is how SharePoint / enterprise dashboards do it.
+
+⸻
+
+✅ WHAT YOU SHOULD DO NOW (MY ADVICE)
+
+Since you want quick + clean UI like image #3:
+
+✔️ Use OPTION 1 (PrimeIcons only)
+✔️ No Angular complexity
+✔️ 100% stable inside AG-Grid
+✔️ Looks identical to PrimeNG buttons
+
+⸻
+
+🔥 QUICK CHECKLIST (IMPORTANT)
+
+Make sure this exists in angular.json:
+
+"styles": [
+  "node_modules/primeicons/primeicons.css",
+  "src/styles.css"
+]
+
+Restart once:
+
+ng serve
+
+
+⸻
+
+✅ Final result
+	•	Icons visible ✔️
+	•	Clean UI ✔️
+	•	Green theme ✔️
+	•	No broken directives ✔️
+
+If you want, next I can:
+	•	Add click handlers
+	•	Add tooltips
+	•	Add disabled edit icon instead of hiding
+	•	Convert to SharePoint-like UI
+
+Just say 👍
+
+
+
+
 Perfect 👍 since you are using PrimeNG, DO NOT use raw <button> + icons.
 PrimeNG already gives you exactly the UI used in your 3rd image.
 
