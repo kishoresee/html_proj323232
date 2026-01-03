@@ -1,3 +1,128 @@
+Got it 👍 — no long explanation, just exactly what to change.
+
+⸻
+
+✅ 1️⃣ DO NOT change your TypeScript logic
+
+Keep this as-is:
+
+<button class="viewBtn actionBtn"></button>
+<button class="editBtn actionBtn"></button>
+
+
+⸻
+
+✅ 2️⃣ Ensure this wrapper is returned
+
+Your cellRenderer must return buttons inside this div:
+
+return `
+  <div class="action-wrapper">
+    ${viewBtn}
+    ${editBtn}
+  </div>
+`;
+
+
+⸻
+
+✅ 3️⃣ REPLACE your ENTIRE Action button CSS with THIS
+
+👉 Delete all old .actionBtn, .viewBtn, .editBtn CSS
+👉 Paste this only
+
+/* wrapper */
+.action-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* pill base */
+.actionBtn {
+  min-width: 46px;
+  height: 32px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.actionBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0,0,0,.18);
+}
+
+/* VIEW – blue */
+.viewBtn {
+  background: #2f6fd8;
+}
+
+.viewBtn::before {
+  content: "";
+  width: 14px;
+  height: 9px;
+  border: 2px solid #fff;
+  border-radius: 50% / 60%;
+  position: absolute;
+}
+
+.viewBtn::after {
+  content: "";
+  width: 4px;
+  height: 4px;
+  background: #fff;
+  border-radius: 50%;
+  position: absolute;
+}
+
+/* EDIT – green */
+.editBtn {
+  background: #2f9e44;
+}
+
+.editBtn::before {
+  content: "";
+  width: 14px;
+  height: 3px;
+  background: #fff;
+  border-radius: 2px;
+  transform: rotate(-45deg);
+  position: absolute;
+}
+
+.editBtn::after {
+  content: "";
+  border-left: 4px solid #fff;
+  border-top: 3px solid transparent;
+  border-bottom: 3px solid transparent;
+  transform: rotate(-45deg) translate(6px, -1px);
+  position: absolute;
+}
+
+
+⸻
+
+✅ 4️⃣ Restart once
+
+ng serve
+
+
+⸻
+
+✅ Result
+
+You’ll get exactly the pill-style blue View + green Edit buttons like your 2nd image, no emojis, no PrimeNG, clean & professional.
+
+If you want disabled edit for closed rows, say 👍
+
+
+
 /* =========================================================
    ACTION BUTTON BASE
    ========================================================= */
