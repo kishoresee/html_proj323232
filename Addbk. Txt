@@ -1,3 +1,85 @@
+/* =========================================================
+   ACTION BUTTON BASE
+   ========================================================= */
+
+.actionBtn {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 0;
+  font-size: 0; /* hide emoji safely */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+.actionBtn:hover {
+  background-color: var(--primary-green-light);
+  transform: scale(1.05);
+}
+
+/* =========================================================
+   VIEW (EYE) ICON
+   ========================================================= */
+
+.viewBtn::before {
+  content: "";
+  display: block;                /* 🔥 REQUIRED */
+  width: 16px;
+  height: 10px;
+  border: 2px solid var(--primary-green);
+  border-radius: 50% / 60%;
+}
+
+.viewBtn::after {
+  content: "";
+  display: block;                /* 🔥 REQUIRED */
+  width: 4px;
+  height: 4px;
+  background: var(--primary-green);
+  border-radius: 50%;
+  position: absolute;
+}
+
+/* =========================================================
+   EDIT (PENCIL) ICON
+   ========================================================= */
+
+.editBtn::before {
+  content: "";
+  display: block;                /* 🔥 REQUIRED */
+  width: 14px;
+  height: 3px;
+  background: #d4a106;
+  transform: rotate(-45deg);
+  border-radius: 2px;
+}
+
+.editBtn::after {
+  content: "";
+  display: block;                /* 🔥 REQUIRED */
+  width: 0;
+  height: 0;
+  border-left: 4px solid #333;
+  border-top: 3px solid transparent;
+  border-bottom: 3px solid transparent;
+  transform: rotate(-45deg) translate(6px, -1px);
+  position: absolute;
+}
+
+/* spacing between icons */
+.editBtn {
+  margin-left: 6px;
+}
+
+
+
+
 Got it 👍
 You’re 100% right — the problem now is NOT the grid.
 The grid is fine ✅
