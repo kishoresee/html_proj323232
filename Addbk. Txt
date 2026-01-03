@@ -1,3 +1,161 @@
+/* =========================================================
+   AG-GRID – ENTERPRISE GREEN THEME (MATCHING IMAGE)
+   ========================================================= */
+
+/* GRID CONTAINER */
+.ag-theme-alpine {
+  --ag-background-color: #ffffff;
+  --ag-odd-row-background-color: #ffffff;
+  --ag-border-color: #e4eee9;
+  --ag-row-border-color: #e4eee9;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.ag-theme-alpine .ag-header {
+  background: #2f7d57; /* green header */
+  border-bottom: none;
+  min-height: 46px;
+}
+
+.ag-theme-alpine .ag-header-row {
+  height: 46px !important;
+}
+
+.ag-theme-alpine .ag-header-cell {
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.3px;
+  border-right: 1px solid rgba(255,255,255,0.15);
+}
+
+.ag-theme-alpine .ag-header-cell:last-child {
+  border-right: none;
+}
+
+.ag-theme-alpine .ag-header-cell-label {
+  justify-content: center;
+}
+
+/* Filter icon */
+.ag-theme-alpine .ag-header-icon {
+  color: #ffffff;
+  opacity: 0.85;
+}
+
+/* =========================================================
+   ROWS
+   ========================================================= */
+
+.ag-theme-alpine .ag-row {
+  min-height: 44px;
+  border-bottom: 1px solid #eef4f1;
+}
+
+.ag-theme-alpine .ag-row:hover {
+  background-color: rgba(47,125,87,0.05) !important;
+}
+
+.ag-theme-alpine .ag-row-selected {
+  background-color: rgba(47,125,87,0.08) !important;
+}
+
+/* =========================================================
+   CELLS
+   ========================================================= */
+
+.ag-theme-alpine .ag-cell {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: #2e3a36;
+  padding-left: 14px;
+  padding-right: 14px;
+  border-right: 1px solid #f2f6f4;
+}
+
+.ag-theme-alpine .ag-cell:last-child {
+  border-right: none;
+}
+
+/* Center text for status */
+.ag-theme-alpine .ag-cell[col-id="Status"] {
+  font-weight: 600;
+  color: #2f7d57;
+}
+
+/* =========================================================
+   ACTION COLUMN (EYE ICON)
+   ========================================================= */
+
+.action-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  padding-right: 12px;
+}
+
+/* Eye icon style */
+.action-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #2f7d57;
+}
+
+/* Hover */
+.action-icon:hover {
+  background: rgba(47,125,87,0.12);
+  transform: scale(1.05);
+}
+
+/* =========================================================
+   SCROLLBAR (CLEAN & MODERN)
+   ========================================================= */
+
+.ag-body-vertical-scroll {
+  width: 10px;
+}
+
+.ag-body-vertical-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.ag-body-vertical-scroll::-webkit-scrollbar-thumb {
+  background: rgba(47,125,87,0.35);
+  border-radius: 8px;
+}
+
+.ag-body-vertical-scroll::-webkit-scrollbar-track {
+  background: #f3f7f5;
+}
+
+/* =========================================================
+   REMOVE AG-GRID DEFAULT OUTLINES
+   ========================================================= */
+
+.ag-theme-alpine .ag-root-wrapper {
+  border: none;
+}
+
+.ag-theme-alpine .ag-cell-focus,
+.ag-theme-alpine .ag-cell:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+
+
 This is a very common AG-Grid + PrimeNG pitfall 👍
 Nothing is wrong with your styles.css.
 
