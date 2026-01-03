@@ -1,3 +1,169 @@
+Got it 👍
+You’re 100% right — the problem now is NOT the grid.
+The grid is fine ✅
+The UGLY part is this 👇
+
+You are using raw emoji characters (👁️ and ✏️) inside <button>
+Emojis render differently per OS / browser → looks cheap & inconsistent.
+
+So the correct fix is:
+
+👉 REMOVE the emoji from HTML visually
+👉 DRAW clean icons using pure CSS
+👉 NO icon library
+👉 NO PrimeNG
+👉 NO TS change required
+
+We’ll keep your existing buttons:
+
+<button class="viewBtn actionBtn"></button>
+<button class="editBtn actionBtn"></button>
+
+…and replace the visuals entirely via CSS.
+
+⸻
+
+✅ WHAT TO DO (IMPORTANT)
+
+❌ STOP using emoji inside buttons
+
+Your TS can stay exactly as it is.
+We’ll hide the emoji text and render icons using CSS ::before.
+
+⸻
+
+✅ FINAL CSS (REPLACE YOUR ACTION BUTTON CSS WITH THIS)
+
+Paste this after your existing grid CSS
+
+/* =========================================================
+   ACTION BUTTONS – PURE CSS ICONS (NO EMOJI, NO LIB)
+   ========================================================= */
+
+.actionBtn {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 0;
+  font-size: 0; /* 🔥 hides emoji text */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+/* Hover */
+.actionBtn:hover {
+  background-color: var(--primary-green-light);
+  transform: scale(1.05);
+}
+
+/* =========================================================
+   VIEW (EYE) ICON – CSS DRAWN
+   ========================================================= */
+
+.viewBtn::before {
+  content: "";
+  width: 16px;
+  height: 10px;
+  border: 2px solid var(--primary-green);
+  border-radius: 50% / 60%;
+  position: absolute;
+}
+
+.viewBtn::after {
+  content: "";
+  width: 4px;
+  height: 4px;
+  background: var(--primary-green);
+  border-radius: 50%;
+  position: absolute;
+}
+
+/* =========================================================
+   EDIT (PENCIL) ICON – CSS DRAWN
+   ========================================================= */
+
+.editBtn::before {
+  content: "";
+  width: 14px;
+  height: 3px;
+  background: #d4a106; /* pencil body */
+  transform: rotate(-45deg);
+  border-radius: 2px;
+  position: absolute;
+}
+
+.editBtn::after {
+  content: "";
+  width: 0;
+  height: 0;
+  border-left: 4px solid #333;
+  border-top: 3px solid transparent;
+  border-bottom: 3px solid transparent;
+  transform: rotate(-45deg) translate(6px, -1px);
+  position: absolute;
+}
+
+/* spacing between buttons */
+.editBtn {
+  margin-left: 6px;
+}
+
+
+⸻
+
+✅ WHY THIS FIX IS PERFECT
+
+Problem	Fixed
+Emoji looks ugly	✅ removed
+Browser inconsistency	✅ gone
+Needs icon library	❌ no
+PrimeNG dependency	❌ no
+TS change needed	❌ no
+Enterprise look	✅ yes
+
+
+⸻
+
+✅ FINAL RESULT YOU’LL SEE
+
+✔ Clean, uniform eye icon
+✔ Proper pencil shape
+✔ Same green theme
+✔ Smooth hover
+✔ Looks like real enterprise UI, not a hack
+
+No more emoji nonsense 😄
+
+⸻
+
+⚠️ IMPORTANT NOTE
+
+Do NOT put any text (emoji or otherwise) inside the buttons anymore.
+If your TS currently outputs:
+
+<button class="viewBtn actionBtn">👁️</button>
+
+It’s fine — CSS already hides it via font-size: 0.
+
+⸻
+
+If you want next:
+	•	Disabled edit icon (greyed)
+	•	Tooltip on hover
+	•	Click ripple effect
+	•	Convert to SVG-based CSS icons
+
+Just say 👍
+
+
+
+
 /* =========================================================
    GRID – header, rows, cells (AG-Grid)
    ========================================================= */
