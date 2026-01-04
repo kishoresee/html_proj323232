@@ -1,3 +1,265 @@
+Perfect — thanks for sharing all the CSS + TS + HTML.
+I can clearly see the problem now 👍
+
+You currently have 3 different button systems mixed:
+	1.	Old PrimeNG button styles
+	2.	New action-icon styles
+	3.	ag-Grid + ::ng-deep overrides
+
+Because of this, PrimeNG styles are still leaking and breaking responsiveness.
+
+⸻
+
+✅ WHAT I’M GOING TO DO FOR YOU
+
+I’ll give you ONE CLEAN, CORRECT, FINAL CSS that:
+
+✔ Keeps your green theme
+✔ Makes Action icons simple (eye + pencil only)
+✔ Fully removes PrimeNG pill / square styles
+✔ Makes grid responsive (mobile / tablet / desktop)
+✔ Keeps ag-Grid clean and enterprise-looking
+✔ Works in SharePoint + PrimeNG + ag-Grid
+
+You can replace your entire dashboard.component.css with this.
+
+⸻
+
+✅ FINAL REVISED dashboard.component.css (CLEAN & CORRECT)
+
+🔥 DELETE EVERYTHING in dashboard.component.css
+🔥 PASTE THIS FULL FILE
+
+/* =====================================================
+   GLOBAL THEME VARIABLES
+===================================================== */
+:host {
+  --primary-green: rgba(0, 145, 90, 1);
+  --primary-green-light: rgba(0, 145, 90, 0.12);
+  --primary-green-hover: rgba(0, 145, 90, 0.18);
+
+  --font-base: 14px;
+  --font-sm: 12px;
+
+  --row-height: 44px;
+  --cell-px: 12px;
+  --cell-py: 8px;
+
+  --action-icon-size: 16px;
+}
+
+/* =====================================================
+   GRID CONTAINER
+===================================================== */
+.grid-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+/* =====================================================
+   AG-GRID BASE CLEANUP
+===================================================== */
+.custom-grid ::ng-deep .ag-root-wrapper {
+  border: none;
+  box-shadow: none;
+}
+
+.custom-grid ::ng-deep .ag-header {
+  background-color: var(--primary-green);
+  color: #fff;
+  border-bottom: none;
+}
+
+.custom-grid ::ng-deep .ag-header-cell {
+  font-weight: 600;
+  font-size: var(--font-sm);
+  padding: var(--cell-py) var(--cell-px);
+  border-right: 1px solid rgba(255,255,255,.2);
+  white-space: nowrap;
+}
+
+.custom-grid ::ng-deep .ag-header-cell:last-child {
+  border-right: none;
+}
+
+/* =====================================================
+   ROWS & CELLS
+===================================================== */
+.custom-grid ::ng-deep .ag-row {
+  height: var(--row-height);
+  border-bottom: 1px solid rgba(0,0,0,.05);
+}
+
+.custom-grid ::ng-deep .ag-row-hover {
+  background-color: var(--primary-green-hover) !important;
+}
+
+.custom-grid ::ng-deep .ag-cell {
+  display: flex;
+  align-items: center;
+  padding: var(--cell-py) var(--cell-px);
+  font-size: var(--font-base);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-right: 1px solid rgba(0,0,0,.04);
+}
+
+.custom-grid ::ng-deep .ag-cell:last-child {
+  border-right: none;
+}
+
+/* =====================================================
+   STATUS COLUMN
+===================================================== */
+.custom-grid ::ng-deep .ag-cell[col-id="Status"] {
+  font-weight: 600;
+  color: var(--primary-green);
+}
+
+/* =====================================================
+   ACTION COLUMN (FINAL FIX)
+===================================================== */
+.action-wrapper {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 🔥 HARD RESET PRIME NG */
+.custom-grid ::ng-deep .action-icon {
+  all: unset;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--action-icon-size);
+  line-height: 1;
+}
+
+/* Eye icon */
+.view-icon i {
+  color: #000;
+}
+
+/* Edit icon */
+.edit-icon i {
+  color: var(--primary-green);
+}
+
+/* Hover effect */
+.action-icon:hover i {
+  transform: scale(1.2);
+  opacity: 0.85;
+}
+
+/* Remove focus outline */
+.action-icon:focus {
+  outline: none;
+}
+
+/* =====================================================
+   RESPONSIVE – MOBILE
+===================================================== */
+@media (max-width: 576px) {
+  .custom-grid ::ng-deep .ag-header-cell,
+  .custom-grid ::ng-deep .ag-cell {
+    font-size: var(--font-sm);
+    padding: 6px 8px;
+  }
+
+  /* hide non-essential columns on mobile */
+  .custom-grid.hide-on-mobile ::ng-deep .ag-column[col-id="CreatedDate"],
+  .custom-grid.hide-on-mobile ::ng-deep .ag-column[col-id="HRBP UID"] {
+    display: none !important;
+  }
+
+  .action-icon {
+    font-size: 18px;
+  }
+}
+
+/* =====================================================
+   TABLET
+===================================================== */
+@media (min-width: 577px) and (max-width: 991px) {
+  .custom-grid ::ng-deep .ag-cell {
+    font-size: var(--font-base);
+  }
+}
+
+/* =====================================================
+   DESKTOP
+===================================================== */
+@media (min-width: 992px) {
+  .custom-grid ::ng-deep .ag-cell {
+    font-size: 14px;
+  }
+}
+
+
+⸻
+
+✅ IMPORTANT: 1 SMALL TS FIX (YOU MISSED THIS)
+
+In your cellRenderer, you still have PrimeNG classes on edit button ❌
+
+❌ CURRENT (WRONG)
+
+const editBtn = isClosed
+  ? ''
+  : `<button class="p-button p-button-sm p-button-rounded p-button-success">`;
+
+✅ FIX IT LIKE THIS
+
+const editBtn = isClosed
+  ? ''
+  : `<button class="action-icon edit-icon"
+      data-id="${safeId}"
+      title="Edit record">
+      <i class="pi pi-pencil"></i>
+    </button>`;
+
+👉 This is why it didn’t change earlier.
+
+⸻
+
+🎯 FINAL RESULT YOU WILL GET
+
+✔ Simple eye icon
+✔ Simple pencil icon
+✔ No square
+✔ No pill
+✔ Clean green theme
+✔ Fully responsive
+✔ Enterprise-grade UI
+✔ SharePoint-safe
+
+⸻
+
+🧠 WHY THIS VERSION IS CORRECT
+	•	One button system (no mix)
+	•	Hard PrimeNG reset
+	•	ag-Grid–scoped CSS
+	•	Mobile-first
+	•	No unnecessary CSS bloat
+
+⸻
+
+If you want next:
+	•	Disable edit icon for Closed rows (grey + no click)
+	•	Tooltip animation
+	•	Keyboard accessibility
+	•	Icon alignment perfection
+
+Just say the word 👍
+
+
+
+
+
+
 .action-wrapper {
   display: flex;
   gap: 12px;
