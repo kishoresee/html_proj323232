@@ -1,3 +1,189 @@
+/* =====================================================
+   GLOBAL THEME VARIABLES
+===================================================== */
+:host {
+  --primary-green: rgba(0, 145, 90, 1);
+  --primary-green-light: rgba(0, 145, 90, 0.12);
+  --primary-green-hover: rgba(0, 145, 90, 0.18);
+
+  --font-base: 14px;
+  --font-sm: 12px;
+
+  --row-height: 44px;
+  --cell-px: 12px;
+  --cell-py: 8px;
+
+  --action-icon-size: 16px;
+}
+
+/* =====================================================
+   GRID CONTAINER
+===================================================== */
+.grid-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+/* =====================================================
+   AG-GRID BASE CLEANUP
+===================================================== */
+.custom-grid ::ng-deep .ag-root-wrapper {
+  border: none;
+  box-shadow: none;
+}
+
+.custom-grid ::ng-deep .ag-header {
+  background-color: var(--primary-green);
+  color: #fff;
+  border-bottom: none;
+}
+
+.custom-grid ::ng-deep .ag-header-cell {
+  font-weight: 600;
+  font-size: var(--font-sm);
+  padding: var(--cell-py) var(--cell-px);
+  border-right: 1px solid rgba(255,255,255,.2);
+  white-space: nowrap;
+}
+
+.custom-grid ::ng-deep .ag-header-cell:last-child {
+  border-right: none;
+}
+
+/* =====================================================
+   ROWS & CELLS (IMPORTANT: NO FLEX HERE)
+===================================================== */
+.custom-grid ::ng-deep .ag-row {
+  height: var(--row-height);
+  border-bottom: 1px solid rgba(0,0,0,.05);
+}
+
+.custom-grid ::ng-deep .ag-row-hover {
+  background-color: var(--primary-green-hover) !important;
+}
+
+.custom-grid ::ng-deep .ag-cell {
+  padding: var(--cell-py) var(--cell-px);
+  font-size: var(--font-base);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-right: 1px solid rgba(0,0,0,.04);
+}
+
+.custom-grid ::ng-deep .ag-cell:last-child {
+  border-right: none;
+}
+
+/* =====================================================
+   STATUS COLUMN
+===================================================== */
+.custom-grid ::ng-deep .ag-cell[col-id="Status"] {
+  font-weight: 600;
+  color: var(--primary-green);
+}
+
+/* =====================================================
+   ACTION COLUMN (THE ONLY FLEX AREA)
+===================================================== */
+.custom-grid ::ng-deep .ag-cell[col-id="action"] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* wrapper */
+.action-wrapper {
+  display: flex;
+  gap: 18px; /* ✅ SPACE BETWEEN EYE & PENCIL */
+  align-items: center;
+  justify-content: center;
+}
+
+/* =====================================================
+   ICON BUTTONS (HARD RESET PRIME NG)
+===================================================== */
+.custom-grid ::ng-deep .action-icon {
+  all: unset;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--action-icon-size);
+  line-height: 1;
+}
+
+/* eye icon */
+.view-icon i {
+  color: #000;
+}
+
+/* edit icon */
+.edit-icon i {
+  color: var(--primary-green);
+}
+
+/* hover */
+.action-icon:hover i {
+  transform: scale(1.2);
+  opacity: 0.85;
+}
+
+/* focus cleanup */
+.action-icon:focus {
+  outline: none;
+}
+
+/* =====================================================
+   RESPONSIVE – MOBILE
+===================================================== */
+@media (max-width: 576px) {
+  .custom-grid ::ng-deep .ag-header-cell,
+  .custom-grid ::ng-deep .ag-cell {
+    font-size: var(--font-sm);
+    padding: 6px 8px;
+  }
+
+  .action-wrapper {
+    gap: 14px;
+  }
+
+  .custom-grid.hide-on-mobile ::ng-deep .ag-column[col-id="CreatedDate"],
+  .custom-grid.hide-on-mobile ::ng-deep .ag-column[col-id="HRBP UID"] {
+    display: none !important;
+  }
+
+  .action-icon {
+    font-size: 18px;
+  }
+}
+
+/* =====================================================
+   TABLET
+===================================================== */
+@media (min-width: 577px) and (max-width: 991px) {
+  .custom-grid ::ng-deep .ag-cell {
+    font-size: var(--font-base);
+  }
+}
+
+/* =====================================================
+   DESKTOP
+===================================================== */
+@media (min-width: 992px) {
+  .custom-grid ::ng-deep .ag-cell {
+    font-size: 14px;
+  }
+}
+
+
+
+
+
+
+
+
+
 Perfect — thanks for sharing all the CSS + TS + HTML.
 I can clearly see the problem now 👍
 
