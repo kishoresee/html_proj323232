@@ -1,3 +1,11 @@
+@font-face {
+  font-family: 'primeicons';
+  src: url('/assets/fonts/primeicons/primeicons.woff2') format('woff2');
+}
+
+
+
+
 Understood 👍
 You DO want eye & edit icons, but they must work inside SharePoint.
 So here is the only reliable way to get real eye & pencil icons (not text, not emoji, not fonts).
