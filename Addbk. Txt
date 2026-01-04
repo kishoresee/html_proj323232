@@ -1,3 +1,14 @@
+.view-icon i {
+  font-size: 18px;
+  transform: scale(1.15);
+  filter: drop-shadow(0 0 0 currentColor)
+          drop-shadow(0 0 0 currentColor);
+}
+
+
+
+
+
 return `
   <div class="action-wrapper">
     ${viewBtn}
