@@ -1,3 +1,47 @@
+.action-wrapper {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+}
+
+/* base icon button */
+.action-icon {
+  background: transparent;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  color: #2f2f2f;
+  line-height: 1;
+}
+
+/* eye icon */
+.view-icon {
+  color: #2e7d32; /* subtle green */
+}
+
+/* edit icon */
+.edit-icon {
+  color: #1565c0; /* subtle blue */
+}
+
+/* hover effect */
+.action-icon:hover {
+  transform: scale(1.15);
+  opacity: 0.85;
+}
+
+/* optional focus cleanup */
+.action-icon:focus {
+  outline: none;
+}
+
+
+
+
+
+
 @font-face {
   font-family: 'primeicons';
   src: url('/assets/fonts/primeicons/primeicons.woff2') format('woff2');
