@@ -1,3 +1,14 @@
+return `
+  <div class="action-wrapper">
+    ${viewBtn}
+    <span style="display:inline-block;width:14px;"></span>
+    ${editBtn}
+  </div>
+`;
+
+
+
+
 /* =====================================================
    GLOBAL THEME VARIABLES
 ===================================================== */
