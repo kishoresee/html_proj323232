@@ -1,3 +1,35 @@
+if (this.isManager) {
+  this.loadDataForManager();
+}
+
+if (!this.rowData?.length && this.isHRBP) {
+  this.loadDataForHRBP();
+}
+
+if (!this.rowData?.length && this.isEmployee) {
+  this.loadDataForEmployee();
+}
+
+
+
+
+
+const calls = [];
+
+if (this.isManager) calls.push(this.sp.getPIPsByManager(this.currentUid));
+if (this.isHRBP)   calls.push(this.sp.getPIPsByHRBP(this.currentUid));
+if (this.isEmployee) calls.push(this.sp.getPIPsByEmployee(this.currentUid));
+
+forkJoin(calls).subscribe(results => {
+  const merged = results.flat();
+  this.applyGridData(merged);
+});
+
+
+
+
+
+
 .view-icon i {
   font-size: 18px;
   transform: scale(1.15);
