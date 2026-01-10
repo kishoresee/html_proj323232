@@ -1,3 +1,35 @@
+const deletions$ = includeSessions
+  ? forkJoin([
+      this.sp.deletePerformanceIssuesForPip(reportId),
+      this.sp.deleteSessionsForPip(reportId)
+    ])
+  : forkJoin([
+      this.sp.deletePerformanceIssuesForPip(reportId)
+    ]);
+
+deletions$.subscribe({
+  next: ([deletedPerf, deletedSess]) => {
+    if (perfIssuesForSave.length) {
+      this.savePerformanceIssues(reportId, perfIssuesForSave);
+    }
+
+    if (sessionsForSave.length) {
+      this.saveSessions(reportId, sessionsForSave);
+    }
+
+    this.applyPermissions(newStatus);
+    this.fireAlert(`PIP updated | status now ${newStatus}.`, 'success');
+  },
+  error: err => {
+    console.error('Error deleting child rows', err);
+    this.fireAlert('Failed to update child rows.', 'error');
+  }
+});
+
+
+
+
+
 if (this.isManager) {
   this.loadDataForManager();
 }
