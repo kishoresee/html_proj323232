@@ -1,3 +1,92 @@
+👍 Got it — hover is working, so CSS is applied correctly.
+Now you want the calendar icon itself (📅) to be green in normal state, not just on hover.
+
+Right now:
+	•	Button background → default
+	•	Icon (pi-calendar) → default blue/white
+
+We’ll explicitly target the icon.
+
+⸻
+
+✅ Correct CSS to make the ICON green (normal state)
+
+Add this globally (styles.scss / styles.css):
+
+/* Calendar icon color (normal state) */
+.p-calendar .p-datepicker-trigger .pi {
+  color: rgba(0, 145, 90, 1) !important;
+}
+
+This changes only the icon, not the button.
+
+⸻
+
+🔥 If you want BOTH button + icon green (recommended look)
+
+/* Button background */
+.p-calendar .p-datepicker-trigger {
+  background-color: rgba(0, 145, 90, 1) !important;
+  border-color: rgba(0, 145, 90, 1) !important;
+}
+
+/* Icon color */
+.p-calendar .p-datepicker-trigger .pi {
+  color: #ffffff !important;
+}
+
+
+⸻
+
+🎨 Variant: green icon + white background (minimal style)
+
+If you want only icon green, button white:
+
+.p-calendar .p-datepicker-trigger {
+  background-color: #ffffff !important;
+  border-color: rgba(0, 145, 90, 1) !important;
+}
+
+.p-calendar .p-datepicker-trigger .pi {
+  color: rgba(0, 145, 90, 1) !important;
+}
+
+
+⸻
+
+❌ Common mistake (why it didn’t work earlier)
+
+❌ This targets button, not icon:
+
+.p-datepicker-trigger:hover { }
+
+✅ Icon lives inside:
+
+<button>
+  <span class="pi pi-calendar"></span>
+</button>
+
+So we must target .pi
+
+⸻
+
+✅ Final checklist
+
+✔ Icon green in normal state
+✔ Hover still works
+✔ No PrimeNG breakage
+✔ Works inside table / form / appendTo=“body”
+
+If you want:
+	•	disabled icon greyed out
+	•	different color for invalid state
+	•	smaller icon size
+
+Tell me 👍
+
+
+
+
 
 .p-calendar .p-datepicker-trigger:hover {
   background-color: #055e3c !important;
