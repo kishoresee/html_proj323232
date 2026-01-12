@@ -1,3 +1,18 @@
+/* Calendar icon button background */
+.p-calendar .p-datepicker-trigger {
+  background-color: rgba(0, 145, 90, 1) !important;
+  border-color: rgba(0, 145, 90, 1) !important;
+}
+
+/* Calendar icon color */
+.p-calendar .p-datepicker-trigger .pi {
+  color: #ffffff !important;
+}
+
+
+
+
+
 Got it 👍
 Your toolbar is already flex, but everything is pushed to the right because of this line:
 
