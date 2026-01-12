@@ -1,3 +1,149 @@
+Got it 👍
+Your toolbar is already flex, but everything is pushed to the right because of this line:
+
+justify-content: flex-end;
+
+And you’re also using an empty spacer span which is doing nothing useful right now.
+
+⸻
+
+✅ What you want
+	•	Left side → Status + View as
+	•	Right side → Home + Upload New
+
+This is a classic left–right toolbar layout.
+We’ll fix it cleanly with Flexbox, no hacks.
+
+⸻
+
+✅ STEP 1: Update HTML (VERY IMPORTANT)
+
+Change your menu-bar.component.html to this structure:
+
+<div class="custom-toolbar">
+
+  <!-- LEFT SECTION -->
+  <div class="left-info">
+    <div class="status-line" *ngIf="status$ | async as curStatus">
+      <span class="label">Status:</span>
+      <span class="value">{{ curStatus }}</span>
+    </div>
+
+    <div class="role-line" *ngIf="roles$ | async as curRole">
+      <span class="label">View as:</span>
+      <span class="value">
+        {{ curRole.isManager ? 'Manager' :
+           curRole.isHRBP ? 'HRBP' :
+           curRole.isEmployee ? 'Employee' : 'Unknown' }}
+      </span>
+    </div>
+  </div>
+
+  <!-- RIGHT SECTION -->
+  <div class="right-actions">
+    <button
+      class="menuButtons"
+      routerLink="/"
+      routerLinkActive="active-link"
+      [routerLinkActiveOptions]="{ exact: true }">
+      Home
+    </button>
+
+    <button
+      *ngIf="isManager"
+      class="menuButtons"
+      routerLink="/pipform"
+      routerLinkActive="active-link">
+      + Upload New
+    </button>
+  </div>
+
+</div>
+
+👉 Remove this completely:
+
+<span class="spacer"></span>
+
+
+⸻
+
+✅ STEP 2: Update CSS (simple & clean)
+
+Replace your menu-bar.component.css with this:
+
+.custom-toolbar {
+  display: flex;
+  justify-content: space-between; /* 🔥 THIS IS THE KEY */
+  align-items: center;
+  height: 45px;
+  background-color: rgba(0, 145, 90, 1) !important;
+  padding: 0 12px;
+  border-radius: 5px;
+}
+
+/* LEFT SIDE */
+.left-info {
+  display: flex;
+  gap: 20px;
+  color: white;
+  font-size: 13px;
+}
+
+/* RIGHT SIDE */
+.right-actions {
+  display: flex;
+  align-items: center;
+}
+
+.menuButtons {
+  background-color: rgba(0, 145, 90, 1) !important;
+  color: white !important;
+  margin-left: 8px;
+  border: none;
+  cursor: pointer;
+}
+
+.active-link {
+  background-color: #055e3c !important;
+}
+
+/* labels */
+.label {
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+
+⸻
+
+✅ Final Result (what you’ll see)
+
+✔ Left side no longer empty
+✔ Status and View as appear neatly on the left
+✔ Buttons stay aligned on the right
+✔ Looks professional (bank-grade UI 😄)
+✔ Works for Manager / HRBP / Employee
+
+⸻
+
+❌ Why your old version didn’t work
+	•	justify-content: flex-end → pushes everything right
+	•	Empty <span class="spacer"> → useless without flex-grow
+	•	No left/right grouping
+
+⸻
+
+If you want next:
+	•	icons before Status / View as
+	•	mobile responsive toolbar
+	•	hide View As for employees
+	•	show colored status (green / orange / red)
+
+Just tell me 👍
+
+
+
+
 import { forkJoin, of } from 'rxjs';
 
 const deletions$ = forkJoin({
