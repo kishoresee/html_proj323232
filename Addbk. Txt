@@ -1,3 +1,9 @@
+
+.p-calendar .p-datepicker-trigger:hover {
+  background-color: #055e3c !important;
+  border-color: #055e3c !important;
+}
+
 /* Calendar icon button background */
 .p-calendar .p-datepicker-trigger {
   background-color: rgba(0, 145, 90, 1) !important;
