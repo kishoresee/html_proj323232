@@ -1,3 +1,15 @@
+updateStartTime(start: Date) {
+  const current = this.pipForm.get('sessionTime')?.value || [];
+  this.pipForm.get('sessionTime')?.setValue([start, current[1] || null]);
+}
+
+updateEndTime(end: Date) {
+  const current = this.pipForm.get('sessionTime')?.value || [];
+  if (current[0] && end < current[0]) return;
+  this.pipForm.get('sessionTime')?.setValue([current[0], end]);
+}
+
+
 <p-calendar
   [timeOnly]="true"
   hourFormat="12"
