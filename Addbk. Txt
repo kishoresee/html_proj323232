@@ -1,3 +1,34 @@
+<div class="time-range-wrapper">
+  <p-calendar
+    [timeOnly]="true"
+    hourFormat="12"
+    minuteStep="5"
+    [showIcon]="true"
+    appendTo="body"
+    [disabled]="isViewMode || isSubmitted"
+    [ngModel]="sessionTime?.[0]"
+    (onSelect)="onStartTimeSelect($event)">
+  </p-calendar>
+
+  <span class="time-separator">–</span>
+
+  <p-calendar
+    [timeOnly]="true"
+    hourFormat="12"
+    minuteStep="5"
+    [showIcon]="true"
+    appendTo="body"
+    [disabled]="isViewMode || isSubmitted"
+    [ngModel]="sessionTime?.[1]"
+    (onSelect)="onEndTimeSelect($event)">
+  </p-calendar>
+</div>
+
+
+
+
+
+
 <p-calendar
   formControlName="sessionTime"
   [timeOnly]="true"
