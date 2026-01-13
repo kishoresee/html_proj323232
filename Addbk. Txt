@@ -1,3 +1,25 @@
+<td class="time-range">
+  <input
+    type="time"
+    pInputText
+    formControlName="sessionStartTime"
+    class="time-input"
+    [disabled]="isViewMode || isSubmitted" />
+
+  <span class="time-separator">–</span>
+
+  <input
+    type="time"
+    pInputText
+    formControlName="sessionEndTime"
+    class="time-input"
+    [disabled]="isViewMode || isSubmitted" />
+</td>
+
+
+
+
+
 👍 Got it — hover is working, so CSS is applied correctly.
 Now you want the calendar icon itself (📅) to be green in normal state, not just on hover.
 
