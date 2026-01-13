@@ -1,3 +1,18 @@
+<p-calendar
+  formControlName="sessionTime"
+  [timeOnly]="true"
+  selectionMode="range"
+  hourFormat="12"
+  showIcon="true"
+  class="full-width"
+  appendTo="body"
+  [disabled]="isViewMode || isSubmitted">
+</p-calendar>
+
+
+
+
+
 <td class="time-range">
   <input
     type="time"
