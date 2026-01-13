@@ -1,3 +1,31 @@
+<p-calendar
+  [timeOnly]="true"
+  hourFormat="12"
+  minuteStep="5"
+  showIcon="true"
+  appendTo="body"
+  [value]="pipForm.get('sessionTime')?.value?.[0]"
+  (onSelect)="updateStartTime($event)"
+  [disabled]="isViewMode || isSubmitted">
+</p-calendar>
+
+<span class="time-separator">–</span>
+
+<p-calendar
+  [timeOnly]="true"
+  hourFormat="12"
+  minuteStep="5"
+  showIcon="true"
+  appendTo="body"
+  [value]="pipForm.get('sessionTime')?.value?.[1]"
+  (onSelect)="updateEndTime($event)"
+  [disabled]="isViewMode || isSubmitted">
+</p-calendar>
+
+
+
+
+
 <div class="time-range-wrapper">
   <p-calendar
     [timeOnly]="true"
