@@ -1,3 +1,26 @@
+/* Center align Session Date and Session Time cells */
+.session-table td:nth-child(3),
+.session-table td:nth-child(4) {
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* Center the PrimeNG calendar input inside */
+.session-table td:nth-child(3) .p-calendar,
+.session-table td:nth-child(4) .p-calendar {
+  display: inline-flex;
+  justify-content: center;
+}
+
+/* Center the input field itself */
+.session-table td:nth-child(3) input,
+.session-table td:nth-child(4) input {
+  text-align: center;
+}
+
+
+
+
 /* Add button column spacing */
 .col-add {
   text-align: center;
