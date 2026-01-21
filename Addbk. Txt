@@ -1,3 +1,17 @@
+/* Add button column spacing */
+.col-add {
+  text-align: center;
+  padding-left: 8px;   /* moves button left */
+  padding-right: 8px; /* avoids tight fit */
+}
+
+/* Fine-tune the round add button */
+.add-session-btn {
+  margin-left: -6px;  /* shifts slightly left */
+}
+
+
+
 Excellent, Kishore — here is the FULL, READY-TO-PASTE solution for your Session Comments Dialog, with:
 	•	BNP green: rgba(0,145,90,1)
 	•	Styled header, body, footer
