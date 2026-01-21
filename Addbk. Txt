@@ -1,3 +1,82 @@
+<p-dialog
+  header="Session Comments - {{ getSessionLabel(activeSessionIndex) }}"
+  [(visible)]="showSessionDialog"
+  [modal]="true"
+  [style]="{ width: '560px' }"
+  [dismissableMask]="true"
+  styleClass="green-dialog"
+>
+
+  <!-- Render only after the temporary form has been created -->
+  <ng-container *ngIf="sessionPopupForm">
+
+    <form [formGroup]="sessionPopupForm">
+
+      <div class="p-fluid green-dialog-body">
+
+        <!-- 1. Performance Issues (Read-only) -->
+        <div class="p-field">
+          <label>Performance Issues</label>
+          <ul class="perf-list">
+            <li *ngFor="let issue of sessionPopupForm.get('performanceIssues')?.value">
+              {{ issue }}
+            </li>
+          </ul>
+        </div>
+
+        <!-- 2. Manager Comment -->
+        <div class="p-field">
+          <label for="mgrCmt">Manager Comment</label>
+          <textarea
+            id="mgrCmt"
+            pInputTextarea
+            rows="3"
+            formControlName="managerComments"
+            [disabled]="!roleInfo.isManager"
+          ></textarea>
+        </div>
+
+        <!-- 3. Employee Comment -->
+        <div class="p-field">
+          <label for="empCmt">Employee Comment</label>
+          <textarea
+            id="empCmt"
+            pInputTextarea
+            rows="3"
+            formControlName="employeeComments"
+            [disabled]="!roleInfo.isEmployee"
+          ></textarea>
+        </div>
+
+      </div>
+
+      <!-- Footer -->
+      <p-footer>
+        <button
+          pButton
+          label="Cancel"
+          class="p-button-text"
+          (click)="showSessionDialog = false"
+        ></button>
+
+        <button
+          pButton
+          label="Save"
+          (click)="saveSessionPopup()"
+          [disabled]="sessionPopupForm.invalid"
+        ></button>
+      </p-footer>
+
+    </form>
+
+  </ng-container>
+
+</p-dialog>
+
+
+
+
+
 /* Center align Session Date and Session Time cells */
 .session-table td:nth-child(3),
 .session-table td:nth-child(4) {
