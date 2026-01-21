@@ -1,3 +1,146 @@
+Perfect, Kishore — now I clearly see your p-dialog (Session Comments popup) code.
+Let’s style this dialog to match your BNP green theme using exactly:
+
+rgba(0, 145, 90, 1)
+
+We’ll style:
+	•	Dialog header (green bar)
+	•	Footer buttons
+	•	Textareas
+	•	Section labels
+→ Without breaking your existing logic.
+
+⸻
+
+1️⃣ Add These CSS Styles (Global or Component CSS)
+
+Paste this in your pipform.component.css or global styles:
+
+/* Dialog container */
+.green-dialog .p-dialog {
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+/* Header styling */
+.green-dialog .p-dialog-header {
+  background: rgba(0, 145, 90, 1);
+  color: #fff;
+  font-weight: 600;
+  font-size: 15px;
+  padding: 0.8rem 1rem;
+}
+
+/* Close icon color */
+.green-dialog .p-dialog-header-icon {
+  color: #fff;
+}
+
+/* Body padding */
+.green-dialog .p-dialog-content {
+  padding: 1.2rem;
+  background: #f9fdfb;
+}
+
+/* Labels */
+.green-dialog label {
+  font-weight: 600;
+  font-size: 13px;
+  color: rgba(0, 145, 90, 1);
+}
+
+/* Performance issues list */
+.green-dialog ul {
+  padding-left: 1.2rem;
+  margin-top: 4px;
+}
+
+.green-dialog li {
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+/* Textareas */
+.green-dialog textarea {
+  border-radius: 6px;
+  border: 1px solid rgba(0, 145, 90, 0.4);
+  font-size: 13px;
+}
+
+.green-dialog textarea:focus {
+  outline: none;
+  border-color: rgba(0, 145, 90, 1);
+  box-shadow: 0 0 0 2px rgba(0, 145, 90, 0.2);
+}
+
+/* Footer */
+.green-dialog .p-dialog-footer {
+  padding: 0.8rem 1rem;
+  border-top: 1px solid rgba(0, 145, 90, 0.2);
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+/* Save button (green) */
+.green-dialog .p-button {
+  background: rgba(0, 145, 90, 1);
+  border-color: rgba(0, 145, 90, 1);
+}
+
+.green-dialog .p-button:hover {
+  background: rgba(0, 145, 90, 0.9);
+  border-color: rgba(0, 145, 90, 0.9);
+}
+
+/* Cancel text button */
+.green-dialog .p-button-text {
+  color: rgba(0, 145, 90, 1);
+}
+
+
+⸻
+
+2️⃣ Attach This Style to Your Existing Dialog (Very Small Change)
+
+In your <p-dialog> tag, just add a styleClass:
+
+<p-dialog
+  header="Session Comments - {{ getSessionLabel(activeSessionIndex) }}"
+  [(visible)]="showSessionDialog"
+  [modal]="true"
+  [style]="{ width: '560px' }"
+  [dismissableMask]="true"
+  styleClass="green-dialog"
+>
+
+That’s it.
+No change to your form, no change to logic.
+
+⸻
+
+3️⃣ What You’ll Get Visually
+
+Your dialog will now have:
+	•	✅ Green header bar with white title
+	•	✅ Clean white/light-green body background
+	•	✅ Green-bordered textareas with focus glow
+	•	✅ Green Save button
+	•	✅ Subtle shadow + rounded corners
+	•	✅ Professional HR-style modal look
+
+This will perfectly match your Documentation tab green card theme.
+
+⸻
+
+If you want, next I can help you:
+	•	Add icons before Performance / Manager / Employee
+	•	Add a readonly badge (Manager / Employee view)
+	•	Animate dialog open smoothly (fade + scale).
+
+
+
 Got it, Kishore — your current Documentation tab looks functionally correct but visually too plain. Let’s convert it into a clean, professional green-themed card layout similar to your 3rd image, using your existing BNP green color and PrimeNG.
 
 Below is a drop-in styling + small template tweaks that will make each session look like a polished documentation card.
