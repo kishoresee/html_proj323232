@@ -1,3 +1,46 @@
+Absolutely, Kishore! Let’s refine the earlier prompt to include the new details about storing and displaying the comments as JSON in the Session Check-In field.
+
+⸻
+
+📌 Updated Feature Requirement Prompt: Session-wise JSON Storage and Card View Display
+
+I have a PIP form with a Session Date and Session Time (From–To). I need to implement the following functionality:
+	1.	Add Icon Visibility & Popup
+	•	Show an Add (+) icon parallel to each session date if:
+	•	The session date is on or before today’s date.
+	•	The current time is after the session end time.
+	•	Clicking the Add icon opens a popup dialog with a table view of performance issues.
+	2.	Comments Entry and Role-Based Access
+	•	Inside the popup, the table will auto-populate a list of predefined Performance Issues.
+	•	There will be fields for Manager Comments and Employee Comments.
+	•	If a Manager is logged in, only the Manager Comment field is editable; Employee Comment is disabled.
+	•	If an Employee is logged in, only the Employee Comment field is editable; Manager Comment is disabled.
+	3.	Saving Comments as JSON in Multi-Line Text
+	•	When the user clicks Save in the popup:
+	•	Collect the Performance Issues and the entered comments.
+	•	Store this data as a JSON object in the Session Check-In column (multi-line text) for that particular session.
+	•	Example JSON structure:
+
+{
+  "performanceIssues": ["Issue1", "Issue2"],
+  "employeeComments": "Employee's comments here",
+  "managerComments": "Manager's comments here"
+}
+
+
+	4.	Retrieving and Displaying in Documentation Tab
+	•	In the Documentation tab, retrieve the stored JSON for each session.
+	•	Display the data in a card view format for each session date.
+	•	Each card should show the Performance Issues along with the Manager and Employee comments that were saved.
+
+⸻
+
+This updated prompt should now fully cover your requirement of storing the comments as JSON and displaying them back in the Documentation tab as cards.
+
+
+
+
+
 updateStartTime(start: Date) {
   const current = this.pipForm.get('sessionTime')?.value || [];
   this.pipForm.get('sessionTime')?.setValue([start, current[1] || null]);
