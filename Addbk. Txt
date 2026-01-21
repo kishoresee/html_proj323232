@@ -1,3 +1,191 @@
+Got it, Kishore — your current Documentation tab looks functionally correct but visually too plain. Let’s convert it into a clean, professional green-themed card layout similar to your 3rd image, using your existing BNP green color and PrimeNG.
+
+Below is a drop-in styling + small template tweaks that will make each session look like a polished documentation card.
+
+⸻
+
+1️⃣ Update your HTML (Documentation Tab)
+
+Replace your inner card content with this structure (minimal logic change, only layout):
+
+<p-tabPanel header="Documentation">
+  <p-card header="Documentation" styleClass="doc-wrapper">
+
+    <div *ngIf="checkInSessions.length === 0" class="empty-state">
+      No sessions yet.
+    </div>
+
+    <div class="p-grid p-gap-3">
+      <div
+        class="p-col-12 p-md-6 p-lg-4"
+        *ngFor="let sess of checkInSessions.controls; let i = index"
+      >
+        <p-card styleClass="doc-card">
+
+          <!-- Session Header -->
+          <div class="doc-header">
+            <span class="doc-date">{{ getSessionLabel(i) }}</span>
+          </div>
+
+          <ng-container *ngIf="getSessionJson(i) as js">
+
+            <!-- Performance Issues -->
+            <div class="doc-section">
+              <h5>Performance Issues</h5>
+              <ul>
+                <li *ngFor="let issue of js.performanceIssues">
+                  {{ issue }}
+                </li>
+              </ul>
+            </div>
+
+            <!-- Manager Comment -->
+            <div class="doc-section">
+              <h5>Manager Comment</h5>
+              <p class="doc-text" *ngIf="js.managerComments?.trim(); else noMgr">
+                {{ js.managerComments }}
+              </p>
+              <ng-template #noMgr>
+                <span class="doc-muted">No manager comment</span>
+              </ng-template>
+            </div>
+
+            <!-- Employee Comment -->
+            <div class="doc-section">
+              <h5>Employee Comment</h5>
+              <p class="doc-text" *ngIf="js.employeeComments?.trim(); else noEmp">
+                {{ js.employeeComments }}
+              </p>
+              <ng-template #noEmp>
+                <span class="doc-muted">No employee comment</span>
+              </ng-template>
+            </div>
+
+          </ng-container>
+
+        </p-card>
+      </div>
+    </div>
+
+  </p-card>
+</p-tabPanel>
+
+
+⸻
+
+2️⃣ Add Green-Themed CSS (matches your BNP green)
+
+Add this to your component CSS:
+
+/* Wrapper spacing */
+.doc-wrapper {
+  padding: 1rem;
+}
+
+/* Each session card */
+.doc-card {
+  border-radius: 10px;
+  border: 1px solid rgba(0, 145, 90, 0.25);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.doc-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* Top green header strip */
+.doc-header {
+  background: #006538; /* BNP green */
+  color: white;
+  padding: 0.6rem 0.9rem;
+  border-radius: 6px;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.doc-date {
+  font-size: 14px;
+}
+
+/* Sections inside card */
+.doc-section {
+  margin-bottom: 0.8rem;
+}
+
+.doc-section h5 {
+  margin: 0 0 0.4rem 0;
+  font-size: 14px;
+  color: #006538;
+  border-left: 3px solid #006538;
+  padding-left: 6px;
+}
+
+/* Performance issues list */
+.doc-section ul {
+  padding-left: 1.2rem;
+  margin: 0;
+}
+
+.doc-section li {
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+/* Text styles */
+.doc-text {
+  font-size: 13px;
+  color: #333;
+  background: #f6fdf9;
+  padding: 6px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 145, 90, 0.15);
+}
+
+.doc-muted {
+  font-size: 13px;
+  color: #888;
+  font-style: italic;
+}
+
+/* Empty state */
+.empty-state {
+  padding: 1.5rem;
+  text-align: center;
+  color: #777;
+  font-style: italic;
+}
+
+
+⸻
+
+3️⃣ What This Will Look Like
+
+You’ll get:
+	•	✅ Green header strip per session (date clearly visible)
+	•	✅ Card grid layout (2–3 cards per row depending on screen)
+	•	✅ Subtle shadow + hover lift effect
+	•	✅ Clear section separation:
+	•	Performance Issues
+	•	Manager Comment
+	•	Employee Comment
+	•	✅ BNP green used consistently
+
+This will make the Documentation tab look like a professional audit/history panel, not a plain text dump.
+
+⸻
+
+If you want, next I can help you:
+	•	Add a timeline-style left border (vertical green line)
+	•	Add icons for Manager / Employee
+	•	Add accordion expand/collapse per session for long histories.
+
+
+
+
+
+
 Absolutely, Kishore! Let’s refine the earlier prompt to include the new details about storing and displaying the comments as JSON in the Session Check-In field.
 
 ⸻
