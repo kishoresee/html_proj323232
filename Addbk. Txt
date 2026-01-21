@@ -1,3 +1,232 @@
+Excellent, Kishore — here is the FULL, READY-TO-PASTE solution for your Session Comments Dialog, with:
+	•	BNP green: rgba(0,145,90,1)
+	•	Styled header, body, footer
+	•	Styled labels, list, textareas, buttons
+	•	Works with your existing form + role-based disable logic
+
+You can directly copy this.
+
+⸻
+
+✅ 1️⃣ FULL <p-dialog> HTML (Replace Your Dialog Section)
+
+<p-dialog
+  header="Session Comments - {{ getSessionLabel(activeSessionIndex) }}"
+  [(visible)]="showSessionDialog"
+  [modal]="true"
+  [style]="{ width: '560px' }"
+  [dismissableMask]="true"
+  styleClass="green-dialog"
+>
+
+  <!-- Render only after the temporary form has been created -->
+  <ng-container *ngIf="sessionPopupForm">
+
+    <form [formGroup]="sessionPopupForm">
+
+      <div class="p-fluid green-dialog-body">
+
+        <!-- 1. Performance Issues (Read-only) -->
+        <div class="p-field">
+          <label>Performance Issues</label>
+          <ul class="perf-list">
+            <li *ngFor="let issue of sessionPopupForm.get('performanceIssues')?.value">
+              {{ issue }}
+            </li>
+          </ul>
+        </div>
+
+        <!-- 2. Manager Comment -->
+        <div class="p-field">
+          <label for="mgrCmt">Manager Comment</label>
+          <textarea
+            id="mgrCmt"
+            pInputTextarea
+            rows="3"
+            formControlName="managerComments"
+            [disabled]="!roleInfo.isManager"
+          ></textarea>
+        </div>
+
+        <!-- 3. Employee Comment -->
+        <div class="p-field">
+          <label for="empCmt">Employee Comment</label>
+          <textarea
+            id="empCmt"
+            pInputTextarea
+            rows="3"
+            formControlName="employeeComments"
+            [disabled]="!roleInfo.isEmployee"
+          ></textarea>
+        </div>
+
+      </div>
+
+      <!-- Footer -->
+      <p-footer>
+        <button
+          pButton
+          label="Cancel"
+          class="p-button-text"
+          (click)="showSessionDialog = false"
+        ></button>
+
+        <button
+          pButton
+          label="Save"
+          (click)="saveSessionPopup()"
+          [disabled]="sessionPopupForm.invalid"
+        ></button>
+      </p-footer>
+
+    </form>
+
+  </ng-container>
+
+</p-dialog>
+
+
+⸻
+
+✅ 2️⃣ FULL CSS (Paste in pipform.component.css)
+
+This is the complete green theme for the dialog.
+
+/* ===== GREEN THEMED DIALOG ===== */
+
+.green-dialog .p-dialog {
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+/* Header */
+.green-dialog .p-dialog-header {
+  background: rgba(0, 145, 90, 1);
+  color: #fff;
+  font-weight: 600;
+  font-size: 15px;
+  padding: 0.8rem 1rem;
+}
+
+/* Header close icon */
+.green-dialog .p-dialog-header-icon {
+  color: #fff;
+}
+
+/* Body */
+.green-dialog .p-dialog-content {
+  padding: 1.2rem;
+  background: #f9fdfb;
+}
+
+/* Inner body spacing */
+.green-dialog-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Labels */
+.green-dialog label {
+  font-weight: 600;
+  font-size: 13px;
+  color: rgba(0, 145, 90, 1);
+  margin-bottom: 4px;
+  display: block;
+}
+
+/* Performance issues list */
+.green-dialog .perf-list {
+  padding-left: 1.2rem;
+  margin: 6px 0 0 0;
+  background: #f3fbf7;
+  border: 1px solid rgba(0, 145, 90, 0.2);
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+
+.green-dialog .perf-list li {
+  font-size: 13px;
+  margin-bottom: 4px;
+  color: #333;
+}
+
+/* Textareas */
+.green-dialog textarea {
+  border-radius: 6px;
+  border: 1px solid rgba(0, 145, 90, 0.4);
+  font-size: 13px;
+  padding: 6px 8px;
+}
+
+.green-dialog textarea:focus {
+  outline: none;
+  border-color: rgba(0, 145, 90, 1);
+  box-shadow: 0 0 0 2px rgba(0, 145, 90, 0.2);
+}
+
+/* Disabled textarea look */
+.green-dialog textarea:disabled {
+  background: #f1f1f1;
+  color: #777;
+  cursor: not-allowed;
+}
+
+/* Footer */
+.green-dialog .p-dialog-footer {
+  padding: 0.8rem 1rem;
+  border-top: 1px solid rgba(0, 145, 90, 0.25);
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  background: #fff;
+}
+
+/* Save button */
+.green-dialog .p-button {
+  background: rgba(0, 145, 90, 1);
+  border-color: rgba(0, 145, 90, 1);
+}
+
+.green-dialog .p-button:hover {
+  background: rgba(0, 145, 90, 0.9);
+  border-color: rgba(0, 145, 90, 0.9);
+}
+
+/* Cancel text button */
+.green-dialog .p-button-text {
+  color: rgba(0, 145, 90, 1);
+}
+
+
+⸻
+
+🎯 Final Result
+
+Your dialog will now have:
+	•	🟢 Green header bar (BNP green)
+	•	🟢 Green-accent labels
+	•	🟢 Soft green background for performance issues
+	•	🟢 Green focus glow on textareas
+	•	🟢 Green Save button
+	•	🟢 Clean, professional HR modal look
+
+⸻
+
+If you want, next we can:
+	•	Add role badge: “Manager View” / “Employee View”
+	•	Add icons for each section
+	•	Add readonly styling when disabled
+	•	Add smooth open animation
+
+Just tell me 👍
+
+
+
+
+
+
 Perfect, Kishore — now I clearly see your p-dialog (Session Comments popup) code.
 Let’s style this dialog to match your BNP green theme using exactly:
 
