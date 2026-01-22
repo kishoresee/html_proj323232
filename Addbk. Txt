@@ -1,3 +1,27 @@
+Hi APS Team,
+
+I am raising a marketplace request with the following details for your reference before placing the order:
+
+Subscription Name: Billing europe LUX  
+Ecosystem: SSC-ECM-APPS-AND-SERVICES  
+
+Environment: DEV  
+
+eLDAP Application Name: SRMS  
+Onboard Application: false  
+
+eLDAP Group:  
+SRMS_EMEA_Xelerate_LUX_V  
+
+Please let me know if any changes are required before I proceed.
+
+Thanks & regards,  
+Kishore S
+
+
+
+
+
 const calls = issues.map((issue, index) => {
   const payload = {
     ...issue,
