@@ -1,3 +1,14 @@
+const calls = issues.map((issue, index) => {
+  const payload = {
+    ...issue,
+    Sequence: index + 1   // 👈 ADD THIS LINE
+  };
+
+  return this.sp.createPerformanceIssueItem(this.pipId, payload, parentId);
+});
+
+
+
 <p-dialog
   header="Session Comments - {{ getSessionLabel(activeSessionIndex) }}"
   [(visible)]="showSessionDialog"
