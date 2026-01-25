@@ -1,3 +1,21 @@
+/* Center the Timeline column cell */
+td .p-calendar {
+  display: flex;
+  justify-content: center;
+}
+
+/* Center the calendar input text */
+td .p-calendar input {
+  text-align: center;
+}
+
+/* Optional: make the calendar icon also centered nicely */
+td .p-calendar .p-datepicker-trigger {
+  margin-left: 4px;
+}
+
+
+
 Perfect 👍 I’ll give you a complete, clean, copy-paste ready version of:
 	1.	✅ Full HTML for the dialog
 	2.	✅ Full CSS for the green theme
