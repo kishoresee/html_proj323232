@@ -1,3 +1,244 @@
+Perfect 👍 I’ll give you a complete, clean, copy-paste ready version of:
+	1.	✅ Full HTML for the dialog
+	2.	✅ Full CSS for the green theme
+So you can directly paste and see the improved UI.
+
+⸻
+
+🟢 1. FULL HTML (Session Comment Dialog)
+
+Replace your dialog part with this:
+
+<p-dialog
+  header="Session Comments - {{ getSessionLabel(activeSessionIndex) }}"
+  [(visible)]="showSessionDialog"
+  [modal]="true"
+  [style]="{ width: '560px' }"
+  [dismissableMask]="true"
+  class="green-themed-dialog"
+>
+  <ng-container *ngIf="sessionPopupForm">
+    <form [formGroup]="sessionPopupForm">
+
+      <div class="dialog-form-grid">
+
+        <!-- Performance Issues -->
+        <div class="p-field">
+          <label>Performance Issues</label>
+          <ul class="issues-box">
+            <li *ngFor="let issue of sessionPopupForm.get('performanceIssues')?.value">
+              {{ issue }}
+            </li>
+          </ul>
+        </div>
+
+        <!-- Manager Comment -->
+        <div class="p-field">
+          <label for="mgrCmt">Manager Comment</label>
+          <textarea
+            id="mgrCmt"
+            pInputTextarea
+            rows="3"
+            formControlName="managerComments"
+            [disabled]="!roleInfo.isManager"
+            placeholder="Enter manager comments here..."
+          ></textarea>
+        </div>
+
+        <!-- Employee Comment -->
+        <div class="p-field">
+          <label for="empCmt">Employee Comment</label>
+          <textarea
+            id="empCmt"
+            pInputTextarea
+            rows="3"
+            formControlName="employeeComments"
+            [disabled]="!roleInfo.isEmployee"
+            placeholder="Enter employee comments here..."
+          ></textarea>
+        </div>
+
+      </div>
+
+      <!-- Footer -->
+      <div class="dialog-footer">
+        <button
+          pButton
+          type="button"
+          label="Cancel"
+          class="p-button-text"
+          (click)="showSessionDialog = false"
+        ></button>
+
+        <button
+          pButton
+          type="button"
+          label="Save"
+          severity="primary"
+          (click)="saveSessionPopup()"
+          [disabled]="sessionPopupForm.invalid"
+        ></button>
+      </div>
+
+    </form>
+  </ng-container>
+</p-dialog>
+
+
+⸻
+
+🟢 2. FULL CSS (Green Theme – Copy Paste)
+
+Paste this in your component CSS or global styles.css:
+
+/* =========================
+   Green Themed Dialog
+========================= */
+
+/* Dialog container */
+.green-themed-dialog .p-dialog {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Header */
+.green-themed-dialog .p-dialog-header {
+  background: rgba(0, 145, 90, 1);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 16px;
+  padding: 12px 16px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+/* Close icon */
+.green-themed-dialog .p-dialog-header-icon {
+  color: #ffffff;
+}
+
+/* Content area */
+.green-themed-dialog .p-dialog-content {
+  padding: 20px 24px;
+  background: #f9fdfb; /* very light green background */
+}
+
+/* Grid layout */
+.dialog-form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  row-gap: 16px;
+}
+
+/* Field wrapper */
+.p-field {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Labels */
+.p-field > label {
+  font-weight: 600;
+  color: #145a3a;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+/* Issues box */
+.issues-box {
+  list-style: disc;
+  background: #eef7f3;
+  border: 1px solid rgba(0, 145, 90, 0.3);
+  border-radius: 6px;
+  padding: 10px 16px;
+  margin: 0;
+}
+
+.issues-box li {
+  padding: 4px 0;
+  font-size: 14px;
+  color: #333;
+}
+
+/* Textareas */
+.p-inputtextarea {
+  width: 100%;
+  border: 1px solid rgba(0, 145, 90, 0.4);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 14px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+/* Focus effect */
+.p-inputtextarea:focus {
+  border-color: rgba(0, 145, 90, 1);
+  box-shadow: 0 0 0 2px rgba(0, 145, 90, 0.15);
+  outline: none;
+}
+
+/* Disabled textarea */
+.p-inputtextarea:disabled {
+  background: #f2f2f2;
+  color: #888;
+}
+
+/* Footer */
+.dialog-footer {
+  margin-top: 20px;
+  padding-top: 12px;
+  border-top: 1px solid #dfeee8;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* Cancel button */
+.p-button-text {
+  color: #555;
+}
+
+/* Primary green button */
+.p-button.p-button-primary {
+  background: rgba(0, 145, 90, 1);
+  border-color: rgba(0, 145, 90, 1);
+}
+
+/* Hover effect */
+.p-button.p-button-primary:hover {
+  background: rgba(0, 120, 75, 1);
+  border-color: rgba(0, 120, 75, 1);
+}
+
+/* Disabled save button */
+.p-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+
+⸻
+
+🎯 What You’ll See After This
+	•	Dark green professional header
+	•	Soft light green dialog body
+	•	Boxed performance issues section
+	•	Clean aligned labels & textareas
+	•	Premium footer with aligned buttons
+
+This will look clean, corporate, and consistent with your green theme.
+
+⸻
+
+If you want, next I can:
+	•	Add section titles like “Issues”, “Manager Section”, “Employee Section”
+	•	Or add a green left border accent to each block for a premium look.
+
+
+
+
+
+
 Hi APS Team,
 
 I am raising a marketplace request with the following details for your reference before placing the order:
