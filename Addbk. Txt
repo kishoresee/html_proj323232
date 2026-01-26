@@ -1,4 +1,21 @@
+/* Change autocomplete dropdown button background */
+::ng-deep .p-autocomplete .p-autocomplete-dropdown {
+  background: rgba(0, 145, 90, 1) !important;
+  border-color: rgba(0, 145, 90, 1) !important;
+}
+
+/* Change the arrow icon color to white (looks better on green) */
+::ng-deep .p-autocomplete .p-autocomplete-dropdown .pi {
+  color: #ffffff !important;
+}
+
+
+
+
+
+
 /* Center the Timeline column cell */
+
 td .p-calendar {
   display: flex;
   justify-content: center;
