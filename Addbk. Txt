@@ -1,3 +1,100 @@
+
+Got it 👍
+That thin white vertical line between each column header is coming from the grid’s column separator / border-right style.
+
+From your code + UI, this looks like Angular Material table / ag-Grid–style headers.
+Here are the exact fixes — pick the one that matches your grid.
+
+⸻
+
+✅ If this is Angular Material Table (mat-table)
+
+Add this to your component CSS / global styles.scss:
+
+/* Remove vertical separators between header columns */
+.mat-header-cell {
+  border-right: none !important;
+}
+
+/* If body cells also have separators */
+.mat-cell {
+  border-right: none !important;
+}
+
+If you see a line due to ::after:
+
+.mat-header-cell::after {
+  display: none !important;
+}
+
+
+⸻
+
+✅ If this is AG Grid
+
+AG Grid adds separators via borders.
+
+Remove header separators:
+
+.ag-theme-alpine .ag-header-cell {
+  border-right: none !important;
+}
+
+Also remove body column separators (optional):
+
+.ag-theme-alpine .ag-cell {
+  border-right: none !important;
+}
+
+If the line still appears:
+
+.ag-theme-alpine .ag-header-cell::after {
+  display: none !important;
+}
+
+
+⸻
+
+✅ If this is PrimeNG (p-table)
+
+.p-datatable .p-datatable-thead > tr > th {
+  border-right: none !important;
+}
+
+
+⸻
+
+🔍 Why this happens
+
+That white line is:
+	•	border-right
+	•	or a pseudo-element (::after)
+	•	added by the grid theme for column separation
+
+Since your header background is green, the white border becomes very visible.
+
+⸻
+
+✅ Final quick fix (works in most cases)
+
+If you want a brute-force fix just to remove all vertical lines in headers:
+
+th {
+  border-right: none !important;
+}
+
+
+⸻
+
+If you want, send just this line from your HTML:
+
+<table ...> / <ag-grid-angular ...>
+
+or tell me Angular Material / AG Grid / PrimeNG, I’ll give you the cleanest single-line fix 👌
+
+
+
+
 /* Change autocomplete dropdown button background */
 ::ng-deep .p-autocomplete .p-autocomplete-dropdown {
   background: rgba(0, 145, 90, 1) !important;
