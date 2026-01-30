@@ -1,3 +1,32 @@
+.tab-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.custom-tabs {
+  flex: 1;
+}
+
+.status-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.status-badge {
+  background-color: #00915a;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-weight: 600;
+}
+
+
+
 
 Got it 👍
 That thin white vertical line between each column header is coming from the grid’s column separator / border-right style.
