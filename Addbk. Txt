@@ -1,3 +1,58 @@
+Got it 👍 I can see the issue clearly.
+
+Your table content is left-aligned by default, so even though the table itself is fine, the text inside <th> and <td> isn’t centered.
+
+✅ Minimal change (CSS-only, safest fix)
+
+Just add text-align: center to your table cells.
+
+Option 1: Inline (absolute minimum change)
+Change your header and row HTML like this:
+
+<th style="padding:4px 8px; text-align:center;">Date</th>
+<th style="padding:4px 8px; text-align:center;">Start</th>
+<th style="padding:4px 8px; text-align:center;">End</th>
+
+And in row creation:
+
+<td style="text-align:center;">${dateStr}</td>
+<td style="text-align:center;">${startStr}</td>
+<td style="text-align:center;">${endStr}</td>
+
+
+⸻
+
+✅ Cleaner minimal change (recommended)
+
+Since you already have a class session-table, add just this CSS once:
+
+.session-table th,
+.session-table td {
+  text-align: center;
+}
+
+👉 That’s it. Nothing else needed.
+
+⸻
+
+Why this works
+	•	Your table layout is correct
+	•	Columns are aligned
+	•	Only the content alignment was missing
+	•	This fix doesn’t affect spacing, width, or structure
+
+If you want, next we can:
+	•	Vertically center (vertical-align: middle)
+	•	Match Outlook email styling
+	•	Fix mobile responsiveness
+
+Tell me 👍
+
+
+
+
+
+
 .tab-header-row {
   display: flex;
   align-items: center;
