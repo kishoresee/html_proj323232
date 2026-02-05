@@ -1,3 +1,54 @@
+private getValidSessions(
+  raw: any[],
+  allowPartial = false
+): any[] {
+  return raw
+    .filter(session => {
+      if (allowPartial) {
+        // Draft: save if ANY meaningful field is entered
+        return (
+          session.sessionDate ||
+          session.sessionStart ||
+          session.sessionEnd ||
+          session.participants?.trim()
+        );
+      }
+
+      // Submit: strict validation
+      return (
+        session.sessionDate &&
+        session.sessionStart &&
+        session.sessionEnd &&
+        session.participants?.trim()
+      );
+    })
+    .map(session => {
+      const start = session.sessionStart;
+      const end = session.sessionEnd;
+
+      return {
+        ...session,
+
+        // ✅ Preserve old date conversion
+        sessionDate: session.sessionDate
+          ? this.displayToIso(session.sessionDate)
+          : null,
+
+        // ✅ Preserve old time handling
+        sessionStart:
+          start instanceof Date && !isNaN(start.getTime())
+            ? start.toISOString()
+            : start ?? null,
+
+        sessionEnd:
+          end instanceof Date && !isNaN(end.getTime())
+            ? end.toISOString()
+            : end ?? null
+      };
+    });
+}
+
+
 
 Actually, now fully understanding, if I first if I fill everything and I submit in HRBP, it is not saying anything, it is submitting and patching, but if I save as draft some column and I fill other columns, then I submit, it is not patching things. So it is not submitting and it is not storing in the SharePoint. Now tell me how to fix it. This is the issue now I understood.
 
