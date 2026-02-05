@@ -1,3 +1,176 @@
+You’re very close already. The behavior you’re seeing is 100% explainable from the code you shared, and the fix can be done with very minimal change.
+
+I’ll break this into 3 parts so it’s crystal clear:
+
+⸻
+
+1️⃣ Why this is happening (root cause)
+
+🔴 The real culprit: getValidPerformanceIssues()
+
+You have this method:
+
+private getValidPerformanceIssues(raw: any[]): any[] {
+  return raw
+    .filter(issue =>
+      issue.timeline &&
+      issue.issue?.trim() &&
+      issue.standard?.trim() &&
+      issue.currentAssessment?.trim()
+    )
+    .map(issue => ({
+      ...issue,
+      timeline: this.displayToIso(issue.timeline)
+    }));
+}
+
+What this means in plain English
+
+A performance issue row is considered “valid” ONLY IF:
+	•	timeline ✅
+	•	issue text ✅
+	•	standard ✅
+	•	currentAssessment ✅
+
+If even one field is missing, that row is silently dropped.
+
+⸻
+
+2️⃣ Why Draft save fails when only “Performance Issue” is filled
+
+Step-by-step what actually happens
+
+When you click Save as Draft:
+	1.	onSaveDetailsDraft() is called
+	2.	It calls:
+
+this.saveOrUpdate(PipStatus.Draft, false);
+
+
+	3.	Inside saveOrUpdate():
+
+const raw = this.pipForm.getRawValue();
+const perfIssuesForSave =
+  this.getValidPerformanceIssues(raw.performanceIssues as any[]);
+
+
+
+Now the key problem
+	•	You filled only issue in the 4th row
+	•	timeline, standard, currentAssessment are empty
+	•	That row fails the filter
+	•	perfIssuesForSave becomes empty array []
+
+Then this logic runs later:
+
+if (includePerformance && perfIssuesForSave.length) {
+  this.savePerformanceIssues(reportId, perfIssuesForSave);
+}
+
+👉 Since perfIssuesForSave.length === 0
+👉 Nothing is saved
+👉 SharePoint receives no child rows
+👉 Looks like “Draft didn’t save” (but technically nothing qualified to be saved)
+
+⸻
+
+3️⃣ Why full row works but partial row doesn’t
+
+Case	Result
+All fields filled	Passes filter → saved
+Only “Performance Issue” filled	Fails filter → dropped
+Empty rows	Dropped
+Draft save	Uses same strict filter
+
+Important:
+Your code treats Draft = Final for performance rows.
+That’s the real design issue.
+
+⸻
+
+4️⃣ Minimal & safe fix (BEST approach)
+
+✅ Allow partial rows ONLY for Draft
+
+🔧 Minimal change: pass status into the validator
+
+Step 1: Update function signature
+
+private getValidPerformanceIssues(
+  raw: any[],
+  allowPartial = false
+): any[] {
+  return raw
+    .filter(issue => {
+      if (allowPartial) {
+        return issue.issue?.trim();
+      }
+      return (
+        issue.timeline &&
+        issue.issue?.trim() &&
+        issue.standard?.trim() &&
+        issue.currentAssessment?.trim()
+      );
+    })
+    .map(issue => ({
+      ...issue,
+      timeline: issue.timeline
+        ? this.displayToIso(issue.timeline)
+        : null
+    }));
+}
+
+
+⸻
+
+Step 2: Change only one line in saveOrUpdate()
+
+const perfIssuesForSave = this.getValidPerformanceIssues(
+  raw.performanceIssues as any[],
+  newStatus === PipStatus.Draft
+);
+
+That’s it.
+No other logic change needed.
+
+⸻
+
+5️⃣ What this fix achieves
+
+Scenario	Behavior
+Draft + only “Performance Issue”	✅ Saved
+Draft + partial rows	✅ Saved
+Submit to HRBP	❌ Still requires full row
+Existing logic	Preserved
+
+
+⸻
+
+6️⃣ Why this is the correct design
+	•	Draft = work-in-progress
+	•	Submit = validation enforced
+	•	SharePoint receives only what user actually typed
+	•	No fake rows, no empty garbage data
+
+⸻
+
+7️⃣ One-line summary
+
+It’s not saving because your draft save still uses final-submit validation.
+Allow partial rows only for Draft, and the issue is fixed cleanly.
+
+⸻
+
+If you want, next I can:
+	•	Refactor this to avoid duplicate delete–insert calls
+	•	Fix the “rows disappear on reopen” issue
+	•	Optimize SharePoint PATCH vs POST logic
+
+Just tell me 👍
+
+
+
+
 The thing is, the entire code works fine, but the one issue I face is that whenever there are four rows, both in performance, like performance issue, timeline, standard goal, and current assessment in performance section, and in session details also, I have same like the session date, session start, session end, then participants. So, if I try to enter only one data, like example, for example, I enter only performance issue, only performance issue, no timeline, no goal, no current assessment. If I try to save draft, it is not saving. Same happening for session details also. Like if I enter only one session date, I'm not going to enter session start or session end. I'm going to enter it later. But if I try to save the draft, it's not saving. Why it is so? Analyze my entire code and give me a minimal fix. And
 
 
