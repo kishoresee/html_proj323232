@@ -1,3 +1,6 @@
+the thing is I'm able to store HRBP disagree comments successfully in the SharePoint and in the big details list, but when I try to fetch and display in the manager's view with the session details tab, it is not fetching and displayed, and just the HRBP disagree comment label is displayed but not the comments, but comments is stored in the SharePoint column successfully. So what changes I must do in the code so that I can successfully fetch the comments and display, and why it is not displaying firstly? Can you tell me the reason and tell me the minimal fix to do that?
+
+
 Another important thing is that I have session sequence, a column in my SharePoint, and I'm using in the code, you can see in the code form, the thing is, whenever I previously have eight sessions filled and it is there, but when I extend the sessions, the remaining 11, 12, starting from 9, 10, 11, 12, four sessions are added, but they are added above, above the already existing sessions. I want them to add them below, like below the already existing sessions. So can I use this session sequence to keep this order, like first eight sessions, then if I extend the added sessions should come below, not above?
 
 
