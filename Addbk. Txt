@@ -1,3 +1,10 @@
+The thing is, the entire code works fine, but the one issue I face is that whenever there are four rows, both in performance, like performance issue, timeline, standard goal, and current assessment in performance section, and in session details also, I have same like the session date, session start, session end, then participants. So, if I try to enter only one data, like example, for example, I enter only performance issue, only performance issue, no timeline, no goal, no current assessment. If I try to save draft, it is not saving. Same happening for session details also. Like if I enter only one session date, I'm not going to enter session start or session end. I'm going to enter it later. But if I try to save the draft, it's not saving. Why it is so? Analyze my entire code and give me a minimal fix. And
+
+
+
+
+
+
 Actually, the thing is, when I click disagreed, it is not enabling without the HRBP disagree comments. That is all fine. But when I click, when the manager decision is selected as extend, and when the flow comes to HRBP, and HRBP selects to agree, but if I click agree, the pop-up is showing four rows are added, but it is not actually adding the four rows. So only if I enter the disagree comments again, and then agree, only then it is adding the four rows. So it should not happen. So the HRBP disagree comments should not affect the agree button. So there should not be any link between the, if I agree means it should be, it should perform an extend and it should add the four rows. It is not happening. It is happening only when I enter the HRBP disagree comments.
 
 
