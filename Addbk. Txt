@@ -1,3 +1,8 @@
+
+Actually, now fully understanding, if I first if I fill everything and I submit in HRBP, it is not saying anything, it is submitting and patching, but if I save as draft some column and I fill other columns, then I submit, it is not patching things. So it is not submitting and it is not storing in the SharePoint. Now tell me how to fix it. This is the issue now I understood.
+
+
+
 Great — this clarification is the key insight, and you’re absolutely right.
 What you’re seeing now is the final missing piece of the puzzle.
 Let me be very precise and practical.
