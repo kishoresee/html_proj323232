@@ -1,3 +1,138 @@
+Perfect — this is exactly the same class of bug, and we’ll fix it in the same clean, minimal way 👍
+You don’t need a new design, just Draft-aware filtering for sessions.
+
+⸻
+
+1️⃣ Why sessions behave the same way (quick recap)
+
+Your current getValidSessions() is doing strict validation:
+
+“Save the session ONLY if all required fields are filled”
+
+So when you enter only one field (date / start / end / participants), that row:
+	•	❌ fails the filter
+	•	❌ gets dropped
+	•	❌ never reaches SharePoint
+	•	❌ looks like “Draft didn’t save”
+
+Exactly what happened with performance issues earlier.
+
+⸻
+
+2️⃣ Minimal, correct fix (same pattern)
+
+We’ll do ONE small enhancement:
+
+✔ Allow partial rows for Draft
+✔ Keep full-row validation for Submit
+
+⸻
+
+3️⃣ Updated getValidSessions() (DROP-IN replacement)
+
+✅ Replace your existing method with this
+
+private getValidSessions(
+  raw: any[],
+  allowPartial = false
+): any[] {
+  return raw
+    .filter(session => {
+      if (allowPartial) {
+        // Draft: save if user typed ANY meaningful value
+        return (
+          session.sessionDate ||
+          session.sessionStart ||
+          session.sessionEnd ||
+          session.participants?.trim()
+        );
+      }
+
+      // Submit: strict validation
+      return (
+        session.sessionDate &&
+        session.sessionStart &&
+        session.sessionEnd &&
+        session.participants?.trim()
+      );
+    })
+    .map(session => ({
+      ...session,
+      sessionDate: session.sessionDate
+        ? this.displayToIso(session.sessionDate)
+        : null
+    }));
+}
+
+
+⸻
+
+4️⃣ One-line change in saveOrUpdate() (VERY important)
+
+Find this line 👇
+
+const sessionsForSave = includeSessions
+  ? this.getValidSessions(raw.checkInSessions as any[])
+  : [];
+
+🔁 Replace with:
+
+const sessionsForSave = includeSessions
+  ? this.getValidSessions(
+      raw.checkInSessions as any[],
+      newStatus === PipStatus.Draft
+    )
+  : [];
+
+That’s it.
+No other changes needed.
+
+⸻
+
+5️⃣ What this fixes (behavior matrix)
+
+Scenario	Result
+Draft + only session date	✅ Saved
+Draft + only participants	✅ Saved
+Draft + partial row	✅ Saved
+Submit to HRBP	❌ Requires full row
+Empty rows	❌ Ignored
+SharePoint payload	✅ Clean
+
+
+⸻
+
+6️⃣ Why this is the right approach
+	•	Draft = user is mid-work
+	•	Submit = data must be complete
+	•	Same logic for:
+	•	Performance Issues
+	•	Sessions
+	•	Zero breaking changes
+	•	Zero SharePoint schema changes
+	•	Zero UI changes
+
+⸻
+
+7️⃣ Final mental model (important)
+
+Draft = “Did the user type something?”
+Submit = “Is everything filled?”
+
+Once you apply this to both child lists, your PIP form behaves exactly like users expect.
+
+⸻
+
+If you want next, I can:
+	•	Merge both validators into a reusable helper
+	•	Fix row-ordering when sessions are extended
+	•	Prevent accidental deletion of draft rows
+
+Just say the word 👌
+
+
+
+
 You’re very close already. The behavior you’re seeing is 100% explainable from the code you shared, and the fix can be done with very minimal change.
 
 I’ll break this into 3 parts so it’s crystal clear:
