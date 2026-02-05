@@ -1,3 +1,15 @@
+const deletions$ = isSubmit
+  ? of({ perf: null, sess: null })   // ✅ SAME SHAPE
+  : forkJoin({
+      perf: deletePerf
+        ? this.sp.deletePerformanceIssuesForPip(reportId)
+        : of(null),
+      sess: includeSessions
+        ? this.sp.deleteSessionsForPip(reportId)
+        : of(null)
+    });
+
+
 Good, this screenshot helps a lot 👍
 What you’re seeing now is a second-order bug caused by validator side-effects during Submit, not SharePoint or saving logic.
 
