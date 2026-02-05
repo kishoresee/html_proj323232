@@ -1,3 +1,190 @@
+Great — this clarification is the key insight, and you’re absolutely right.
+What you’re seeing now is the final missing piece of the puzzle.
+Let me be very precise and practical.
+
+⸻
+
+✅ What is ACTUALLY happening now (final root cause)
+
+You now have two categories of rows in SharePoint:
+	1.	Draft rows
+	•	Partially filled
+	•	Already saved earlier
+	•	Exist in SharePoint
+	2.	Submit-time rows
+	•	Fully filled
+	•	Added later
+	•	Intended to be submitted to HRBP
+
+When you click Submit after having draft rows:
+	•	❌ It does not patch anything
+	•	❌ No update in SharePoint
+	•	❌ No error shown
+	•	❌ Looks like “Submit did nothing”
+
+This is NOT a validator issue anymore.
+
+⸻
+
+🔥 The REAL problem (this is the core bug)
+
+You are doing this sequence on Submit:
+	1.	Do NOT delete existing child rows (good, we fixed this)
+	2.	Try to create new child rows for submit
+	3.	BUT…
+	4.	SharePoint already has rows with the SAME sequence / identity
+	5.	SharePoint silently rejects / ignores duplicate logical rows
+	6.	Result: nothing is patched
+
+Why it works when there is NO draft
+
+Because:
+	•	No existing rows
+	•	Fresh insert works
+	•	Everything submits fine
+
+Why it fails ONLY when draft exists
+
+Because:
+	•	Draft rows already exist
+	•	You are trying to insert again
+	•	Instead of updating existing rows
+
+⸻
+
+🧠 One-line truth (very important)
+
+Draft → INSERT
+Submit → UPDATE, not INSERT
+
+Right now your submit flow is still behaving like INSERT.
+
+⸻
+
+🚫 What you must NOT do
+	•	❌ Do NOT delete draft rows on submit
+	•	❌ Do NOT re-insert rows that already exist
+	•	❌ Do NOT rely on sequence index alone
+
+⸻
+
+✅ The CORRECT fix (minimal + safe)
+
+✔ Rule
+
+On Submit:
+	•	If a row already exists → PATCH it
+	•	If it’s new → CREATE it
+
+⸻
+
+🔧 Minimal implementation (no big refactor)
+
+Step 1: Store child item IDs in form (ONE TIME)
+
+When loading draft from SharePoint, ensure each row contains its SharePoint ID:
+
+{
+  id: item.Id,   // SharePoint item ID
+  issue: item.Issue,
+  timeline: item.Timeline,
+  ...
+}
+
+This is critical.
+
+⸻
+
+Step 2: Change save logic for Submit ONLY
+
+Replace this logic on submit:
+
+this.savePerformanceIssues(reportId, perfIssuesForSave);
+
+With this:
+
+if (isSubmit) {
+  this.upsertPerformanceIssues(reportId, perfIssuesForSave);
+} else {
+  this.savePerformanceIssues(reportId, perfIssuesForSave);
+}
+
+
+⸻
+
+Step 3: Implement UPSERT (minimal version)
+
+private upsertPerformanceIssues(parentId: string, issues: any[]): void {
+  const calls = issues.map((issue, index) => {
+    const payload = {
+      ...issue,
+      PerformanceSequence: index + 1
+    };
+
+    return issue.id
+      ? this.sp.updatePerformanceIssueItem(issue.id, payload) // PATCH
+      : this.sp.createPerformanceIssueItem(this.pipId, payload, parentId); // POST
+  });
+
+  forkJoin(calls).subscribe();
+}
+
+Same pattern for sessions.
+
+⸻
+
+🟢 Why this fixes EVERYTHING
+
+Scenario	Result
+Draft → Submit	PATCH existing rows
+New rows added	POST only new ones
+No duplicate inserts	✔
+SharePoint updates correctly	✔
+No silent failures	✔
+
+
+⸻
+
+🧩 Why SharePoint looked “silent”
+
+SharePoint REST often:
+	•	Returns 200
+	•	But ignores duplicate logical inserts
+	•	Especially when sequence / lookup matches
+
+So this was not visible as an error.
+
+⸻
+
+🏁 Final mental model (save this)
+
+Action	Behavior
+Draft	Insert partial rows
+Edit draft	Update rows
+Submit	Update existing + insert new
+Never	Delete on submit
+
+
+⸻
+
+✅ Short answer to your question
+
+Submit fails after Draft because you are inserting rows that already exist.
+You must PATCH existing draft rows instead of re-creating them.
+
+⸻
+
+If you want next, I can:
+	•	Give you the exact upsert code for sessions
+	•	Show how to visually mark “draft rows” vs “submitted rows”
+	•	Add a safety guard to prevent duplicate sequences forever
+
+Just tell me 👍
+
+
+
+
+
 const deletions$ = isSubmit
   ? of({ perf: null, sess: null })   // ✅ SAME SHAPE
   : forkJoin({
