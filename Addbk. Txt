@@ -1,3 +1,205 @@
+Good, this screenshot helps a lot 👍
+What you’re seeing now is a second-order bug caused by validator side-effects during Submit, not SharePoint or saving logic.
+
+I’ll explain exactly why Submit is dropping data, and then give you a minimal, safe fix.
+
+⸻
+
+1️⃣ What is actually going wrong (important)
+
+Key observation from your screenshots
+
+You have two different validation systems acting at different times:
+
+A. Draft flow (WORKING)
+	•	Draft allows partial rows ✅
+	•	getValidPerformanceIssues(..., allowPartial=true)
+	•	getValidSessions(..., allowPartial=true)
+	•	Data is saved correctly
+
+B. Submit flow (BROKEN)
+
+When you click Submit to HRBP, this runs:
+
+onSubmitDetailsForHRBP() {
+  this.enforceSubmitValidators();
+  this.saveOrUpdate(PipStatus.Review, false, false, { hrbpComment: '' });
+}
+
+⚠️ Problem:
+enforceSubmitValidators() is modifying FormArray validators, and that changes what Angular thinks is “valid data”, before you extract raw data.
+
+⸻
+
+2️⃣ The real root cause (this is subtle but critical)
+
+Inside enforceSubmitValidators() you do this:
+
+const perfCtrl = this.pipForm.get('performanceIssues') as FormArray;
+perfCtrl.setValidators([
+  this.arrayCountValidator(5, 8, () => true, 'perfCount'),
+  this.atLeastOneIssueValidator
+]);
+perfCtrl.updateValueAndValidity();
+
+const sessCtrl = this.pipForm.get('checkInSessions') as FormArray;
+sessCtrl.setValidators([
+  this.arrayCountValidator(8, 12, () => true, 'sessCount')
+]);
+sessCtrl.updateValueAndValidity();
+
+What this causes internally
+	•	Angular re-evaluates every row
+	•	Rows that:
+	•	were partially filled in Draft
+	•	or don’t meet strict submit rules
+	•	become INVALID
+
+Now the killer part 👇
+
+⸻
+
+3️⃣ Why data disappears on Submit
+
+Even though you call:
+
+this.pipForm.getRawValue()
+
+👉 Your own filtering methods (getValidPerformanceIssues, getValidSessions) now run under Submit rules.
+
+So this happens:
+	1.	Draft rows exist in form ✔
+	2.	Submit validators activate ❌
+	3.	Partial rows fail submit validation ❌
+	4.	Your filtering logic drops them ❌
+	5.	Only rows created during submit survive
+	6.	SharePoint receives incomplete payload
+
+So:
+
+Data is not “lost” — it is being filtered out intentionally by submit-time validation
+
+⸻
+
+4️⃣ The correct mental model (important)
+
+Phase	What should happen
+Draft	Save anything user typed
+Submit	Only submit rows that are fully complete
+Existing draft rows	Must NOT be deleted
+Submit payload	Must include only valid rows
+SharePoint	Must not be wiped
+
+Right now, Submit is implicitly deleting Draft rows.
+
+⸻
+
+5️⃣ Minimal, safe fix (NO refactor)
+
+✅ Fix strategy
+
+On Submit, do NOT delete draft rows
+Only ignore them for submission, not remove them.
+
+We do this by:
+	•	Keeping draft rows in SharePoint
+	•	Submitting only valid rows
+	•	NOT running delete-and-reinsert for submit
+
+⸻
+
+6️⃣ Minimal code change (THIS is the fix)
+
+🔧 Step 1: Detect submit vs draft
+
+In saveOrUpdate() add this flag at the top:
+
+const isSubmit = newStatus !== PipStatus.Draft;
+
+
+⸻
+
+🔧 Step 2: Do NOT delete child rows on Submit
+
+Find this section:
+
+const deletions$ = forkJoin({
+  perf: deletePerf ? this.sp.deletePerformanceIssuesForPip(reportId) : of(null),
+  sess: includeSessions ? this.sp.deleteSessionsForPip(reportId) : of(null)
+});
+
+✅ Replace with:
+
+const deletions$ = isSubmit
+  ? of(null) // 🚫 do NOT delete existing draft rows on submit
+  : forkJoin({
+      perf: deletePerf
+        ? this.sp.deletePerformanceIssuesForPip(reportId)
+        : of(null),
+      sess: includeSessions
+        ? this.sp.deleteSessionsForPip(reportId)
+        : of(null)
+    });
+
+
+⸻
+
+🔧 Step 3: Save only valid rows on Submit (already correct)
+
+This part stays as-is (important):
+
+if (includePerformance && perfIssuesForSave.length) {
+  this.savePerformanceIssues(reportId, perfIssuesForSave);
+}
+
+if (includeSessions && sessionsForSave.length) {
+  this.saveSessions(reportId, sessionsForSave);
+}
+
+Your filters already ensure:
+	•	Draft → partial allowed
+	•	Submit → strict
+
+⸻
+
+7️⃣ Why this fix works
+
+Before	After
+Submit deletes draft rows	Draft rows preserved
+Validators remove partial rows	Validators only gate submission
+SharePoint loses data	SharePoint keeps draft data
+User confused	User happy
+
+
+⸻
+
+8️⃣ One-line summary (bookmark this)
+
+Submit validators must restrict what gets SENT — not what already EXISTS.
+You were deleting data as a side-effect of validation.
+
+⸻
+
+9️⃣ Optional (recommended later)
+
+If you want a perfect UX, next step would be:
+	•	Mark partial rows as read-only on submit
+	•	Show inline “Complete this row before submit”
+
+But that’s optional — your current fix is correct and safe.
+
+⸻
+
+If you want, next I can:
+	•	Show how to visually highlight incomplete draft rows
+	•	Prevent submit until newly added rows are valid (without touching old draft rows)
+	•	Clean up validator side effects fully
+
+Just tell me 👍
+
+
+
+
 Perfect — this is exactly the same class of bug, and we’ll fix it in the same clean, minimal way 👍
 You don’t need a new design, just Draft-aware filtering for sessions.
 
