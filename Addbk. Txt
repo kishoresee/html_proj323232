@@ -1,3 +1,18 @@
+/* Fix participants text getting hidden */
+.session-table td {
+  overflow: visible;
+}
+
+/* Ensure participants input respects cell width */
+.session-table input,
+.session-table .p-inputtext {
+  width: 100%;
+  box-sizing: border-box;
+  padding-right: 0.5rem; /* breathing room from icon column */
+}
+
+
+
 /* Tighten the Check-In Review (icon) column */
 .session-table td:last-child,
 .session-table th:last-child {
