@@ -1,3 +1,20 @@
+/* Tighten the Check-In Review (icon) column */
+.session-table td:last-child,
+.session-table th:last-child {
+  padding-left: 0.25rem !important;
+  padding-right: 0.25rem !important;
+  width: 60px;              /* keeps column compact */
+  text-align: center;
+}
+
+/* Reduce PrimeNG rounded button spacing */
+.session-table .p-button {
+  padding: 0.3rem !important;
+  min-width: auto !important;
+}
+
+
+
 Perfect — below is the FULLY REVISED, READY-TO-PASTE HTML for your PIP Log tab, keeping all your existing logic, but wrapped and styled to match the green GCM Check-Ins theme.
 
 I have not changed any bindings / conditions / functions — only structure + classes.
