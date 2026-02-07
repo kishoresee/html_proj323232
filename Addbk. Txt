@@ -1,3 +1,333 @@
+Perfect — below is the FULLY REVISED, READY-TO-PASTE HTML for your PIP Log tab, keeping all your existing logic, but wrapped and styled to match the green GCM Check-Ins theme.
+
+I have not changed any bindings / conditions / functions — only structure + classes.
+
+⸻
+
+✅ FULL REVISED HTML (PIP Log – Green Theme, Session-wise)
+
+<p-tabPanel header="PIP Log">
+
+  <!-- ===============================
+       GLOBAL EMPTY STATE
+       =============================== -->
+  <div *ngIf="!hasAnyDocContent()" class="p-mt-3 p-text-center">
+    <i
+      class="pi pi-info-circle"
+      style="font-size:1.5rem;color:#00915a"
+    ></i>
+    <p>No log's has been saved yet.</p>
+  </div>
+
+  <!-- ===============================
+       SESSION BY SESSION
+       =============================== -->
+  <ng-container
+    *ngFor="let _ of checkInSessions.controls; let i = index"
+  >
+
+    <!-- Render ONLY if this session has data -->
+    <div *ngIf="hasDocContent(i)" class="pip-session-card">
+
+      <!-- GREEN SESSION HEADER -->
+      <div class="pip-session-header">
+        {{ getSessionLabel(i) }}
+      </div>
+
+      <!-- SESSION TABLE -->
+      <p-table
+        [value]="[ getSessionJson(i) ]"
+        responsiveLayout="stack"
+        class="pip-log-table p-datatable-sm"
+      >
+
+        <!-- ================= HEADER ================= -->
+        <ng-template pTemplate="header">
+          <tr>
+            <th style="width:30%">Performance Issues</th>
+            <th style="width:35%">Manager Comment</th>
+            <th style="width:35%">Employee Comment</th>
+          </tr>
+        </ng-template>
+
+        <!-- ================= BODY ================= -->
+        <ng-template pTemplate="body" let-row>
+          <tr>
+
+            <!-- PERFORMANCE ISSUES -->
+            <td>
+              <ng-container
+                *ngIf="row.performanceIssues?.length; else noIssues"
+              >
+                <ul class="issue-list">
+                  <li
+                    *ngFor="let issue of row.performanceIssues"
+                  >
+                    {{ issue }}
+                  </li>
+                </ul>
+              </ng-container>
+
+              <ng-template #noIssues>
+                <span class="p-text-muted">—</span>
+              </ng-template>
+            </td>
+
+            <!-- MANAGER COMMENT -->
+            <td>
+              <ng-container
+                *ngIf="row.managerComments?.trim(); else noMgr"
+              >
+                <p class="comment-text">
+                  {{ row.managerComments }}
+                </p>
+              </ng-container>
+
+              <ng-template #noMgr>
+                <span class="p-text-muted">—</span>
+              </ng-template>
+            </td>
+
+            <!-- EMPLOYEE COMMENT -->
+            <td>
+              <ng-container
+                *ngIf="row.employeeComments?.trim(); else noEmp"
+              >
+                <p class="comment-text">
+                  {{ row.employeeComments }}
+                </p>
+              </ng-container>
+
+              <ng-template #noEmp>
+                <span class="p-text-muted">—</span>
+              </ng-template>
+            </td>
+
+          </tr>
+        </ng-template>
+
+        <!-- OPTIONAL EMPTY MESSAGE (SAFE) -->
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="3" class="p-text-center p-mt-2">
+              No documentation for this session.
+            </td>
+          </tr>
+        </ng-template>
+
+      </p-table>
+    </div>
+  </ng-container>
+
+</p-tabPanel>
+
+
+⸻
+
+✅ WHAT THIS FIXES (VISUALLY)
+
+✔ Green session header like Check-Ins
+✔ Card-style grouping per session
+✔ Clean spacing & alignment
+✔ Professional BNP/GCM look
+✔ Mobile friendly
+✔ No logic or API changes
+
+⸻
+
+⚠️ IMPORTANT
+
+Make sure you already added the CSS I gave earlier
+(.pip-session-card, .pip-session-header, .pip-log-table, etc.)
+
+If you want, next I can:
+	•	🔥 Add row hover highlight
+	•	🔥 Match exact Check-Ins spacing
+	•	🔥 Add icons instead of bullets
+	•	🔥 Make print-ready PDF view
+
+Just say “next polish step” 👍
+
+
+
+Got it 👍
+You don’t want logic changes — your HTML structure is fine.
+You want the PIP Log tables to visually match the green GCM-themed “Check-Ins” table, session by session, and look clean, readable, and professional.
+
+Below is a drop-in styling + minimal template polish that keeps your current markup but transforms the look.
+
+⸻
+
+What’s wrong with the current PIP Log look (quick diagnosis)
+
+Right now your PIP Log tables look bad because:
+	1.	❌ No green header bar (like Check-Ins)
+	2.	❌ Table rows blend into background
+	3.	❌ Session title looks disconnected from table
+	4.	❌ Borders & spacing are default PrimeNG (too plain)
+	5.	❌ No visual separation between sessions
+
+We’ll fix all of this with CSS + tiny HTML wrap only.
+
+⸻
+
+✅ Target look (same as Check-Ins)
+
+Each session should look like this:
+
+🟩 Check-In : 19/01/2026 | Kishore, Varun
+────────────────────────────────────
+| Performance Issues | Manager | Employee |
+| • i1               | TESTY   | —        |
+| • i2               |         |          |
+────────────────────────────────────
+
+Green, padded, card-style, clean.
+
+⸻
+
+1️⃣ Wrap EACH session table in a green “card”
+
+🔧 HTML (VERY SMALL change)
+
+Wrap your existing table like this 👇
+(no logic touched)
+
+<div class="pip-session-card">
+  <div class="pip-session-header">
+    {{ getSessionLabel(i) }}
+  </div>
+
+  <p-table
+    [value]="[ getSessionJson(i) ]"
+    responsiveLayout="stack"
+    class="pip-log-table"
+  >
+    ...
+  </p-table>
+</div>
+
+👉 This gives us a green header strip + boxed table, exactly like Check-Ins.
+
+⸻
+
+2️⃣ Apply GCM Green Theme (CSS)
+
+Paste this AS-IS into your component SCSS / CSS:
+
+/* ===============================
+   PIP LOG – GREEN THEME
+   =============================== */
+
+.pip-session-card {
+  border: 1px solid #00915a;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+/* GREEN SESSION HEADER */
+.pip-session-header {
+  background: #00915a; /* GCM green */
+  color: #ffffff;
+  padding: 0.6rem 1rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+/* TABLE BASE */
+.pip-log-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* HEADER ROW */
+.pip-log-table .p-datatable-thead > tr > th {
+  background: #e6f4ef;
+  color: #004d33;
+  font-weight: 600;
+  padding: 0.6rem;
+  border-bottom: 1px solid #b7dfcf;
+}
+
+/* BODY CELLS */
+.pip-log-table .p-datatable-tbody > tr > td {
+  padding: 0.6rem;
+  vertical-align: top;
+  border-bottom: 1px solid #edf3f1;
+}
+
+/* ISSUE LIST */
+.issue-list {
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.issue-list li {
+  font-size: 0.85rem;
+}
+
+/* COMMENTS */
+.comment-text {
+  font-size: 0.85rem;
+  color: #333;
+}
+
+/* EMPTY TEXT */
+.p-text-muted {
+  color: #9aa5a1;
+  font-style: italic;
+}
+
+/* STACK MODE (MOBILE) */
+@media (max-width: 768px) {
+  .pip-log-table .p-datatable-thead {
+    display: none;
+  }
+}
+
+
+⸻
+
+3️⃣ Why this matches your Check-Ins perfectly
+
+✔ Same green tone
+✔ Same card-based grouping
+✔ Same visual hierarchy
+✔ Clean separation per session
+✔ No PrimeNG default ugliness
+✔ Works for any number of sessions
+
+⸻
+
+4️⃣ Result (what you’ll see)
+	•	Each session looks like its own green block
+	•	Easy to scan dates & comments
+	•	Matches BNP / GCM UI language
+	•	No clutter
+	•	Management-ready UI ✅
+
+⸻
+
+Optional polish (tell me if you want)
+
+I can also add:
+	•	✔ Zebra rows (alternate shading)
+	•	✔ Icon bullets instead of dots
+	•	✔ Sticky column headers
+	•	✔ Print-friendly layout
+	•	✔ Read-only “audit log” look
+
+If you want, next I can:
+👉 Apply the same style to PIP Details
+👉 Unify all 3 tabs (Details / Check-Ins / Log)
+
+Just say “apply everywhere” 👍
+
+
+
+
 private getValidSessions(
   raw: any[],
   allowPartial = false
