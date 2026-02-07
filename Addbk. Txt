@@ -1,3 +1,31 @@
+/* PARTICIPANTS COLUMN — force 2-line wrap */
+.session-table td:nth-child(4) .p-inputtext {
+  white-space: normal !important;      /* allow wrapping */
+  word-break: break-word;
+  line-height: 1.4;
+  height: auto;
+
+  /* 🔥 two-line clamp */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Ensure cell can grow vertically */
+.session-table td:nth-child(4) {
+  vertical-align: middle;
+  overflow: visible;
+}
+
+/* Keep input sizing correct */
+.session-table .p-inputtext {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+
+
 /* Participants column: allow wrapping instead of clipping */
 .session-table td:nth-child(4) .p-inputtext {
   white-space: normal !important;     /* allow wrap */
