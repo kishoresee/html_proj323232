@@ -1,3 +1,9 @@
+.session-table input[readonly] {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
 /* Fix participants text getting hidden */
 .session-table td {
   overflow: visible;
