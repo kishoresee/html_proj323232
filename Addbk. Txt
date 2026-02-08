@@ -1,3 +1,8 @@
+So, given the supporting documentation, I have added a supporting documentation doc library in my SharePoint. Now, I have given all the components of HTML and a service component. I want to add this supporting document. I want to get the file attachment from the user below the performance issue section in the PIP details tab. And I want to store them in this supporting documentation library. And how to do that and what are the modifications should I do in this HTML and service component and then PIP.ts. Give correctly and correct modifications with minimal fix. And I want the clear and bug-free code. And I want to store and then this supporting file attachment which is required for each and every PIP submission.
+
+
+
+
 /* PARTICIPANTS COLUMN — force 2-line wrap */
 .session-table td:nth-child(4) .p-inputtext {
   white-space: normal !important;      /* allow wrapping */
