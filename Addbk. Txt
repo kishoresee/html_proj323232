@@ -1,3 +1,12 @@
+areCommentButtonsDisabled(): boolean {
+  const sessCtrl = this.checkInSessions?.at(this.activeSessionIndex);
+  if (!sessCtrl) return false;
+
+  return sessCtrl.get('sessionCommentStatus')?.value === 'Submitted';
+}
+
+
+
 This is a good bug — it means your save is correct, but your open / patch flow is incomplete.
 Nothing is “random” here. There are two very specific reasons why Draft & Submit are still visible.
 
