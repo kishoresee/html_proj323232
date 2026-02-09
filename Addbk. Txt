@@ -1,3 +1,184 @@
+This is a good bug — it means your save is correct, but your open / patch flow is incomplete.
+Nothing is “random” here. There are two very specific reasons why Draft & Submit are still visible.
+
+I’ll be very precise and minimal.
+
+⸻
+
+🔴 Why this is happening (root cause)
+
+You already submitted → SharePoint row has:
+
+SessionCommentStatus = "Submitted"
+
+BUT when you open the popup, one (or both) of these is happening:
+
+⸻
+
+❌ Root cause #1 (MAIN ISSUE)
+
+You are NOT patching sessionCommentStatus into the row FormGroup when opening the popup
+
+So inside Angular:
+
+rowCtrl.get('sessionCommentStatus').value === null
+
+Your helper then does:
+
+const status = ctrlVal ?? rawVal ?? this.DRAFT;
+
+Since both are missing → it defaults to Draft
+➡️ Buttons stay enabled.
+
+SharePoint has the value,
+Angular form DOES NOT.
+
+⸻
+
+❌ Root cause #2 (SECONDARY ISSUE)
+
+You are doing this after submit:
+
+sessCtrl.disable({ emitEvent: false });
+
+When a FormGroup is disabled:
+	•	.value becomes null
+	•	.get('sessionCommentStatus')?.value becomes null
+
+So unless you read getRawValue(), Angular thinks status is empty.
+
+You already handled this correctly in your helper 👍
+But only if the value was patched in the first place.
+
+⸻
+
+✅ The FIX (MINIMAL & CORRECT)
+
+You do NOT need to change save logic.
+You do NOT need service changes.
+
+You only need to fix OPEN / PATCH logic.
+
+⸻
+
+✅ STEP 1: Patch sessionCommentStatus when opening popup
+
+Find your openSessionPopup(i: number) method.
+
+You MUST have something like this:
+
+openSessionPopup(i: number): void {
+  this.activeSessionIndex = i;
+  const rowCtrl = this.checkInSessions.at(i);
+
+  this.sessionPopupForm.patchValue({
+    managerComments: ...,
+    employeeComments: ...,
+    performanceIssues: ...
+  });
+
+  this.showSessionDialog = true;
+}
+
+🔴 Add THIS ONE LINE (THIS IS THE KEY)
+
+this.sessionPopupForm.patchValue({
+  commentStatus: rowCtrl.getRawValue().sessionCommentStatus
+});
+
+✅ FULL minimal fix:
+
+openSessionPopup(i: number): void {
+  this.activeSessionIndex = i;
+
+  const rowCtrl = this.checkInSessions.at(i);
+
+  this.sessionPopupForm.patchValue({
+    managerComments: rowCtrl.getRawValue().managerComments,
+    employeeComments: rowCtrl.getRawValue().employeeComments,
+    performanceIssues: rowCtrl.getRawValue().performanceIssues,
+
+    // 🔥 THIS LINE FIXES EVERYTHING
+    commentStatus: rowCtrl.getRawValue().sessionCommentStatus
+  });
+
+  this.showSessionDialog = true;
+}
+
+
+⸻
+
+✅ STEP 2: Ensure the FormControl exists (quick check)
+
+In your popup form builder, you must have:
+
+commentStatus: ['Draft']
+
+If not, Angular silently ignores patching.
+
+⸻
+
+✅ STEP 3: Your helper is already correct (no change)
+
+This method is perfect — do not touch it:
+
+public areCommentButtonsDisabled(): boolean {
+  if (this.activeSessionIndex === undefined || this.activeSessionIndex === null) {
+    return false;
+  }
+
+  const rowCtrl = this.checkInSessions.at(this.activeSessionIndex) as FormGroup;
+
+  const ctrlVal = rowCtrl.get('sessionCommentStatus')?.value;
+  const rawVal = rowCtrl.getRawValue()?.sessionCommentStatus;
+
+  const status = ctrlVal ?? rawVal ?? this.DRAFT;
+
+  return status === this.SUBMITTED;
+}
+
+
+⸻
+
+🧪 After this fix, what happens
+
+Scenario	Result
+Submitted earlier	Draft & Submit ❌ disabled
+Reload page	❌ disabled
+Reopen popup	❌ disabled
+Draft session	✅ enabled
+
+Exactly what you want.
+
+⸻
+
+🧠 Mental model (important)
+	•	Save → writes to SharePoint ✔
+	•	Reopen → MUST rehydrate Angular form from SharePoint ✔
+	•	Angular does not auto-sync DB → form
+	•	If you don’t patch → Angular assumes “Draft”
+
+This is why it looked “wrong”.
+
+⸻
+
+✅ Summary (one-line fix)
+
+You saved the status correctly, but never patched it back into the popup form when reopening.
+
+Add one patch line in openSessionPopup() → issue gone.
+
+⸻
+
+If you want next:
+	•	hide buttons instead of disable
+	•	show “Submitted (locked)” badge
+	•	make textarea readonly
+	•	allow HRBP override
+
+Just say 👍
+
+
 Got it 👍 You don’t want to disturb the existing save logic, no status changes, no workflow changes — just split the action into two buttons: Save as Draft and Submit, with minimal, safe changes.
 
 Below is the cleanest way to do this without breaking what’s already working.
