@@ -1,3 +1,21 @@
+.doc-actions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+/* Make icon buttons compact */
+.doc-actions .p-button {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+}
+
+.doc-actions .p-button .pi {
+  font-size: 0.75rem;
+}
+
+
+
 Perfect, this is pure UI polish, not logic 👍
 You already have the data right — we’ll just present it cleanly and professionally.
 
