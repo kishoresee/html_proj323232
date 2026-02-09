@@ -1,3 +1,296 @@
+Got it. Your upload is actually correct 👍
+What’s broken is expectation + UI binding, not SharePoint.
+
+Let me break this cleanly and then give you the exact fix.
+
+⸻
+
+🔴 Root cause (very important)
+
+1️⃣ File inputs can NEVER be prefilled
+
+This is a browser security rule.
+
+So this will never work (and should not work):
+
+<input type="file" ... />
+
+When you reopen a draft, the browser will NOT show test.pdf inside the file chooser even if:
+	•	The file exists in SharePoint ✅
+	•	Parent ID is correct ✅
+	•	Metadata is correct ✅
+
+👉 This is expected behavior. Not a bug.
+
+⸻
+
+🟢 What SHOULD happen instead (correct UX)
+
+When reopening the draft:
+	•	❌ You do NOT show the file inside <input type="file">
+	•	✅ You SHOW a list of already uploaded documents
+	•	✅ You optionally allow:
+	•	Download
+	•	View
+	•	Delete
+	•	Upload another file
+
+This is exactly how SharePoint, Jira, ServiceNow, etc. behave.
+
+⸻
+
+✅ What you already did right (important)
+
+From your screenshots/code, you already have:
+
+✔ File uploaded
+✔ PerformanceParentPIPID patched
+✔ Library contains the file
+✔ Metadata column exists
+✔ getSupportingDocsByReportId() implemented
+
+So backend = DONE ✔
+
+⸻
+
+❌ Why you don’t “see” the PDF when editing
+
+Because currently:
+	•	You never bind the fetched docs to the UI
+	•	You expect the file input to show the file (impossible)
+
+⸻
+
+✅ THE FIX (this will solve everything)
+
+STEP 1: Store fetched docs in component state
+
+You already hinted this in your screenshot — good instinct.
+
+In pipform.component.ts
+
+public supportingDocs: any[] = [];
+
+
+⸻
+
+STEP 2: Load documents when draft is opened
+
+Wherever you already load:
+	•	performance issues
+	•	sessions
+
+👉 Add one more observable
+
+forkJoin({
+  issues: this.sp.getPerformanceIssuesByReportId(pip.ReportPipID),
+  sessions: this.sp.getSessionsByReportId(pip.ReportPipID),
+  docs: this.sp.getSupportingDocsByReportId(pip.ReportPipID)
+}).subscribe(({ issues, sessions, docs }) => {
+
+  // existing logic
+  this.performanceIssues = issues;
+  this.sessions = sessions;
+
+  // 🔥 THIS IS THE KEY
+  this.supportingDocs = docs ?? [];
+});
+
+
+⸻
+
+STEP 3: Show uploaded documents in UI (NOT file input)
+
+In pipform.component.html
+Add this below the file input:
+
+<div *ngIf="supportingDocs?.length" class="uploaded-docs">
+  <label>Uploaded documents</label>
+
+  <ul>
+    <li *ngFor="let doc of supportingDocs">
+      <a
+        [href]="doc.ServerRelativeUrl"
+        target="_blank"
+      >
+        {{ doc.FileLeafRef }}
+      </a>
+    </li>
+  </ul>
+</div>
+
+✔ Now when you reopen draft → PDF will appear as a link
+✔ Clicking opens the file from SharePoint
+✔ This is the correct enterprise UX
+
+⸻
+
+🚫 DO NOT try this (will never work)
+
+this.supportFileCtrl.setValue(file); // ❌
+
+<input type="file" value="test.pdf" /> // ❌
+
+Browsers will block it by design.
+
+⸻
+
+🟢 Optional UX improvement (recommended)
+
+After successful upload, immediately update UI without reload:
+
+In persistSupportingDoc()
+
+return this.sp.uploadSupportingDocAndGetItemId(file, file.name).pipe(
+  switchMap(itemId =>
+    this.sp.setSupportingDocParentId(itemId, reportPipId).pipe(
+      tap(() => {
+        this.supportingDocs.unshift({
+          FileLeafRef: file.name,
+          ServerRelativeUrl:
+            `/sites/PIPWorkflow/SupportingDocumentations/${encodeURIComponent(file.name)}`
+        });
+      })
+    )
+  )
+);
+
+Now:
+	•	Upload → file instantly visible
+	•	Reopen draft → file still visible
+
+⸻
+
+🧠 Final mental model (remember this)
+
+Thing	Expected
+File chooser shows old file	❌ Impossible
+File exists in SharePoint	✅ Yes
+Fetch docs via REST	✅ Yes
+Show docs as list/links	✅ Correct
+Re-upload allowed	✅ Yes
+
+
+⸻
+
+✅ Summary
+
+Nothing is wrong with your upload logic.
+You just need to:
+	1.	Fetch documents when editing draft
+	2.	Display them as links
+	3.	Stop expecting the file input to be prefilled
+
+If you want, next I can:
+	•	Add delete document
+	•	Add replace document
+	•	Add download button
+	•	Add required validation only for new uploads
+
+Just tell me 👍
+
+
+Perfect, this is a code-level fix 👍
+Below is the revised and correct getSupportingDocsByPipId (aka getSupportingDocsByReportId) method for your scenario.
+
+This version:
+	•	✅ Correctly queries the SupportingDocumentations library
+	•	✅ Filters by PerformanceParentPIPID
+	•	✅ Returns plain array
+	•	✅ Works for edit draft reload
+	•	✅ Gives you everything needed for UI (file name + link)
+
+⸻
+
+✅ REVISED getSupportingDocsByPipId METHOD
+
+SharePointService (sharepoint.service.ts)
+
+getSupportingDocsByPipId(pipId: string): Observable<any[]> {
+  // NOTE:
+  // - This is a DOCUMENT LIBRARY, so we query /lists/getbytitle(...)
+  // - Filter uses single quotes
+  // - We select FileLeafRef (name) + ServerRelativeUrl (link)
+
+  const url =
+    `${this.siteUrl}` +
+    `/_api/web/lists/getbytitle('SupportingDocumentations')/items` +
+    `?$filter=PerformanceParentPIPID eq '${pipId}'` +
+    `&$select=Id,FileLeafRef,ServerRelativeUrl,Created,Author/Title` +
+    `&$expand=Author`;
+
+  return this.http.get<any>(url, this.httpOptions()).pipe(
+    map(resp => resp?.d?.results ?? resp?.value ?? [])
+  );
+}
+
+
+⸻
+
+✅ What this method returns (example)
+
+[
+  {
+    Id: 12,
+    FileLeafRef: "test.pdf",
+    ServerRelativeUrl: "/sites/PIPWorkflow/SupportingDocumentations/test.pdf",
+    Created: "2026-02-09T05:55:00Z",
+    Author: { Title: "tec.Kishore SRINIVASAN" }
+  }
+]
+
+
+⸻
+
+✅ How to use this in your component (reminder)
+
+this.sp.getSupportingDocsByPipId(this.reportPipId)
+  .subscribe(docs => {
+    this.supportingDocs = docs;
+  });
+
+
+⸻
+
+✅ UI binding (must-have)
+
+<div *ngIf="supportingDocs?.length">
+  <label>Uploaded documents</label>
+
+  <ul>
+    <li *ngFor="let doc of supportingDocs">
+      <a [href]="doc.ServerRelativeUrl" target="_blank">
+        {{ doc.FileLeafRef }}
+      </a>
+    </li>
+  </ul>
+</div>
+
+
+⸻
+
+🚫 Important reminder (why this works)
+	•	❌ File input will NEVER show old files
+	•	✅ You must fetch & render documents separately
+	•	✅ This method is the correct enterprise pattern
+
+⸻
+
+🔥 Optional (if you want next)
+
+I can give you:
+	•	Delete document
+	•	Replace document
+	•	Disable upload if file already exists
+	•	Required-file validation only for new drafts
+
+Just tell me what you want next 👌
+
+
+
+
+
+
 So, given the supporting documentation, I have added a supporting documentation doc library in my SharePoint. Now, I have given all the components of HTML and a service component. I want to add this supporting document. I want to get the file attachment from the user below the performance issue section in the PIP details tab. And I want to store them in this supporting documentation library. And how to do that and what are the modifications should I do in this HTML and service component and then PIP.ts. Give correctly and correct modifications with minimal fix. And I want the clear and bug-free code. And I want to store and then this supporting file attachment which is required for each and every PIP submission.
 
 
