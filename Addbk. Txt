@@ -1,3 +1,105 @@
+Perfect, this is a code-level fix 👍
+Below is the revised and correct getSupportingDocsByPipId (aka getSupportingDocsByReportId) method for your scenario.
+
+This version:
+	•	✅ Correctly queries the SupportingDocumentations library
+	•	✅ Filters by PerformanceParentPIPID
+	•	✅ Returns plain array
+	•	✅ Works for edit draft reload
+	•	✅ Gives you everything needed for UI (file name + link)
+
+⸻
+
+✅ REVISED getSupportingDocsByPipId METHOD
+
+SharePointService (sharepoint.service.ts)
+
+getSupportingDocsByPipId(pipId: string): Observable<any[]> {
+  // NOTE:
+  // - This is a DOCUMENT LIBRARY, so we query /lists/getbytitle(...)
+  // - Filter uses single quotes
+  // - We select FileLeafRef (name) + ServerRelativeUrl (link)
+
+  const url =
+    `${this.siteUrl}` +
+    `/_api/web/lists/getbytitle('SupportingDocumentations')/items` +
+    `?$filter=PerformanceParentPIPID eq '${pipId}'` +
+    `&$select=Id,FileLeafRef,ServerRelativeUrl,Created,Author/Title` +
+    `&$expand=Author`;
+
+  return this.http.get<any>(url, this.httpOptions()).pipe(
+    map(resp => resp?.d?.results ?? resp?.value ?? [])
+  );
+}
+
+
+⸻
+
+✅ What this method returns (example)
+
+[
+  {
+    Id: 12,
+    FileLeafRef: "test.pdf",
+    ServerRelativeUrl: "/sites/PIPWorkflow/SupportingDocumentations/test.pdf",
+    Created: "2026-02-09T05:55:00Z",
+    Author: { Title: "tec.Kishore SRINIVASAN" }
+  }
+]
+
+
+⸻
+
+✅ How to use this in your component (reminder)
+
+this.sp.getSupportingDocsByPipId(this.reportPipId)
+  .subscribe(docs => {
+    this.supportingDocs = docs;
+  });
+
+
+⸻
+
+✅ UI binding (must-have)
+
+<div *ngIf="supportingDocs?.length">
+  <label>Uploaded documents</label>
+
+  <ul>
+    <li *ngFor="let doc of supportingDocs">
+      <a [href]="doc.ServerRelativeUrl" target="_blank">
+        {{ doc.FileLeafRef }}
+      </a>
+    </li>
+  </ul>
+</div>
+
+
+⸻
+
+🚫 Important reminder (why this works)
+	•	❌ File input will NEVER show old files
+	•	✅ You must fetch & render documents separately
+	•	✅ This method is the correct enterprise pattern
+
+⸻
+
+🔥 Optional (if you want next)
+
+I can give you:
+	•	Delete document
+	•	Replace document
+	•	Disable upload if file already exists
+	•	Required-file validation only for new drafts
+
+Just tell me what you want next 👌
+
+
+
+
+
+
+
 Got it. Your upload is actually correct 👍
 What’s broken is expectation + UI binding, not SharePoint.
 
