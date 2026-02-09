@@ -1,3 +1,155 @@
+Perfect, this is the same UI problem, just for the file input itself.
+The default browser Choose File / No file chosen looks cheap — we’ll replace it with a PrimeNG-style attachment UI that matches what you already did for uploaded files.
+
+I’ll give you a drop-in solution (minimal logic change, mostly HTML + CSS).
+
+⸻
+
+🎯 Target look (what we’re building)
+
+Supporting documentation (required)
+
+[ 📎 Attach file ]   test.pdf
+
+	•	❌ No native “Choose File / No file chosen”
+	•	✔ PrimeNG-style button
+	•	✔ Selected file name shown nicely
+	•	✔ Same visual language as uploaded-doc list
+	•	✔ Clean, enterprise HR look
+
+⸻
+
+1️⃣ Replace the native <input type="file"> UI
+
+✅ HTML (replace only this section)
+
+<div
+  *ngIf="pipForm.get('status')?.value === PipStatus.Draft"
+  class="p-field support-upload"
+>
+  <label>Supporting documentation (required)</label>
+
+  <!-- Hidden native input -->
+  <input
+    type="file"
+    #fileInput
+    accept=".pdf,.doc,.docx,.xlsx,.png,.jpg,.jpeg,.txt"
+    (change)="onSupportFileSelected($event)"
+    [disabled]="isViewMode"
+    hidden
+  />
+
+  <!-- Custom upload row -->
+  <div class="upload-row">
+    <button
+      pButton
+      type="button"
+      icon="pi pi-paperclip"
+      label="Attach file"
+      class="p-button-outlined p-button-sm"
+      (click)="fileInput.click()"
+      [disabled]="isViewMode"
+    ></button>
+
+    <span
+      class="selected-file"
+      *ngIf="supportFileCtrl?.value"
+      title="{{ supportFileCtrl.value?.name }}"
+    >
+      <i class="pi pi-file doc-icon"></i>
+      {{ supportFileCtrl.value?.name }}
+    </span>
+  </div>
+
+  <!-- Validation -->
+  <small
+    class="p-error"
+    *ngIf="supportFileCtrl?.invalid && supportFileCtrl?.touched"
+  >
+    Please attach a file
+  </small>
+</div>
+
+
+⸻
+
+2️⃣ CSS (matches your uploaded-doc styling)
+
+Add this to pipform.component.css
+
+/* Upload container */
+.support-upload label {
+  font-weight: 500;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+/* Upload row layout */
+.upload-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+/* Selected file name */
+.selected-file {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  color: #374151;
+}
+
+/* File icon */
+.selected-file .doc-icon {
+  font-size: 1rem;
+  color: #dc2626; /* PDF-style red */
+}
+
+
+⸻
+
+3️⃣ Resulting UX (important)
+
+Before	After
+❌ Browser default input	✔ PrimeNG button
+❌ “No file chosen”	✔ Clean filename
+❌ Visual mismatch	✔ Matches uploaded-doc list
+❌ Ugly	✔ HR-system quality
+
+
+⸻
+
+4️⃣ Why this is the right approach
+	•	Native file input is hidden (best practice)
+	•	Button triggers file picker
+	•	Selected file is shown explicitly
+	•	Same styling philosophy as:
+	•	uploaded documents
+	•	icon-only actions
+	•	No backend or validation logic changed
+
+⸻
+
+🔥 Optional polish (tell me if you want)
+	•	show file size (245 KB)
+	•	replace generic icon with PDF / DOC / XLS detection
+	•	add ❌ remove selected file before upload
+	•	animate upload progress bar
+
+⸻
+
+✅ Bottom line
+
+You now have consistent, clean, PrimeNG-styled file upload + file list, with zero UX debt.
+
+If you want, next we can merge selected-file + uploaded-file into one unified list (very professional).
+
+
+
+
+
 Perfect, this is a PrimeNG button skin issue, not layout 👍
 You’re seeing the default blue background because p-button is still rendering as a button.
 What you want is icon-only (no background, no square), just the icon in black.
