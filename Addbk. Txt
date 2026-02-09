@@ -1,3 +1,116 @@
+Perfect, this is a PrimeNG button skin issue, not layout 👍
+You’re seeing the default blue background because p-button is still rendering as a button.
+What you want is icon-only (no background, no square), just the icon in black.
+
+We’ll fix this cleanly and minimally.
+
+⸻
+
+✅ What you want (final behavior)
+	•	❌ No blue square
+	•	❌ No button background
+	•	✔ Only the download icon
+	•	✔ Icon is black
+	•	✔ Still clickable
+	•	✔ Same for ❌ close icon
+
+⸻
+
+1️⃣ Change the HTML (very small change)
+
+🔁 Update your download & delete buttons like this
+
+<p-button
+  icon="pi pi-download"
+  class="doc-icon-btn"
+  title="Download"
+  (onClick)="downloadDoc(doc)"
+></p-button>
+
+<p-button
+  icon="pi pi-times"
+  class="doc-icon-btn"
+  title="Remove"
+  (onClick)="deleteDoc(doc)"
+  [disabled]="isViewMode || isSubmitted"
+></p-button>
+
+👉 We’ll control everything via CSS now.
+
+⸻
+
+2️⃣ Add THIS CSS (this is the key)
+
+Put this in pipform.component.css
+
+/* Icon-only buttons (no background, no box) */
+.doc-icon-btn {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  min-width: unset !important;
+}
+
+/* Icon styling */
+.doc-icon-btn .pi {
+  font-size: 0.9rem;
+  color: #000; /* black icon */
+}
+
+/* Hover effect (optional, subtle) */
+.doc-icon-btn:hover .pi {
+  color: #374151; /* dark gray */
+}
+
+/* Disabled state */
+.doc-icon-btn:disabled .pi {
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+
+⸻
+
+3️⃣ (Optional but recommended) Tighten spacing near filename
+
+.doc-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+
+⸻
+
+✅ Final visual result
+
+test.pdf   ⬇︎   ✕
+
+	•	✔ No blue box
+	•	✔ No square
+	•	✔ Clean black icons
+	•	✔ Looks like a professional attachment list
+	•	✔ Matches enterprise HR UI patterns
+
+⸻
+
+🔍 Why this works
+	•	PrimeNG styles are overridden only for these buttons
+	•	background, border, box-shadow removed
+	•	Icon color controlled directly
+	•	No impact on other buttons in the app
+
+⸻
+
+If you want next-level polish:
+	•	icons appear only on hover
+	•	tooltip animation
+	•	confirmation popup for delete
+
+Just say 👍
+
+
 .doc-actions {
   display: flex;
   gap: 0.25rem;
