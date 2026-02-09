@@ -1,3 +1,178 @@
+Got it 👍 You don’t want to disturb the existing save logic, no status changes, no workflow changes — just split the action into two buttons: Save as Draft and Submit, with minimal, safe changes.
+
+Below is the cleanest way to do this without breaking what’s already working.
+
+⸻
+
+What you already have (good news)
+
+✔ Your saveSessionPopup() is idempotent
+→ It already handles:
+	•	create vs update
+	•	overwrite comments on re-save
+	•	SharePoint payload
+	•	UI sync
+
+So we will reuse it.
+We will not duplicate logic.
+
+⸻
+
+Core idea (minimal & safe)
+	1.	Keep saveSessionPopup() exactly as-is
+	2.	Add one optional flag to indicate submit vs draft
+	3.	Add two buttons in HTML
+	4.	Add one tiny wrapper method for submit
+
+No backend changes.
+No status field touched.
+
+⸻
+
+Step 1: Modify saveSessionPopup signature (MINIMAL)
+
+Change this:
+
+saveSessionPopup(): void {
+
+To this:
+
+saveSessionPopup(isSubmit: boolean = false): void {
+
+⚠️ Nothing else breaks because default is false.
+
+⸻
+
+Step 2: After successful save, branch behavior
+
+Find this block (inside subscribe -> next):
+
+this.showSessionDialog = false;
+this.fireAlert('Comments saved for this session.', 'success');
+
+Replace it with this:
+
+this.showSessionDialog = false;
+
+if (isSubmit) {
+  this.fireAlert('Session submitted successfully.', 'success');
+} else {
+  this.fireAlert('Draft saved for this session.', 'success');
+}
+
+✅ No status change
+✅ No API change
+✅ Only UI messaging difference
+
+⸻
+
+Step 3: Add a wrapper method for Submit (clean separation)
+
+Add below your save method:
+
+submitSessionPopup(): void {
+  // reuse the SAME logic
+  this.saveSessionPopup(true);
+}
+
+That’s it.
+No duplication.
+
+⸻
+
+Step 4: Update HTML – two buttons instead of one
+
+❌ Remove this
+
+<button
+  pButton
+  type="button"
+  label="Save"
+  severity="primary"
+  (click)="saveSessionPopup()"
+  [disabled]="sessionPopupForm.invalid">
+</button>
+
+
+⸻
+
+✅ Add this (two buttons)
+
+<!-- Save Draft -->
+<button
+  pButton
+  type="button"
+  label="Save Draft"
+  class="p-button-secondary"
+  (click)="saveSessionPopup(false)"
+  [disabled]="sessionPopupForm.invalid">
+</button>
+
+<!-- Submit -->
+<button
+  pButton
+  type="button"
+  label="Submit"
+  severity="primary"
+  (click)="submitSessionPopup()"
+  [disabled]="sessionPopupForm.invalid">
+</button>
+
+🎯 Same validation
+🎯 Same payload
+🎯 Same API
+🎯 Just two actions
+
+⸻
+
+Step 5: What happens now (behavior clarity)
+
+Save Draft
+	•	Updates/creates session
+	•	Overwrites comments if edited
+	•	Keeps dialog logic intact
+	•	Shows “Draft saved”
+
+Submit
+	•	Uses exact same save
+	•	No status change
+	•	No backend flag
+	•	Shows “Submitted successfully”
+	•	Ready for future workflow if needed
+
+⸻
+
+Why this is the BEST minimal fix
+
+✔ Zero breaking changes
+✔ Zero duplication
+✔ Easy to extend later (status, workflow, email, etc.)
+✔ Fully backward-compatible
+✔ Clean UX separation
+
+⸻
+
+Optional (ONLY if you want later)
+
+Later, if product asks:
+	•	“Disable editing after submit”
+	•	“Lock comments”
+	•	“Change status”
+
+You already have the hook (isSubmit) — no refactor needed.
+
+⸻
+
+If you want, next I can:
+	•	Add confirmation popup for Submit
+	•	Disable submit until mandatory comments are filled
+	•	Visually differentiate Draft vs Submitted rows
+	•	Auto-save draft on dialog close
+
+Just say the word 👌
+
+
+
 downloadDoc(doc: any): void {
   fetch(doc.FileRef, { credentials: 'include' })
     .then(res => {
