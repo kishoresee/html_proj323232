@@ -1,3 +1,12 @@
+public get hasSupportingDoc(): boolean {
+  return !!this.supportFileCtrl?.value || (this.supportingDocs?.length ?? 0) > 0;
+}
+
+
+
+
+
+
 areCommentButtonsDisabled(): boolean {
   const sessCtrl = this.checkInSessions?.at(this.activeSessionIndex);
   if (!sessCtrl) return false;
