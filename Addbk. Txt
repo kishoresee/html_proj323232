@@ -1,3 +1,119 @@
+Got it — this is simple, clean, and very important for correctness.
+You already have all the data you need 👍
+
+I’ll give you two versions, pick the one that matches your rule.
+
+⸻
+
+✅ What exactly do you want?
+
+“Submit to HRBP” should be enabled ONLY if at least one file is uploaded
+
+Important distinction:
+	•	❌ NOT “file chosen in file input”
+	•	✅ YES “file already uploaded & exists in SharePoint”
+
+You already solved uploads → so we’ll rely on supportingDocs.
+
+⸻
+
+✅ RECOMMENDED SOLUTION (Correct Business Logic)
+
+✔ Enable submit only if at least one uploaded document exists
+
+pipform.component.ts
+
+public get hasUploadedSupportingDoc(): boolean {
+  return Array.isArray(this.supportingDocs) && this.supportingDocs.length > 0;
+}
+
+
+⸻
+
+Use it in HTML
+
+<button
+  type="button"
+  class="p-button p-button-success"
+  [disabled]="!hasUploadedSupportingDoc || isViewMode"
+>
+  Submit to HRBP
+</button>
+
+✔ Works for:
+	•	New draft
+	•	Edit draft
+	•	Page refresh
+	•	Reload
+	•	Multiple uploads
+
+✔ Survives browser refresh
+✔ No dependency on file input (important)
+
+⸻
+
+❌ WHAT NOT TO DO (common mistake)
+
+this.supportFileCtrl.value // ❌ WRONG
+
+Why?
+	•	File input resets on reload
+	•	Browser security
+	•	Does NOT reflect uploaded files
+
+⸻
+
+🟡 OPTIONAL: If you want to allow submit when file is selected OR already uploaded
+
+(Some teams want this)
+
+public get canSubmitWithDoc(): boolean {
+  const fileSelected = !!this.supportFileCtrl?.value;
+  const alreadyUploaded = this.supportingDocs?.length > 0;
+
+  return fileSelected || alreadyUploaded;
+}
+
+HTML:
+
+[disabled]="!canSubmitWithDoc"
+
+
+⸻
+
+🧠 Final Rule of Thumb (remember this)
+
+Scenario	Correct Check
+Draft reload	supportingDocs.length
+File input value	❌ unreliable
+Enterprise validation	Uploaded docs only
+
+
+⸻
+
+✅ TL;DR (use this)
+
+get hasUploadedSupportingDoc(): boolean {
+  return this.supportingDocs?.length > 0;
+}
+
+[disabled]="!hasUploadedSupportingDoc"
+
+
+⸻
+
+If you want next, I can:
+	•	Block submit until file upload finishes
+	•	Show validation message (“Please upload supporting document”)
+	•	Make upload mandatory only for Submit, not Draft
+	•	Prevent submit if deleted last file
+
+Just tell me 👌
+
+
+
+
+
 Perfect 👌 — you’re at the last 10% polish stage now.
 What you want is exactly the standard SharePoint-style attachment UX:
 	•	📄 File name (click → open)
