@@ -1,3 +1,146 @@
+Good catch — this error is 100% real, and now we’re at the exact SharePoint gotcha that bites everyone 😮‍💨
+The good news: your understanding was right, the fix is simple and precise.
+
+⸻
+
+🔴 The real reason for the error
+
+ServerRelativeUrl is NOT a field on the LIST ITEM.
+
+That’s why SharePoint is throwing:
+
+"The field or property 'ServerRelativeUrl' does not exist."
+
+Important distinction (this is the key)
+
+Thing	Belongs to
+FileLeafRef	✔ List item field
+FileRef	✔ List item field
+ServerRelativeUrl	❌ NOT on list item
+File/ServerRelativeUrl	✔ On File object
+
+So when you do:
+
+$select=FileLeafRef,ServerRelativeUrl
+
+❌ SharePoint fails
+Because ServerRelativeUrl lives under File, not the item.
+
+⸻
+
+✅ The CORRECT ways to fix it (2 valid options)
+
+✅ OPTION 1 (RECOMMENDED): Use FileRef
+
+This is the simplest and safest approach.
+
+FileRef already IS the server-relative URL.
+
+✔ Correct REST query
+
+/_api/web/lists/getbytitle('SupportingDocumentations')/items
+?$filter=PerformanceParentPIPID eq 'PIP-2026-c91684'
+&$select=Id,FileLeafRef,FileRef,Created,Author/Title
+&$expand=Author
+
+
+⸻
+
+✅ OPTION 2: Expand the File object
+
+Use this only if you explicitly want the File object.
+
+$select=FileLeafRef,File/ServerRelativeUrl
+&$expand=File
+
+This is more verbose, not needed here.
+
+⸻
+
+✅ FINAL FIXED METHOD (USE THIS)
+
+sharepoint.service.ts
+
+getSupportingDocsByPipId(pipId: string): Observable<any[]> {
+  const url =
+    `${this.siteUrl}` +
+    `/_api/web/lists/getbytitle('SupportingDocumentations')/items` +
+    `?$filter=PerformanceParentPIPID eq '${pipId}'` +
+    `&$select=Id,FileLeafRef,FileRef,Created,Author/Title` +
+    `&$expand=Author`;
+
+  return this.http.get<any>(url, this.httpOptions()).pipe(
+    map(resp => resp?.d?.results ?? resp?.value ?? [])
+  );
+}
+
+
+⸻
+
+✅ UI usage (update this!)
+
+Since we now use FileRef:
+
+<ul>
+  <li *ngFor="let doc of supportingDocs">
+    <a [href]="doc.FileRef" target="_blank">
+      {{ doc.FileLeafRef }}
+    </a>
+  </li>
+</ul>
+
+✔ Works
+✔ Opens PDF
+✔ No REST error
+✔ Clean
+
+⸻
+
+🧠 Mental model (remember forever)
+	•	List item → metadata
+	•	File object → binary + server URL
+	•	FileRef = already what you want 90% of the time
+	•	ServerRelativeUrl ≠ direct list field
+
+⸻
+
+🔍 Why your earlier error message was actually helpful
+
+SharePoint literally told you the truth:
+
+"ServerRelativeUrl does not exist"
+
+It meant:
+
+“…on THIS object you are querying”
+
+Not:
+
+“…in the library”
+
+⸻
+
+✅ Summary
+
+✔ Upload logic = correct
+✔ Metadata = correct
+✔ Parent ID = correct
+❌ Field selection = slightly wrong
+✅ Fixed by switching to FileRef
+
+⸻
+
+If you want next, I can:
+	•	Add delete document
+	•	Prevent duplicate uploads
+	•	Support multiple files
+	•	Add icons by file type
+	•	Make document upload mandatory only for new drafts
+
+Just say the word 👌
+
+
+
 Perfect, this is a code-level fix 👍
 Below is the revised and correct getSupportingDocsByPipId (aka getSupportingDocsByReportId) method for your scenario.
 
