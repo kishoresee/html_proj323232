@@ -1,3 +1,10 @@
+downloadDoc(doc: any): void {
+  const downloadUrl = `${doc.FileRef}?download=1`;
+  window.open(downloadUrl, '_blank');
+}
+
+
+
 Got it — this is simple, clean, and very important for correctness.
 You already have all the data you need 👍
 
