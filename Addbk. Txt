@@ -1,3 +1,163 @@
+Perfect, this is pure UI polish, not logic 👍
+You already have the data right — we’ll just present it cleanly and professionally.
+
+I’ll give you a PrimeNG-friendly solution + minimal CSS, exactly matching what you asked:
+
+📄 File name a bit bigger
+⬇️ Small download icon next to it
+❌ Small close icon aligned properly
+Clean, enterprise-grade look
+
+⸻
+
+✅ Target layout (what we’re building)
+
+📄  test.pdf        ⬇️   ❌
+
+	•	File name = clickable, slightly larger
+	•	Buttons = icon-only, compact, aligned horizontally
+	•	Looks like a proper “uploaded file chip”, not random icons
+
+⸻
+
+1️⃣ Update ONLY the HTML for uploaded documents
+
+🔁 Replace your <li> content with this
+
+<li *ngFor="let doc of supportingDocs" class="doc-item">
+  <div class="doc-row">
+    <!-- File name -->
+    <a
+      [href]="doc.FileRef"
+      target="_blank"
+      class="doc-name"
+      title="Open file"
+    >
+      <i class="pi pi-file-pdf doc-icon"></i>
+      {{ doc.FileLeafRef }}
+    </a>
+
+    <!-- Actions -->
+    <div class="doc-actions">
+      <p-button
+        icon="pi pi-download"
+        class="p-button-rounded p-button-text p-button-sm"
+        title="Download"
+        (onClick)="downloadDoc(doc)"
+      ></p-button>
+
+      <p-button
+        icon="pi pi-times"
+        class="p-button-rounded p-button-text p-button-sm p-button-danger"
+        title="Remove"
+        (onClick)="deleteDoc(doc)"
+        [disabled]="isViewMode || isSubmitted"
+      ></p-button>
+    </div>
+  </div>
+</li>
+
+👉 We removed visual clutter and wrapped everything in a single flex row.
+
+⸻
+
+2️⃣ Add THIS CSS (minimal but impactful)
+
+Put this in pipform.component.css
+
+/* Uploaded documents container */
+.uploaded-docs {
+  margin-top: 0.75rem;
+}
+
+/* Each file row */
+.doc-item {
+  list-style: none;
+  padding: 0.5rem 0;
+}
+
+/* Horizontal alignment */
+.doc-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+/* File name styling */
+.doc-name {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #2563eb; /* Prime blue */
+  text-decoration: none;
+}
+
+.doc-name:hover {
+  text-decoration: underline;
+}
+
+/* File icon */
+.doc-icon {
+  font-size: 1.1rem;
+  color: #dc2626; /* PDF red */
+}
+
+/* Action buttons group */
+.doc-actions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+
+⸻
+
+3️⃣ Why this looks “enterprise-good”
+
+✔ Consistent font sizing
+✔ Icons visually lighter than text
+✔ Buttons don’t fight for attention
+✔ Looks good in Draft / View / HRBP modes
+✔ Matches PrimeNG design language
+
+⸻
+
+🔥 Optional polish (1-line upgrades)
+
+👉 If you want ALL files to look like cards
+
+.doc-row {
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  background: #f9fafb;
+}
+
+👉 If you want hover highlight
+
+.doc-row:hover {
+  background: #f1f5f9;
+}
+
+
+⸻
+
+✅ Final result (what you’ll see)
+	•	test.pdf is clearly readable
+	•	Icons are aligned & subtle
+	•	No “floating” ugly buttons
+	•	Looks like a real HR system, not a dev screen
+
+⸻
+
+If you want next:
+	•	file-type icons (PDF / DOC / XLS auto)
+	•	tooltip with file size
+	•	animated delete confirmation
+
+Say it — we’ll make it 🔥
+
 public get hasSupportingDoc(): boolean {
   return !!this.supportFileCtrl?.value || (this.supportingDocs?.length ?? 0) > 0;
 }
