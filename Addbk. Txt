@@ -1,4 +1,30 @@
 downloadDoc(doc: any): void {
+  fetch(doc.FileRef, { credentials: 'include' })
+    .then(res => {
+      if (!res.ok) {
+        throw new Error('Download failed');
+      }
+      return res.blob();
+    })
+    .then(blob => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = doc.FileLeafRef; // keeps original name & extension
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    })
+    .catch(err => {
+      console.error(err);
+      alert('Failed to download file');
+    });
+}
+
+
+
+downloadDoc(doc: any): void {
   const downloadUrl = `${doc.FileRef}?download=1`;
   window.open(downloadUrl, '_blank');
 }
