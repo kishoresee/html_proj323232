@@ -1,3 +1,121 @@
+Sure 👍 — below is a complete, copy-paste–ready app.module.ts based on your project structure and the components shown in your screenshots.
+
+I’ll keep it minimal and correct, no extra theory.
+
+⸻
+
+✅ src/app/app.module.ts (FULL CODE)
+
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { HttpClientModule } from '@angular/common/http';
+import { ReactiveFormsModule } from '@angular/forms';
+
+import { AppComponent } from './app.component';
+import { AppRoutingModule } from './app-routing.module';
+
+/* Pages / Components */
+import { HeaderComponent } from './Pages/header/header.component';
+import { MenuBarComponent } from './Pages/menu-bar/menu-bar.component';
+import { DashboardComponent } from './Pages/dashboard/dashboard.component';
+import { PIPFormComponent } from './Pages/pipform/pipform.component';
+
+/* Third-party UI modules (move here from standalone components) */
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { DialogModule } from 'primeng/dialog';
+import { TableModule } from 'primeng/table';
+import { InputTextModule } from 'primeng/inputtext';
+import { InputTextareaModule } from 'primeng/inputtextarea';
+import { DropdownModule } from 'primeng/dropdown';
+import { CalendarModule } from 'primeng/calendar';
+import { CheckboxModule } from 'primeng/checkbox';
+import { AutoCompleteModule } from 'primeng/autocomplete';
+
+import { AgGridModule } from 'ag-grid-angular';
+import { SweetAlert2Module } from '@sweetalert2/ngx-sweetalert2';
+
+@NgModule({
+  declarations: [
+    AppComponent,
+    HeaderComponent,
+    MenuBarComponent,
+    DashboardComponent,
+    PIPFormComponent
+  ],
+  imports: [
+    BrowserModule,
+    BrowserAnimationsModule,
+    HttpClientModule,
+    ReactiveFormsModule,
+
+    /* Routing */
+    AppRoutingModule,
+
+    /* UI / Shared modules */
+    ButtonModule,
+    CardModule,
+    DialogModule,
+    TableModule,
+    InputTextModule,
+    InputTextareaModule,
+    DropdownModule,
+    CalendarModule,
+    CheckboxModule,
+    AutoCompleteModule,
+
+    AgGridModule,
+    SweetAlert2Module.forRoot()
+  ],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+export class AppModule {}
+
+
+⸻
+
+🔍 Important confirmations (match your setup)
+
+✔ You removed standalone: true from all components
+✔ You removed imports: [] from component decorators
+✔ main.ts uses platformBrowserDynamic().bootstrapModule(AppModule)
+✔ AppRoutingModule uses component: (NOT loadComponent)
+
+⸻
+
+❗ If you see errors like:
+
+'ButtonModule' is not a known element
+
+➡️ That means it was used earlier in a standalone component and forgotten here.
+Just add that module to imports[] above.
+
+⸻
+
+🧠 Final architecture (clean & normal Angular)
+
+main.ts  →  AppModule
+              ↓
+        AppRoutingModule
+              ↓
+        Components (NO standalone)
+
+
+⸻
+
+If you want next:
+	•	I can reduce imports (create SharedModule)
+	•	Or lazy-load Dashboard & Pipform using NgModules
+	•	Or verify guards + reload behavior
+
+Just tell me 👍
+
+
+
+
+
 Perfect — now this is clear 👍
 You currently have a HYBRID setup:
 	•	❌ Standalone bootstrap in main.ts
