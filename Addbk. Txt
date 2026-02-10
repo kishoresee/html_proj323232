@@ -1,3 +1,114 @@
+Got it 👍
+You want a small “× / c” icon next to the attached file name so the user can deselect / remove the uploaded file, and no blue background, just a clean black cross.
+
+Below is the clean + correct PrimeNG-friendly way to do it.
+
+⸻
+
+1️⃣ Template (HTML) – add a clear (×) icon
+
+Update your selected-file span like this:
+
+<span
+  class="selected-file"
+  *ngIf="supportFileCtrl?.value"
+  title="{{ supportFileCtrl.value?.name }}"
+>
+  <i class="pi pi-file doc-icon"></i>
+
+  <span class="file-name">
+    {{ supportFileCtrl.value?.name }}
+  </span>
+
+  <!-- clear / deselect icon -->
+  <i
+    class="pi pi-times clear-icon"
+    *ngIf="!isViewMode"
+    (click)="clearSupportFile()"
+  ></i>
+</span>
+
+
+⸻
+
+2️⃣ Component (TS) – clear the file properly
+
+@ViewChild('fileInput') fileInput!: any;
+
+clearSupportFile(): void {
+  this.supportFileCtrl?.reset();
+
+  // Clear native file input
+  if (this.fileInput?.nativeElement) {
+    this.fileInput.nativeElement.value = '';
+  }
+}
+
+✅ This fully deselects the file
+✅ Allows re-selecting the same file again (important!)
+
+⸻
+
+3️⃣ CSS – no blue background, clean black cross
+
+.selected-file {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: transparent;
+}
+
+.doc-icon {
+  color: #d32f2f; /* file icon red */
+}
+
+.file-name {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.clear-icon {
+  cursor: pointer;
+  color: #000;
+  font-size: 12px;
+  margin-left: 6px;
+}
+
+.clear-icon:hover {
+  color: #d32f2f;
+}
+
+🚫 No blue hover
+🚫 No outline
+✔ Just a small neat black ×
+
+⸻
+
+4️⃣ Result UX (what you’ll get)
+	•	📎 Attach file button
+	•	📄 File name shown
+	•	❌ Small black cross to remove
+	•	🔁 User can upload again instantly
+
+Exactly like modern upload chips.
+
+⸻
+
+If you want:
+	•	❌ icon inside a circle
+	•	tooltip “Remove file”
+	•	animation on remove
+	•	or same UI for multiple files
+
+Say the word, I’ll tune it perfectly 👌
+
+
+
+
 Perfect, this is the same UI problem, just for the file input itself.
 The default browser Choose File / No file chosen looks cheap — we’ll replace it with a PrimeNG-style attachment UI that matches what you already did for uploaded files.
 
