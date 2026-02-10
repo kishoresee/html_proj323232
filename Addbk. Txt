@@ -1,3 +1,9 @@
+So, now the thing is, I've given all the things like cookbook form component, service component, and dashboard component. We have three roles already. One is HRBP, manager, and employee. Now, additionally, I want to add an admin role. So instead of checking UIDs from the SharePoint, now I'll hardcode the UIDs. Like people of 7 to 8 people's UIDs I'll be hardcoding as an admin UID. So if an admin person logs in with that UID, I want to give full access to whatever they want, like all the access. And then, I don't want them to see certain things, like the unnecessary things. The HRBP parts where they'll add comments and things, that things I don't want to do. And if an admin logs in, he should see everybody's, all the available, all the available pick data of all the employees. Irrespective of managers, all the employees, he should be able to see and he should be able to edit the data. And then what you can extend, you can exit, you can extend full access. I mean full access. Analyze the code and tell the minimal fix I have to do with that code and it should work properly. And I want modifications. Tell me where to do the modifications and exactly what to do. Analyze the code fully and then you tell the solution.
+
+
+
+
+
 Good, this screenshot shows exactly the right error 👍
 Let’s fix it cleanly.
 
