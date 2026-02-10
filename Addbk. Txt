@@ -1,3 +1,180 @@
+Good, this screenshot shows exactly the right error 👍
+Let’s fix it cleanly.
+
+⸻
+
+❌ Error you’re getting
+
+TS2306: File '.../src/app/app.module.ts' is not a module
+
+This error has ONLY 3 real causes in Angular.
+From your screenshot, cause #1 is 100% the issue.
+
+⸻
+
+✅ ROOT CAUSE (confirmed from your image)
+
+Your app.module.ts does NOT export AppModule correctly
+OR the file is empty / commented / invalid at compile time.
+
+Angular says “not a module” when TypeScript cannot see an exported symbol.
+
+⸻
+
+🔧 FIX (do these in order, don’t skip)
+
+⸻
+
+1️⃣ Open src/app/app.module.ts
+
+Make sure the file is EXACTLY like this (copy–paste fully).
+
+✅ app.module.ts (working, minimal, safe)
+
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { HttpClientModule } from '@angular/common/http';
+
+import { AppComponent } from './app.component';
+import { AppRoutingModule } from './app-routing.module';
+
+import { HeaderComponent } from './Pages/header/header.component';
+import { MenuBarComponent } from './Pages/menu-bar/menu-bar.component';
+import { DashboardComponent } from './Pages/dashboard/dashboard.component';
+import { PIPFormComponent } from './Pages/pipform/pipform.component';
+
+@NgModule({
+  declarations: [
+    AppComponent,
+    HeaderComponent,
+    MenuBarComponent,
+    DashboardComponent,
+    PIPFormComponent
+  ],
+  imports: [
+    BrowserModule,
+    BrowserAnimationsModule,
+    HttpClientModule,
+    AppRoutingModule
+  ],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+export class AppModule {}
+
+📌 Critical line
+
+export class AppModule {}
+
+If this line is missing → ❌ this error happens.
+
+⸻
+
+2️⃣ Verify file name & path (VERY IMPORTANT)
+
+From your error:
+
+import { AppModule } from './app/app.module';
+
+So the file must be:
+
+src/app/app.module.ts
+
+✔ NOT app.modules.ts
+✔ NOT AppModule.ts
+✔ NOT inside another folder
+
+👉 In VS Code Explorer, confirm exact spelling.
+
+⸻
+
+3️⃣ Fix main.ts import (your screenshot shows this)
+
+✅ src/main.ts
+
+import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
+import { AppModule } from './app/app.module';
+
+platformBrowserDynamic()
+  .bootstrapModule(AppModule)
+  .catch(err => console.error(err));
+
+❌ Do NOT use bootstrapApplication anymore
+❌ Do NOT use importProvidersFrom
+
+⸻
+
+4️⃣ HARD RESET (don’t skip this)
+
+Angular compiler caches broken states.
+
+Run these commands once:
+
+rm -rf node_modules package-lock.json
+npm install
+ng serve
+
+(If on Windows PowerShell and rm fails:)
+
+rmdir /s /q node_modules
+del package-lock.json
+npm install
+ng serve
+
+
+⸻
+
+5️⃣ If it STILL errors (edge case)
+
+Open app.module.ts and check:
+	•	❌ No syntax errors
+	•	❌ No commented-out @NgModule
+	•	❌ No duplicate export default
+	•	❌ No BOM / junk at top of file
+
+Quick test
+Add this temporarily at bottom:
+
+console.log('AppModule loaded');
+
+If TypeScript still says “not a module”, the file is not being parsed.
+
+⸻
+
+🧠 Why this happened (short explanation)
+
+You migrated from:
+
+standalone bootstrap → module bootstrap
+
+But Angular only trusts NgModule if it sees:
+	•	@NgModule(...)
+	•	export class AppModule
+
+If either is missing or invalid → TS2306.
+
+⸻
+
+✅ Final checklist (tick these)
+
+✔ app.module.ts exports AppModule
+✔ File path is src/app/app.module.ts
+✔ main.ts uses bootstrapModule(AppModule)
+✔ No standalone bootstrap left
+✔ Clean reinstall done
+
+⸻
+
+If you want, next I can:
+	•	Verify your AppRoutingModule
+	•	Check for duplicate module imports
+	•	Or make a SharedModule to reduce imports
+
+Tell me 👍
+
+
+
 Sure 👍 — below is a complete, copy-paste–ready app.module.ts based on your project structure and the components shown in your screenshots.
 
 I’ll keep it minimal and correct, no extra theory.
