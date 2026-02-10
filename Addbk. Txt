@@ -1,3 +1,182 @@
+Perfect — now this is clear 👍
+You currently have a HYBRID setup:
+	•	❌ Standalone bootstrap in main.ts
+	•	✅ NgModule-based routing (AppRoutingModule)
+	•	❌ Components already converted (or being converted) to non-standalone
+
+So the app builds, but the architecture is mixed, which will bite you later.
+
+Below is the exact minimal set of changes you must do — nothing extra.
+
+⸻
+
+🔥 What to change (ONLY these files)
+
+⸻
+
+1️⃣ main.ts — THIS IS THE ROOT PROBLEM
+
+❌ Your current main.ts (from image)
+
+You are still using:
+
+bootstrapApplication(AppComponent, {
+  providers: [
+    importProvidersFrom(
+      BrowserAnimationsModule,
+      HttpClientModule,
+      AppRoutingModule,
+      SweetAlert2Module
+    )
+  ]
+});
+
+⬆️ This is standalone-style bootstrap
+⬆️ It should NOT exist in a module-based app
+
+⸻
+
+✅ FIX: Replace main.ts completely
+
+import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
+import { AppModule } from './app/app.module';
+
+platformBrowserDynamic()
+  .bootstrapModule(AppModule)
+  .catch(err => console.error(err));
+
+✅ DONE
+This single change switches your app back to normal Angular mode.
+
+⸻
+
+2️⃣ AppModule — must exist and must import routing
+
+If you already have app.module.ts, just ensure this:
+
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { HttpClientModule } from '@angular/common/http';
+
+import { AppComponent } from './app.component';
+import { AppRoutingModule } from './app-routing.module';
+
+@NgModule({
+  declarations: [
+    AppComponent,
+    HeaderComponent,
+    MenuBarComponent,
+    DashboardComponent,
+    PIPFormComponent
+  ],
+  imports: [
+    BrowserModule,
+    BrowserAnimationsModule,
+    HttpClientModule,
+    AppRoutingModule
+  ],
+  bootstrap: [AppComponent]
+})
+export class AppModule {}
+
+📌 Key point
+Everything you previously put in importProvidersFrom(...) now lives here.
+
+⸻
+
+3️⃣ AppRoutingModule — small but IMPORTANT fix
+
+❌ Current issue (from your image)
+
+You are mixing standalone lazy loading:
+
+loadComponent: () =>
+  import('./Pages/dashboard/dashboard.component')
+    .then(m => m.DashboardComponent)
+
+⬆️ This is for standalone components only
+
+⸻
+
+✅ FIX: use normal component routing
+
+const routes: Routes = [
+  { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+
+  { path: 'dashboard', component: DashboardComponent },
+
+  { path: 'pipform', component: PIPFormComponent },
+
+  { path: '**', redirectTo: 'dashboard' }
+];
+
+❌ Remove loadComponent
+✅ Use component: only
+
+⸻
+
+4️⃣ Components — final check (quick)
+
+Every component must now look like this:
+
+@Component({
+  selector: 'app-dashboard',
+  templateUrl: './dashboard.component.html',
+  styleUrls: ['./dashboard.component.css']
+})
+export class DashboardComponent {}
+
+✔ No standalone: true
+✔ No imports: []
+
+(You already did this — just confirming)
+
+⸻
+
+5️⃣ What you should NOT touch ❌
+
+Do NOT change:
+	•	Services
+	•	Guards
+	•	Router navigation code
+	•	Business logic
+	•	HTML templates
+
+⸻
+
+✅ Final sanity checklist
+
+✔ bootstrapApplication → ❌ removed
+✔ platformBrowserDynamic → ✅ added
+✔ AppRoutingModule imported in AppModule
+✔ loadComponent → ❌ removed
+✔ Components declared in AppModule
+
+⸻
+
+🧠 Why your build was still passing
+
+Angular allows hybrid mode, but:
+	•	routing behaves weird
+	•	guards misfire
+	•	reloads break
+	•	lazy loading becomes unpredictable
+
+You’re fixing that correctly now.
+
+⸻
+
+If you want, next I can:
+	•	Convert this to feature modules (DashboardModule, PipformModule)
+	•	Or show exact diff patches
+	•	Or keep routing lazy-loaded but module-based
+
+Say the word 👍
+
+
+
+
 Got it 👍
 You want a small “× / c” icon next to the attached file name so the user can deselect / remove the uploaded file, and no blue background, just a clean black cross.
 
