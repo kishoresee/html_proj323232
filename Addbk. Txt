@@ -1,3 +1,7 @@
+[panelStyle]="{ transformOrigin: 'bottom' }"
+
+
+
 Good 👍 now I can clearly see the problem.
 
 You are shrinking:
