@@ -1,3 +1,119 @@
+Good 👍 now I can clearly see the problem.
+
+You are shrinking:
+
+.session-table td:last-child,
+.session-table th:last-child
+
+⚠️ But your Session Modify is NOT the last column.
+
+Your last column is:
+
+👉 Check In Review
+
+So your width rule is applied to wrong column.
+
+That’s why it is not shrinking.
+
+⸻
+
+✅ Correct Minimal Fix (Based On Your Code)
+
+From your CSS I see:
+
+.session-table td:nth-child(3)
+.session-table td:nth-child(4)
+.session-table td:nth-child(5)
+
+So your columns are fixed by position.
+
+Your Session Modify column is 5th column.
+
+So instead of using last-child, do this:
+
+⸻
+
+🔥 Replace This
+
+.session-table td:last-child,
+.session-table th:last-child {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    width: 100px;
+    text-align: center;
+}
+
+
+⸻
+
+✅ With This (Target Only Session Modify Column)
+
+/* Session Modify column (5th column) */
+.session-table td:nth-child(5),
+.session-table th:nth-child(5) {
+    width: 60px !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    text-align: center;
+}
+
+
+⸻
+
+🎯 Why This Works
+
+Because:
+	•	nth-child(5) specifically targets Session Modify
+	•	last-child was targeting Check In Review
+	•	So your rule was applied to wrong column
+
+⸻
+
+🔥 If Still Not Shrinking (Final Step)
+
+Add this once:
+
+.session-table {
+  table-layout: fixed;
+}
+
+This forces browser to respect width.
+
+⸻
+
+✅ Final Clean CSS (Use This)
+
+.session-table {
+  table-layout: fixed;
+}
+
+.session-table td:nth-child(5),
+.session-table th:nth-child(5) {
+  width: 55px !important;
+  padding: 0 !important;
+  text-align: center;
+}
+
+
+⸻
+
+Now your Session Modify column will shrink exactly like you want.
+
+⸻
+
+If you want ultra tight like only icon width, change to:
+
+width: 45px;
+
+
+⸻
+
+This will definitely fix it.
+
+
+
+
+
 Got it 👍 You don’t need to change anything in TS.
 This is purely a table column width + padding issue.
 
