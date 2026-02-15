@@ -1,3 +1,24 @@
+<p-calendar
+  formControlName="sessionDate"
+  [showIcon]="true"
+  dateFormat="dd/mm/yy"
+  class="full-width"
+  appendTo="body"
+  [disabled]="
+    isViewMode ||
+    isSubmitted ||
+    (
+      pipForm.get('status')?.value !== PipStatus.ManagerProcess &&
+      pipForm.get('status')?.value !== PipStatus.SessionsDraft
+    )
+  ">
+</p-calendar>
+
+
+
+
+
+
 [panelStyle]="{ transformOrigin: 'bottom' }"
 
 
