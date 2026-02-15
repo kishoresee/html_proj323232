@@ -1,3 +1,86 @@
+Perfect 👍 I understand exactly what you want now.
+
+You are already doing this for position:
+
+this.pipForm.get('employee.position')?.disable({ emitEvent: false });
+
+Now you want the same logic for sessionDate, but:
+
+✅ Enable ONLY when status is
+	•	PipStatus.ManagerProcess
+	•	PipStatus.SessionsDraft
+
+❌ Disable for all other statuses
+
+And you want minimal change inside loadExistingPIP().
+
+⸻
+
+✅ Minimal Fix (Clean & Correct Way)
+
+After this line in your loadExistingPIP():
+
+const status = pip.Status as PipStatus;
+
+Add this 👇
+
+const canEditSessionDate =
+  status === PipStatus.ManagerProcess ||
+  status === PipStatus.SessionsDraft;
+
+this.checkInSessions.controls.forEach((grp: any) => {
+  if (canEditSessionDate) {
+    grp.get('sessionDate')?.enable({ emitEvent: false });
+  } else {
+    grp.get('sessionDate')?.disable({ emitEvent: false });
+  }
+});
+
+
+⸻
+
+🔥 That’s It. Nothing Else Needed.
+
+It will now behave like this:
+
+Status	Session Date
+ManagerProcess	✅ Enabled
+SessionsDraft	✅ Enabled
+InProgress	❌ Disabled
+Review	❌ Disabled
+Closed	❌ Disabled
+
+
+⸻
+
+🎯 Why This Is Correct
+	•	You are already populating sessions before this.
+	•	this.checkInSessions already has all the FormGroups pushed.
+	•	So looping through them and disabling sessionDate works perfectly.
+	•	Same pattern as your employee.position disable logic.
+
+⸻
+
+⚠ Important
+
+Place this block after this line:
+
+this.checkInSessions.push(grp);
+
+Or even better — after the whole sessions population block (once all rows are added).
+
+⸻
+
+Now your behavior will be:
+	•	View mode → disabled
+	•	Edit mode → enabled ONLY for those 2 statuses
+	•	All other statuses → disabled even in edit mode
+
+Exactly what you want 💯
+
+
+
+
 <p-calendar
   formControlName="sessionDate"
   [showIcon]="true"
