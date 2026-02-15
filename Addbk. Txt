@@ -1,3 +1,167 @@
+Perfect 👍 I saw your full saveOrUpdate() flow.
+
+Your method has multiple nested subscribes, so the correct and clean minimal solution is:
+
+✅ Turn loader ON before calling saveOrUpdate()
+✅ Turn loader OFF inside afterSaveActions()
+(because that method is called in BOTH create & update flows)
+
+That way you don’t touch 10 different places.
+
+⸻
+
+✅ STEP 1 — Add Loading Flags
+
+In your component (.ts top):
+
+isDraftLoading = false;
+isSubmitLoading = false;
+
+
+⸻
+
+✅ STEP 2 — Update Button Click Methods
+
+🔹 Save Draft
+
+onSaveDetailsDraft(): void {
+  this.isDraftLoading = true;   // 🔥 START LOADER
+  this.saveOrUpdate(PipStatus.Draft, false);
+}
+
+
+⸻
+
+🔹 Submit to HRBP
+
+public onSubmitDetailsForHRBP(): void {
+  this.isSubmitLoading = true;   // 🔥 START LOADER
+
+  this.enforceSubmitValidators();
+  const created = this.dateOnlyToSpString(new Date());
+
+  this.saveOrUpdate(
+    PipStatus.Review,
+    true,
+    true,
+    { hrbpComment: '', PIPCreatedDate: created }
+  );
+}
+
+
+⸻
+
+✅ STEP 3 — Stop Loader in ONE PLACE (Most Important)
+
+You already have this method:
+
+this.afterSaveActions(newStatus);
+
+That method is called:
+
+✔ after create
+✔ after update
+✔ after upload
+✔ even in error
+
+So go to your afterSaveActions() method and add this:
+
+private afterSaveActions(newStatus: PipStatus): void {
+
+  // 🔥 STOP BOTH LOADERS HERE
+  this.isDraftLoading = false;
+  this.isSubmitLoading = false;
+
+  // existing code continues...
+}
+
+That’s it.
+
+No need to modify 5 different subscribe blocks.
+
+⸻
+
+✅ STEP 4 — Update HTML
+
+Save Draft Button
+
+<button
+  pButton
+  label="Save as Draft"
+  class="p-button-danger add-btn"
+  severity="primary"
+  type="button"
+  (click)="onSaveDetailsDraft()"
+  [loading]="isDraftLoading"
+  [disabled]="isSubmitted || isViewMode || !hasAnyPerformanceData">
+</button>
+
+
+⸻
+
+Submit to HRBP Button
+
+<button
+  pButton
+  label="Submit to HRBP"
+  class="p-button-danger add-btn"
+  severity="primary"
+  type="button"
+  (click)="onSubmitDetailsForHRBP()"
+  [loading]="isSubmitLoading"
+  [disabled]="!detailsReady || isViewMode || isSubmitted || filledPerformanceCount() < 5">
+</button>
+
+
+⸻
+
+🎯 Why This Is The Cleanest Way
+
+Because:
+	•	Your save logic has:
+	•	create flow
+	•	update flow
+	•	nested subscribe
+	•	supporting doc upload
+	•	error blocks
+
+If you try to stop loader inside each subscribe, you’ll miss one and loader will get stuck.
+
+Using afterSaveActions() = ✅ single control point.
+
+⸻
+
+🔥 Result
+
+When clicking:
+
+✔ Spinner appears inside button
+✔ Button auto disabled
+✔ No double click
+✔ Stops automatically on success
+✔ Stops automatically on error
+✔ Minimal code change
+
+⸻
+
+⚠️ Important
+
+If there is ANY early return before calling afterSaveActions(), then add:
+
+this.isDraftLoading = false;
+this.isSubmitLoading = false;
+
+before that return.
+
+(Example: invalid form abort)
+
+⸻
+
+If you want, send your afterSaveActions() method — I’ll verify 100% safe placement.
+
+
+
+
 Actually, I have a column, session modify. The thing is, whenever I enter the dashboard with the edit icon, like clicking edit icon, I'm going to the check-in tab, I see that check-in dates are getting enabled. I can choose the check-in date, but I couldn't submit it. So, so far it is not affecting my thing, but the session modify edit pen icon appears when the check-in date is one day, one day after the current date. So, when I modify the check-in date, check-in date, like the session date, session date, session date, like just choosing the value, the edit pen icon is appearing in the session modify column. So, the thing is, there is a bug. It's kind of a bug I'm facing. So, the thing I'm planning is, I should not, I should not able to edit the session date column, that is the check-in date column, entirely other than PIP in progress and the session draft, session drafted status. Other than these statuses, I should not able to edit the check-in date alone. Do something and give me a minimal fix. Analyze the entire document. I gave the dashboard component, PIP HTML component, and PIPJS component. Check the permissions and everything. Tell me, first of all, why it is getting enabled. I already done certain modifications. It's not working. And then, now give me a minimal fix, all for this alone, without affecting any other things.
 
 
