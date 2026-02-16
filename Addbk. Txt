@@ -1,3 +1,83 @@
+Got it 👍 you’re using PrimeNG p-calendar (timeOnly) and the popup is opening downwards, but you want it to open upwards.
+
+This is purely a PrimeNG overlay positioning thing.
+
+⸻
+
+✅ ✅ Minimal Fix (1 Line Change)
+
+Inside your start time and end time calendars, add:
+
+panelStyleClass="calendar-up"
+
+Example:
+
+<p-calendar
+  formControlName="sessionStart"
+  [timeOnly]="true"
+  hourFormat="12"
+  showIcon="true"
+  appendTo="body"
+  panelStyleClass="calendar-up"
+  [disabled]="isViewMode || isSubmitted">
+</p-calendar>
+
+Do the same for sessionEnd.
+
+⸻
+
+✅ Then Add This CSS (Very Small)
+
+In your component CSS:
+
+.calendar-up {
+  transform-origin: bottom !important;
+}
+
+
+⸻
+
+🔥 If That Alone Doesn’t Force It Upwards
+
+Then use this instead (stronger fix):
+
+::ng-deep .calendar-up.p-datepicker {
+  transform: translateY(-100%) !important;
+}
+
+
+⸻
+
+🎯 Why This Works
+
+PrimeNG overlays use dynamic positioning.
+By default they calculate space and open downward.
+This forces the popup to shift upward.
+
+⸻
+
+⚡ Even Cleaner (Newer PrimeNG Versions)
+
+If your version supports it, you can try:
+
+[pAutoZIndex]="true"
+[autoZIndex]="true"
+
+But the CSS method above is the safest minimal fix.
+
+⸻
+
+🏆 Final Result
+
+✔ Time picker opens upward
+✔ No TS changes
+✔ Only small HTML + CSS change
+
+⸻
+
+If you want, I can give you the exact correct CSS based on your PrimeNG version — just tell me your PrimeNG version.
+
+
 Perfect 👍 I saw your full saveOrUpdate() flow.
 
 Your method has multiple nested subscribes, so the correct and clean minimal solution is:
