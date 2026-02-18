@@ -1,3 +1,188 @@
+Perfect 👌 now I can clearly see the real problem from your Network tab.
+
+⸻
+
+❌ Current Error
+
+From your screenshot:
+
+System.ArgumentException
+"Server relative urls must start with SPWeb.ServerRelativeUrl"
+
+This means:
+
+👉 The URL you are passing to SharePoint does NOT start with
+
+/sites/PIPWorkflow
+
+That is why it throws 400 Bad Request.
+
+⸻
+
+🔥 Why This Is Happening
+
+In your code I saw:
+
+const libRoot = '/AuditTrailDocument';
+
+And then:
+
+ServerRelativeUrl: `${libRoot}/${folderName}`
+
+That becomes:
+
+/AuditTrailDocument/e95654_...
+
+❌ WRONG.
+
+It must be:
+
+/sites/PIPWorkflow/AuditTrailDocument/e95654_...
+
+SharePoint requires FULL server-relative path starting from the site.
+
+⸻
+
+✅ What We Will Fix
+
+1️⃣ Proper server relative URL
+2️⃣ Create employee folder FIRST
+3️⃣ Then create report folder
+4️⃣ Then upload file
+5️⃣ No 400 error
+6️⃣ No 500 error
+
+⸻
+
+🚀 FULL WORKING REVISED CODE (Copy Exactly)
+
+Replace your entire ensureAuditFolder() with this:
+
+public ensureAuditFolder(
+  employeeUid: string,
+  reportPipId: string | number
+): Observable<string> {
+
+  const folderName = this.buildAuditFolderName(employeeUid, reportPipId);
+
+  // ✅ Must start with site relative url
+  const webRel = new URL(this.siteUrl).pathname; 
+  // Example: /sites/PIPWorkflow
+
+  const library = 'AuditTrailDocument';
+
+  const empPath = `${webRel}/${library}/${employeeUid}`;
+  const fullPath = `${empPath}/${folderName}`;
+
+  const createUrl = `${this.siteUrl}/_api/web/folders`;
+
+  return this.getFormDigest().pipe(
+    switchMap(digest => {
+
+      const hdr = new HttpHeaders({
+        Accept: 'application/json;odata=verbose',
+        'Content-Type': 'application/json;odata=verbose',
+        'X-RequestDigest': digest
+      });
+
+      // 1️⃣ Create employee folder
+      return this.http.post<any>(createUrl, {
+        '__metadata': { type: 'SP.Folder' },
+        'ServerRelativeUrl': empPath
+      }, { headers: hdr, withCredentials: true }).pipe(
+
+        // Ignore error if exists
+        catchError(() => of(null)),
+
+        // 2️⃣ Create report folder
+        switchMap(() =>
+          this.http.post<any>(createUrl, {
+            '__metadata': { type: 'SP.Folder' },
+            'ServerRelativeUrl': fullPath
+          }, { headers: hdr, withCredentials: true })
+        ),
+
+        // If already exists ignore
+        catchError(() => of(null)),
+
+        map(() => fullPath)
+      );
+    })
+  );
+}
+
+
+⸻
+
+🚀 Your Upload Method (No Change Needed Except URL Fix)
+
+Make sure upload URL is:
+
+const uploadUrl =
+`${this.siteUrl}/_api/web/GetFolderByServerRelativeUrl('${folderPath}')/Files/add(url='${fileName}',overwrite=true)`;
+
+⚠ IMPORTANT: folderPath must be the FULL path returned above:
+
+/sites/PIPWorkflow/AuditTrailDocument/e95654/xyz_timestamp
+
+
+⸻
+
+✅ Why This Will Now Work
+
+✔ ServerRelativeUrl starts with /sites/PIPWorkflow
+✔ Employee folder created automatically
+✔ Report folder created automatically
+✔ No manual creation needed
+✔ No 400 error
+✔ No 500 error
+
+⸻
+
+🧠 Why Your Old Version Failed
+
+You were using:
+
+/AuditTrailDocument/...
+
+Instead of:
+
+/sites/PIPWorkflow/AuditTrailDocument/...
+
+That is exactly why SharePoint said:
+
+Server relative urls must start with SPWeb.ServerRelativeUrl
+
+⸻
+
+🧪 Expected Folder Structure After Fix
+
+AuditTrailDocument
+   └── e95654
+         └── e95654_105_20260218061928
+               └── SAVE_20260218.json
+
+
+⸻
+
+🎯 Final Checklist
+
+Make sure:
+	•	this.siteUrl = https://sp-apps.../sites/PIPWorkflow
+	•	Library name is correct: AuditTrailDocument
+	•	No typo in employee id
+	•	Permissions = Contribute or higher
+
+⸻
+
+If after this you still get error, send me:
+	•	Exact this.siteUrl value
+	•	Exact Network request payload
+
+We will finish it 100% 🔥
+
+
+
 Perfect 👍 — and you’re absolutely right.
 
 You should NOT create the employee folder manually.
