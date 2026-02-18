@@ -1,3 +1,111 @@
+Ahhh ✅ good catch.
+
+That means your menu-bar is not inside pipform component.
+
+So the previous solution won’t work because:
+
+👉 EventEmitter only works when parent-child relationship exists
+👉 Here both menu-bar and pipform are separate routed pages
+
+So now we use the correct minimal solution for routed components.
+
+⸻
+
+✅ BEST Minimal Fix (Since They Are Separate Pages)
+
+Use a shared service with Subject.
+
+This is the cleanest and smallest change.
+
+⸻
+
+🔥 STEP 1 — Modify SharePointService (or create small AuditService)
+
+Inside sharepoint.service.ts add:
+
+import { Subject } from 'rxjs';
+
+private auditClickSource = new Subject<void>();
+auditClick$ = this.auditClickSource.asObservable();
+
+triggerAuditClick(): void {
+  this.auditClickSource.next();
+}
+
+
+⸻
+
+🔥 STEP 2 — Update menu-bar.component.ts
+
+Inject SharePointService:
+
+constructor(private sp: SharePointService) {}
+
+Then change button handler:
+
+onAuditClick(): void {
+  this.sp.triggerAuditClick();
+}
+
+
+⸻
+
+🔥 STEP 3 — Update pipform.component.ts
+
+Inside ngOnInit() add:
+
+this.sp.auditClick$.subscribe(() => {
+  this.loadAuditLogs();
+});
+
+Done.
+
+⸻
+
+✅ STEP 4 — Add Button in menu-bar.component.html
+
+<button
+  *ngIf="isManager"
+  class="menuButtons"
+  (click)="onAuditClick()">
+  Audit Log
+</button>
+
+
+⸻
+
+🎯 What Happens Now
+
+Menu bar button →
+Service emits event →
+PipForm listens →
+loadAuditLogs() runs
+
+Works even if components are on different routes.
+
+⸻
+
+💡 Why This Is Correct For Your Structure
+
+Because your structure is:
+
+Pages
+ ├── menu-bar
+ ├── pipform
+ ├── dashboard
+
+They are siblings, not parent-child.
+
+So shared service event bus is correct.
+
+⸻
+
+🚀 This is the real minimal solution for your project structure.
+
+If you want, I can also show how to auto-hide button when no pipId exists.
+
+
+
 Perfect 👍 you are inside menu-bar.component.html now.
 
 You just need to add the Audit Log button next to New PIP.
