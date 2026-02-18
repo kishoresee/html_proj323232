@@ -1,3 +1,125 @@
+Good 👌 this is happening because of how Angular routing works.
+
+When you are:
+	•	On Dashboard → pipform.component.ts is NOT loaded
+	•	So ngOnInit() of pipform does NOT run
+	•	So it does NOT subscribe to auditClick$
+	•	So button does nothing
+
+That is correct Angular behavior.
+
+⸻
+
+🎯 What You Actually Want
+
+If user clicks Audit Log from menu bar:
+
+👉 It should work even if currently on Dashboard
+👉 It should open PIP page and load logs
+
+So we must:
+	1.	Navigate to pipform route
+	2.	Then trigger audit log
+
+⸻
+
+✅ CLEAN & CORRECT FIX
+
+We will slightly improve the service approach.
+
+⸻
+
+🔥 STEP 1 — Modify trigger method to carry flag
+
+In sharepoint.service.ts change to:
+
+private auditClickSource = new Subject<boolean>();
+auditClick$ = this.auditClickSource.asObservable();
+
+triggerAuditClick(): void {
+  this.auditClickSource.next(true);
+}
+
+
+⸻
+
+🔥 STEP 2 — In menu-bar.component.ts
+
+Inject Router also:
+
+constructor(
+  private sp: SharePointService,
+  private router: Router
+) {}
+
+Then change:
+
+onAuditClick(): void {
+  this.router.navigate(['/pipform']);   // adjust route name if different
+  this.sp.triggerAuditClick();
+}
+
+
+⸻
+
+🔥 STEP 3 — In pipform.component.ts
+
+Move subscription to constructor (important!)
+
+constructor(private sp: SharePointService) {
+  this.sp.auditClick$.subscribe(() => {
+    this.loadAuditLogs();
+  });
+}
+
+⚠️ Why constructor?
+Because constructor runs immediately when component loads.
+
+⸻
+
+✅ What Now Happens
+
+If you are on Dashboard:
+	1.	Click Audit Log
+	2.	Router navigates to pipform
+	3.	pipform loads
+	4.	Constructor runs
+	5.	Subscription catches event
+	6.	loadAuditLogs() executes
+
+Works everywhere.
+
+⸻
+
+🚀 EVEN BETTER (Professional Way)
+
+Instead of Subject, you can also pass query param:
+
+this.router.navigate(['/pipform'], { queryParams: { audit: true } });
+
+Then in pipform:
+
+this.route.queryParams.subscribe(params => {
+  if (params['audit']) {
+    this.loadAuditLogs();
+  }
+});
+
+This is actually cleaner and more reliable.
+
+⸻
+
+🏆 Best Practice Recommendation
+
+Use queryParams approach.
+It avoids timing issues with Subject.
+
+⸻
+
+If you show me your route path for pipform, I’ll give exact final code tailored to your project.
+
+
+
 Ahhh ✅ good catch.
 
 That means your menu-bar is not inside pipform component.
