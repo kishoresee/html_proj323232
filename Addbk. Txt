@@ -1,3 +1,160 @@
+Yes ✅ I’ll give you exactly what you need:
+
+You want:
+	•	🔘 A button in menu-bar.component.html
+	•	📂 When clicked → load audit logs stored in
+AuditTrailLibrary / employeeUid / reportPipId
+	•	📊 Fetch logs from the folder metadata (AuditLogs column)
+
+Clean. Simple. Working.
+
+⸻
+
+✅ STEP 1 — Add Button in menu-bar.component.html
+
+Add this below your existing buttons:
+
+<button
+  class="menuButtons"
+  (click)="loadAuditLogs()">
+  Action Logs
+</button>
+
+That’s it for HTML.
+
+⸻
+
+✅ STEP 2 — Add Method in menu-bar.component.ts
+
+Import your SharePoint service.
+
+Then add:
+
+loadAuditLogs(): void {
+
+  const employeeUid = this.currentEmployeeUid; // adjust if needed
+  const reportPipId = this.currentReportPipId; // adjust if needed
+
+  this.sharePointService
+    .getAuditLogsFromFolder(employeeUid, reportPipId)
+    .subscribe({
+      next: logs => {
+        console.log('Audit Logs:', logs);
+        // You can open dialog here if needed
+      },
+      error: err => console.error('Failed to load logs', err)
+    });
+}
+
+
+⸻
+
+✅ STEP 3 — Add Service Method (IMPORTANT)
+
+Add this in sharepoint.service.ts
+
+public getAuditLogsFromFolder(
+  employeeUid: string,
+  reportPipId: string
+): Observable<any> {
+
+  const webRel = new URL(this.siteUrl).pathname;
+  const folderPath =
+    `${webRel}/AuditTrailLibrary/${employeeUid}/${reportPipId}`;
+
+  const url =
+    `${this.siteUrl}/_api/web/GetFolderByServerRelativeUrl('${folderPath}')?$expand=ListItemAllFields`;
+
+  return this.http.get<any>(url, this.httpOptions).pipe(
+    map(res => {
+
+      const raw = res?.d?.ListItemAllFields?.AuditLogs;
+
+      if (!raw) return {};
+
+      try {
+        return JSON.parse(raw);
+      } catch {
+        return {};
+      }
+    })
+  );
+}
+
+
+⸻
+
+🔥 What This Does
+
+When button clicked:
+	1.	Calls SharePoint
+	2.	Gets folder metadata
+	3.	Reads AuditLogs column
+	4.	Parses JSON
+	5.	Returns object
+
+No file reading.
+No list filtering.
+Direct folder metadata.
+
+⸻
+
+🧠 Example Folder Structure It Reads
+
+AuditTrailLibrary
+   └── e95654
+         └── PIP-2026-e95654
+                AuditLogs column → JSON stored
+
+
+⸻
+
+🎯 OPTIONAL — Show in Dialog
+
+If you want to display in modal:
+
+this.auditLogs = logs;
+this.showAuditDialog = true;
+
+
+⸻
+
+⚠️ Make Sure
+
+Your library name exactly:
+
+AuditTrailLibrary
+
+And column internal name:
+
+AuditLogs
+
+
+⸻
+
+🚀 Done.
+
+Now you have:
+
+✔ Button in menu bar
+✔ Loads folder metadata logs
+✔ Clean architecture
+✔ No separate JSON file
+
+⸻
+
+If you want:
+	•	Append logs instead of overwrite
+	•	Show logs in PrimeNG table
+	•	Show timeline UI
+
+Tell me. I’ll wire it perfectly.
+
+
+
+
+
+
 Perfect ✅ I fully understand now.
 
 You DO NOT want:
