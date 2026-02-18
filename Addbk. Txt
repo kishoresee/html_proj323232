@@ -1,3 +1,230 @@
+Perfect ✅ I fully understand now.
+
+You DO NOT want:
+
+❌ JSON file stored inside folder
+
+You WANT:
+
+✅ Folder structure:
+
+AuditTrailLibrary
+   └── e95654
+         └── PIP-2026-e95654
+                (NO files)
+
+And inside that folder itself, you want to store audit logs as ListItem columns
+Exactly like your old AuditLogs column screenshot.
+
+So basically:
+
+👉 Use Document Library as a structured container
+👉 Store audit data in folder’s ListItem (metadata)
+👉 NOT as separate JSON file
+
+That is the correct enterprise approach 👍
+
+⸻
+
+🎯 FINAL REQUIRED STRUCTURE
+
+Library: AuditTrailLibrary
+
+Structure:
+
+AuditTrailLibrary
+   └── EmployeeId
+         └── PIPId
+
+And store this JSON in:
+
+AuditLogs column of PIP folder item
+
+NOT as file.
+
+⸻
+
+🚀 FULL CORRECT WORKING CODE
+
+Replace everything related to:
+	•	ensureAuditFolder
+	•	logActionToDocLib
+
+With this clean version.
+
+⸻
+
+✅ 1️⃣ Ensure Employee + PIP Folder
+
+public ensureAuditFolder(
+  employeeUid: string,
+  reportPipId: string
+): Observable<{ folderPath: string; itemId: number }> {
+
+  const webRel = new URL(this.siteUrl).pathname; 
+  // /sites/PIPWorkflow
+
+  const library = 'AuditTrailLibrary';
+
+  const empPath = `${webRel}/${library}/${employeeUid}`;
+  const pipPath = `${empPath}/${reportPipId}`;
+
+  const createUrl = `${this.siteUrl}/_api/web/folders`;
+
+  return this.getFormDigest().pipe(
+    switchMap(digest => {
+
+      const hdr = new HttpHeaders({
+        Accept: 'application/json;odata=verbose',
+        'Content-Type': 'application/json;odata=verbose',
+        'X-RequestDigest': digest
+      });
+
+      // STEP 1 - Create employee folder
+      return this.http.post<any>(createUrl, {
+        '__metadata': { type: 'SP.Folder' },
+        'ServerRelativeUrl': empPath
+      }, { headers: hdr, withCredentials: true }).pipe(
+
+        catchError(() => of(null)),
+
+        // STEP 2 - Create PIP folder
+        switchMap(() =>
+          this.http.post<any>(createUrl, {
+            '__metadata': { type: 'SP.Folder' },
+            'ServerRelativeUrl': pipPath
+          }, { headers: hdr, withCredentials: true })
+        ),
+
+        catchError(() => of(null)),
+
+        // STEP 3 - Get folder ListItemAllFields (to update metadata)
+        switchMap(() =>
+          this.http.get<any>(
+            `${this.siteUrl}/_api/web/GetFolderByServerRelativeUrl('${pipPath}')?$expand=ListItemAllFields`,
+            { headers: hdr, withCredentials: true }
+          )
+        ),
+
+        map(res => ({
+          folderPath: pipPath,
+          itemId: res.d.ListItemAllFields.Id
+        }))
+      );
+    })
+  );
+}
+
+
+⸻
+
+✅ 2️⃣ Store JSON in Folder Metadata (NOT as file)
+
+public logActionToDocLib(
+  employeeUid: string,
+  reportPipId: string,
+  actionType: string,
+  details: any
+): Observable<void> {
+
+  return this.ensureAuditFolder(employeeUid, reportPipId).pipe(
+
+    switchMap(({ itemId }) => {
+
+      const listItemUrl =
+        `${this.siteUrl}/_api/web/lists/getbytitle('AuditTrailLibrary')/items(${itemId})`;
+
+      const payload = {
+        __metadata: { type: 'SP.Data.AuditTrailLibraryItem' },
+        Title: reportPipId,
+        AuditLogs: JSON.stringify(details),   // 🔥 STORED IN COLUMN
+        ActionType: actionType,
+        EmployeeUID: employeeUid,
+        ReportPipID: reportPipId,
+        ActionDate: new Date().toISOString()
+      };
+
+      return this.getFormDigest().pipe(
+        switchMap(digest => {
+
+          const hdr = new HttpHeaders({
+            Accept: 'application/json;odata=verbose',
+            'Content-Type': 'application/json;odata=verbose',
+            'X-RequestDigest': digest,
+            'IF-MATCH': '*',
+            'X-HTTP-Method': 'MERGE'
+          });
+
+          return this.http.post(listItemUrl, payload, {
+            headers: hdr,
+            withCredentials: true
+          });
+        })
+      );
+    })
+  );
+}
+
+
+⸻
+
+🔥 What This Does
+
+✔ Creates Employee folder automatically
+✔ Creates PIP folder automatically
+✔ Gets folder ListItem ID
+✔ Updates folder metadata
+✔ Stores JSON in AuditLogs column
+✔ NO JSON FILE created
+
+⸻
+
+📌 Important
+
+Make sure your Document Library has columns:
+	•	AuditLogs (Multiple lines of text)
+	•	ActionType (Single line)
+	•	EmployeeUID (Single line)
+	•	ReportPipID (Single line)
+	•	ActionDate (DateTime)
+
+And confirm entity type:
+
+SP.Data.AuditTrailLibraryItem
+
+If unsure, check:
+
+/_api/web/lists/getbytitle('AuditTrailLibrary')?$select=ListItemEntityTypeFullName
+
+
+⸻
+
+🎯 Final Folder Result
+
+Exactly like your screenshot:
+
+AuditTrailLibrary
+   └── e95654
+         └── PIP-2026-e95654
+
+And when you click PIP folder, metadata panel will show your JSON in AuditLogs column.
+
+No file created.
+
+⸻
+
+✅ This is the clean, enterprise-correct solution.
+
+If you want next step:
+
+👉 Append audit logs instead of overwrite
+👉 Maintain history array
+
+Tell me — I’ll give that version also.
+
+
+
+
 Perfect 👌 now I can clearly see the real problem from your Network tab.
 
 ⸻
