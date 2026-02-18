@@ -1,3 +1,102 @@
+Perfect 👍 you are inside menu-bar.component.html now.
+
+You just need to add the Audit Log button next to New PIP.
+
+Since we already decided to use EventEmitter (minimal clean approach), do exactly this 👇
+
+⸻
+
+✅ 1️⃣ Update menu-bar.component.html
+
+Add this button below New PIP:
+
+<button
+  *ngIf="isManager"
+  class="menuButtons"
+  (click)="onAuditClick()">
+  Audit Log
+</button>
+
+So your final block becomes:
+
+<button *ngIf="isManager"
+        class="menuButtons"
+        (click)="startNewPip()">
+  + New PIP
+</button>
+
+<button *ngIf="isManager"
+        class="menuButtons"
+        (click)="onAuditClick()">
+  Audit Log
+</button>
+
+Done for HTML ✅
+
+⸻
+
+✅ 2️⃣ Make Sure menu-bar.component.ts Has This
+
+Open menu-bar.component.ts and confirm:
+
+import { Output, EventEmitter } from '@angular/core';
+
+@Output() auditClick = new EventEmitter<void>();
+
+onAuditClick(): void {
+  this.auditClick.emit();
+}
+
+Nothing more needed there.
+
+⸻
+
+✅ 3️⃣ Connect It In pipform.component.html
+
+Find this:
+
+<app-menu-bar></app-menu-bar>
+
+Change to:
+
+<app-menu-bar
+  (auditClick)="loadAuditLogs()">
+</app-menu-bar>
+
+That’s it.
+
+⸻
+
+🔥 What Will Happen Now
+
+Click Audit Log in menu bar →
+Event emits →
+loadAuditLogs() in pipform runs →
+Your dialog opens →
+Logs load from SharePoint.
+
+⸻
+
+🎯 Ultra Minimal Change Summary
+
+You only added:
+	•	1 button
+	•	1 EventEmitter
+	•	1 binding in parent
+
+No duplication.
+No service change.
+No logic rewrite.
+
+⸻
+
+If it doesn’t trigger, send your pipform.component.html top section screenshot and I’ll fix instantly.
+
+
+
+
+
+
 Yes ✅ I’ll give you exactly what you need:
 
 You want:
