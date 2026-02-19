@@ -1,4 +1,270 @@
 /* ============================= */
+/* MAIN AUDIT TABLE              */
+/* ============================= */
+
+.audit-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 12px;
+  font-size: 14px;
+  padding: 10px 5px;
+}
+
+/* Header */
+.audit-table thead {
+  background: rgba(0,145,90,1);
+  color: white;
+}
+
+.audit-table th {
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.4px;
+  border: none;
+}
+
+/* Body cells */
+.audit-table td {
+  padding: 12px;
+  border: none;
+  background: white;
+}
+
+
+/* ============================= */
+/* FOLDER ROW (Employee UID)    */
+/* ============================= */
+
+.folder-row td {
+  background: rgba(0,145,90,0.08);
+  border-radius: 8px;
+}
+
+.folder-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 15px;
+  font-weight: 600;
+}
+
+.folder-row {
+  transition: 0.2s ease;
+}
+
+.folder-row:hover td {
+  background: rgba(0,145,90,0.14);
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,145,90,0.15);
+}
+
+.folder-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(0,145,90,1);
+}
+
+.folder-left i {
+  font-size: 18px;
+}
+
+.folder-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+
+/* ============================= */
+/* DOWNLOAD ICON                 */
+/* ============================= */
+
+.download-icon {
+  font-size: 16px;
+  cursor: pointer;
+  color: rgba(0,145,90,1);
+  transition: all 0.2s ease;
+}
+
+.download-icon:hover {
+  transform: scale(1.25);
+  opacity: 0.85;
+}
+
+
+/* ============================= */
+/* INNER LOG ROWS                */
+/* ============================= */
+
+.audit-main-row {
+  background: white;
+  border-radius: 6px;
+  transition: 0.2s ease;
+}
+
+.audit-main-row td {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.audit-main-row:hover {
+  background: rgba(0,145,90,0.05);
+}
+
+/* Remove messy vertical line */
+.audit-expanded-row td {
+  border-left: none !important;
+}
+
+
+/* ============================= */
+/* EYE ICON                      */
+/* ============================= */
+
+.expand-icon {
+  font-size: 1.1rem;
+  color: rgba(0,145,90,1);
+  transition: 0.2s ease;
+  cursor: pointer;
+}
+
+.expand-icon:hover {
+  transform: scale(1.2);
+}
+
+
+/* ============================= */
+/* PAYLOAD PANEL                 */
+/* ============================= */
+
+.audit-expanded-row td {
+  background: #f9fbfa;
+  padding: 18px;
+}
+
+.payload-wrapper {
+  background: white;
+  padding: 18px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,145,90,0.2);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+}
+
+/* Payload title */
+.payload-title {
+  color: rgba(0,145,90,1);
+  font-weight: 600;
+  margin-bottom: 12px;
+  border-bottom: 2px solid rgba(0,145,90,0.15);
+  padding-bottom: 6px;
+}
+
+
+/* ============================= */
+/* PAYLOAD TABLE                 */
+/* ============================= */
+
+.payload-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.payload-table th {
+  text-align: left;
+  background: rgba(0,145,90,1);
+  color: white;
+  padding: 8px;
+  font-weight: 600;
+}
+
+.payload-table td {
+  padding: 8px;
+  border-bottom: 1px solid #eeeeee;
+}
+
+/* Key column */
+.payload-key {
+  font-weight: 600;
+  background: rgba(0,145,90,0.07);
+  width: 180px;
+}
+
+/* JSON formatting */
+.payload-value pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: Consolas, monospace;
+  margin: 0;
+}
+
+
+/* ============================= */
+/* EMPTY STATE                   */
+/* ============================= */
+
+.empty-state {
+  text-align: center;
+  padding: 30px;
+  color: rgba(0,145,90,0.85);
+  font-weight: 500;
+}
+
+
+/* ============================= */
+/* DIALOG HEADER BEAUTIFICATION  */
+/* ============================= */
+
+.green-themed-dialog .p-dialog {
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.green-themed-dialog .p-dialog-header {
+  background: rgba(0,145,90,1) !important;
+  color: white !important;
+  font-weight: 600;
+  font-size: 1.2rem;
+  padding: 14px 18px;
+}
+
+.green-themed-dialog .p-dialog-title {
+  font-weight: 600;
+}
+
+.green-themed-dialog .p-dialog-header-icon {
+  color: white !important;
+}
+
+
+/* ============================= */
+/* SCROLLBAR                     */
+/* ============================= */
+
+::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0,145,90,0.4);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0,145,90,0.6);
+}
+
+
+
+
+
+
+
+
+/* ============================= */
 /* ROOT GREEN THEME VARIABLES    */
 /* ============================= */
 :host {
