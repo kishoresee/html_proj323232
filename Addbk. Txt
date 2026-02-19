@@ -1,3 +1,188 @@
+Perfect ✅ understood.
+
+You DO NOT want full rewrite.
+You only want folder grouping feature added without breaking other components.
+
+So we will:
+	•	✅ Keep your existing auditRows
+	•	✅ Keep your existing service call
+	•	✅ Only add grouping logic
+	•	✅ Only slightly modify HTML
+
+⸻
+
+✅ ✅ ONLY CHANGES REQUIRED (SAFE CHANGES)
+
+⸻
+
+1️⃣ TS FILE — ADD THESE CHANGES ONLY
+
+✅ Step 1: Add this interface (below your existing interfaces)
+
+interface AuditGroup {
+  employeeUid: string;
+  logs: AuditRow[];
+  expanded: boolean;
+}
+
+
+⸻
+
+✅ Step 2: Add this property inside component
+
+groupedAuditRows: AuditGroup[] = [];
+
+DO NOT remove auditRows.
+
+⸻
+
+✅ Step 3: After you assign this.auditRows = rows
+
+Inside your open() or loadAuditLogs() method,
+after this line:
+
+this.auditRows = rows as AuditRow[];
+
+ADD THIS:
+
+this.groupedAuditRows = this.groupByEmployeeUid(this.auditRows);
+
+
+⸻
+
+✅ Step 4: Add these two helper methods inside component
+
+private groupByEmployeeUid(rows: AuditRow[]): AuditGroup[] {
+  const map = new Map<string, AuditRow[]>();
+
+  rows.forEach(row => {
+    const uid = row.employeeUid;
+    if (!map.has(uid)) {
+      map.set(uid, []);
+    }
+    map.get(uid)!.push(row);
+  });
+
+  return Array.from(map.entries()).map(([uid, logs]) => ({
+    employeeUid: uid,
+    logs,
+    expanded: false
+  }));
+}
+
+toggleFolder(group: AuditGroup): void {
+  group.expanded = !group.expanded;
+}
+
+
+⸻
+
+✅ That’s ALL for TS.
+
+Nothing else touched.
+
+⸻
+
+2️⃣ HTML CHANGES (ONLY TABLE SECTION)
+
+Replace ONLY the <tbody> part of your audit table.
+
+Find this:
+
+<ng-container *ngFor="let log of auditRows">
+
+Replace the entire row block with this:
+
+⸻
+
+✅ NEW FOLDER BASED VIEW
+
+<ng-container *ngFor="let group of groupedAuditRows">
+
+  <!-- Folder Row -->
+  <tr class="folder-row" (click)="toggleFolder(group)">
+    <td colspan="6" style="font-weight:600; cursor:pointer;">
+      <i class="pi"
+         [ngClass]="group.expanded ? 'pi-folder-open' : 'pi-folder'">
+      </i>
+      &nbsp; Employee UID: {{ group.employeeUid }}
+      &nbsp; ({{ group.logs.length }})
+    </td>
+  </tr>
+
+  <!-- Expanded Rows -->
+  <ng-container *ngIf="group.expanded">
+    <tr *ngFor="let log of group.logs">
+
+      <td>{{ log.ActionDate | date:'short' }}</td>
+      <td>{{ log.Role }}</td>
+      <td>{{ log.Performer }}</td>
+      <td>{{ log.ActionType }}</td>
+      <td>{{ log.ListName }}</td>
+      <td>{{ log.employeeUid }}</td>
+
+    </tr>
+  </ng-container>
+
+</ng-container>
+
+
+⸻
+
+✅ Optional (Better Green Highlight)
+
+Add this to your CSS:
+
+.folder-row {
+  background: rgba(0,145,90,0.08);
+}
+
+.folder-row:hover {
+  background: rgba(0,145,90,0.15);
+}
+
+
+⸻
+
+🎯 What This Does
+
+Before:
+
+H59131  SAVE_DRAFT
+H59131  CHECK_IN
+H24719  SAVE_DRAFT
+
+After:
+
+📁 Employee UID: H59131 (2)
+    ↳ SAVE_DRAFT
+    ↳ CHECK_IN
+
+📁 Employee UID: H24719 (1)
+    ↳ SAVE_DRAFT
+
+
+⸻
+
+🚫 What We Did NOT Touch
+	•	Service
+	•	Existing interfaces
+	•	Existing logic
+	•	Other components
+	•	Dialog logic
+	•	Spinner logic
+
+Only grouping layer added.
+
+⸻
+
+If something still conflicts, tell me which variable name conflicts and I’ll adjust cleanly for your exact structure.
+
+
+
+
+
+
 Perfect 👍 I clearly understand what you want now:
 
 ✅ Group audit logs by Employee UID
