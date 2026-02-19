@@ -1,3 +1,64 @@
+public logActionToLibrary(
+  employeeUid: string,
+  reportPipId: string,
+  listName: string,
+  actionType: string,
+  details: any
+): Observable<any> {
+
+  const year = new Date().getFullYear();
+  const folderPath =
+    `/sites/PIPWorkflow/AuditTrailLibrary/${employeeUid}/${reportPipId}`;
+
+  const fileName = `${actionType}_${Date.now()}.log`;
+
+  const fileUrl =
+    `${this.siteUrl}/_api/web/GetFolderByServerRelativeUrl('${folderPath}')/Files/add(url='${fileName}',overwrite=false)`;
+
+  const metadataUrl =
+    `${this.siteUrl}/_api/web/GetFileByServerRelativeUrl('${folderPath}/${fileName}')/ListItemAllFields`;
+
+  const payload = {
+    ActionLogs: JSON.stringify(details),
+    ListName: listName,
+    ActionType: actionType,
+    Performer: details.performedBy ?? '',
+    Role: details.role ?? '',
+    ReportPipID: reportPipId,
+    ActionDate: new Date().toISOString()
+  };
+
+  return this.getFormDigest().pipe(
+    switchMap(digest => {
+
+      const headers = new HttpHeaders({
+        Accept: 'application/json;odata=verbose',
+        'Content-Type': 'application/json;odata=verbose',
+        'X-RequestDigest': digest
+      });
+
+      // STEP 1 - create small empty file
+      return this.http.post(fileUrl, '', {
+        headers,
+        withCredentials: true
+      }).pipe(
+
+        // STEP 2 - update metadata of that file
+        switchMap(() =>
+          this.http.post(metadataUrl, payload, {
+            headers: headers.set('X-HTTP-Method', 'MERGE')
+                            .set('IF-MATCH', '*'),
+            withCredentials: true
+          })
+        )
+      );
+    })
+  );
+}
+
+
+
+
 Good. Now I clearly understand what you want. 👌
 
 You want:
