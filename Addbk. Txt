@@ -1,3 +1,120 @@
+Good 👍 now I can clearly see the issue.
+
+Everything inside ManagerAuditComponent is correct.
+
+Your HRBP flow logic is correct.
+
+But the real problem is here 👇 (very important)
+
+In your toolbar (menu-bar component) you are passing:
+
+this.mgrAudit.managerUid = this.managerUid;
+
+⚠️ For HRBP login, this.managerUid is still a manager UID (or maybe empty),
+NOT the HRBP UID.
+
+So inside ManagerAuditComponent, this line:
+
+const currentUid = this.managerUid?.toLowerCase();
+
+is NOT getting the HRBP UID.
+
+So this filter:
+
+p.HRBPUID?.toLowerCase() === currentUid
+
+returns nothing → managerUids = [] → no audits → empty screen.
+
+That is why HRBP still sees:
+
+No audit entries found
+
+⸻
+
+✅ THE ONE THING YOU ARE MISSING
+
+You are NOT passing HRBP UID to the dialog.
+
+⸻
+
+✅ FINAL FIX (Very Small Change)
+
+Go to your menu-bar.component.ts
+
+Inside:
+
+openManagerAudit()
+
+Replace this:
+
+this.mgrAudit.managerUid = this.managerUid;
+
+With this:
+
+if (this.isHRBP) {
+  this.mgrAudit.managerUid = this.hrbpUid;   // ✅ pass HRBP UID
+  this.mgrAudit.isHRBP = true;               // ✅ tell child it's HRBP
+} else {
+  this.mgrAudit.managerUid = this.managerUid;
+  this.mgrAudit.isHRBP = false;
+}
+
+
+⸻
+
+⚠️ Also Make Sure
+
+In your menu-bar.component.ts you actually have:
+
+hrbpUid: string;
+
+And it is populated from login user (same way you set managerUid).
+
+If HRBP UID variable is missing → it will still fail.
+
+⸻
+
+🧠 Why This Fix Works
+
+Now:
+
+For Manager:
+
+managerUid → getAuditLogsForManager(managerUid)
+
+For HRBP:
+
+hrbpUid → getAllPIPs()
+         → find managers mapped to HRBP
+         → getAuditLogsForManager(manager1, manager2...)
+
+So now HRBP sees all mapped managers’ audits.
+
+⸻
+
+🔥 That’s It.
+
+You do NOT need to modify:
+	•	ManagerAuditComponent logic
+	•	Service
+	•	HTML
+	•	Excel download
+	•	Grouping
+
+Only fix what UID you pass from parent.
+
+⸻
+
+If after this it still shows empty, tell me:
+
+👉 What value console shows for currentUid
+👉 What value exists in HRBPUID column in SharePoint
+
+Then I’ll fix it in 1 shot.
+
+
+
+
 Good 👍 now I can see your exact open() method.
 
 You currently have this (manager-only logic):
