@@ -1,3 +1,209 @@
+Good 👌 I understand clearly now.
+
+You want:
+	•	✅ Folder grouping by Employee UID
+	•	✅ Keep existing eye icon
+	•	✅ Keep payload expansion (key-value table)
+	•	❌ Not remove the old expand feature
+	•	❌ Not break existing structure
+
+Right now eye icon disappeared because in my previous suggestion we replaced the row structure and removed the expand-column + payload row.
+
+We will now FIX that properly.
+
+⸻
+
+✅ What We Will Do
+
+Structure will be:
+
+📁 Employee UID: h24719
+   → Row 1 (with eye icon)
+   → Row 2 (with eye icon)
+
+📁 Employee UID: h59931
+   → Row 1 (with eye icon)
+
+Each row still has:
+	•	Eye icon
+	•	toggleRow()
+	•	payload expansion panel
+
+⸻
+
+✅ TS FILE — ADD ONLY THIS (Nothing else changed)
+
+You already added:
+
+groupedAuditRows: AuditGroup[] = [];
+
+You already have:
+
+expandedEmployeeUid: string | null = null;
+
+Now ADD this new property for row expansion:
+
+expandedRowId: number | null = null;
+
+
+⸻
+
+✅ Add this method (keep your existing toggleRow untouched)
+
+toggleLogRow(rowId: number): void {
+  this.expandedRowId = this.expandedRowId === rowId ? null : rowId;
+}
+
+isLogExpanded(rowId: number): boolean {
+  return this.expandedRowId === rowId;
+}
+
+
+⸻
+
+✅ HTML — THIS IS THE IMPORTANT PART
+
+Replace ONLY your <tbody> block with this.
+
+⸻
+
+✅ Folder + Eye Icon + Payload Support
+
+<tbody class="p-datatable-tbody">
+
+<ng-container *ngFor="let group of groupedAuditRows">
+
+  <!-- ===== Folder Row ===== -->
+  <tr class="folder-row" (click)="toggleFolder(group)">
+    <td colspan="7" style="font-weight:600; cursor:pointer;">
+      <i class="pi"
+         [ngClass]="group.expanded ? 'pi-folder-open' : 'pi-folder'">
+      </i>
+      &nbsp; Employee UID: {{ group.employeeUid }}
+      &nbsp; ({{ group.logs.length }})
+    </td>
+  </tr>
+
+  <!-- ===== Logs inside Folder ===== -->
+  <ng-container *ngIf="group.expanded">
+
+    <ng-container *ngFor="let log of group.logs">
+
+      <!-- MAIN ROW -->
+      <tr class="audit-main-row">
+
+        <td>{{ log.ActionDate | date:'short' }}</td>
+        <td>{{ log.Role }}</td>
+        <td>{{ log.Performer }}</td>
+        <td>{{ log.ActionType }}</td>
+        <td>{{ log.ListName }}</td>
+        <td>{{ log.employeeUid }}</td>
+
+        <!-- Eye Icon Column -->
+        <td class="expand-icon p-text-center"
+            (click)="toggleLogRow(log.Id); $event.stopPropagation()">
+
+          <i class="pi"
+             [ngClass]="isLogExpanded(log.Id) ? 'pi-eye-slash' : 'pi-eye'">
+          </i>
+
+        </td>
+      </tr>
+
+      <!-- ===== Payload Expanded Row ===== -->
+      <tr *ngIf="isLogExpanded(log.Id)" class="audit-expanded-row">
+        <td colspan="7">
+
+          <div class="payload-wrapper p-3">
+            <h5 class="payload-title p-mb-2">
+              Action details (Employee {{ log.employeeUid }})
+            </h5>
+
+            <table class="payload-table p-datatable p-component">
+              <thead>
+                <tr>
+                  <th style="width:150px;">Key</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of payloadToRows(log.payload)">
+                  <td class="payload-key">{{ item.key }}</td>
+                  <td class="payload-value">
+                    <pre class="p-m-0">{{ item.value }}</pre>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </td>
+      </tr>
+
+    </ng-container>
+
+  </ng-container>
+
+</ng-container>
+
+</tbody>
+
+
+⸻
+
+✅ Why It Broke Earlier
+
+Because earlier:
+	•	We removed your expand column
+	•	We removed the payload row
+	•	We replaced the structure entirely
+
+Now:
+	•	Folder is outer level
+	•	Eye icon works per log
+	•	Payload expansion works independently
+
+⸻
+
+✅ Visual Result
+
+📁 h24719
+    9:31 SAVE_DRAFT   👁
+        → Click eye
+            → Shows key/value table
+
+📁 h59931
+    9:27 APPROVE      👁
+
+
+⸻
+
+✅ Important
+
+Make sure your table header has one extra column:
+
+<th style="width:40px;"></th>
+
+For the eye column.
+
+⸻
+
+🎯 Nothing Else Changed
+
+✔ Service untouched
+✔ payloadToRows untouched
+✔ Dialog untouched
+✔ Spinner untouched
+
+⸻
+
+If you want the folder row styled exactly in your green theme (rgba(0,145,90,1)), tell me and I’ll give exact CSS for PrimeNG table styling.
+
+This version is clean and production-safe.
+
+
+
+
 Perfect ✅ understood.
 
 You DO NOT want full rewrite.
