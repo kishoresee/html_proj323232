@@ -1,3 +1,148 @@
+Perfect ✅ — now I clearly understand.
+
+You do NOT want:
+	•	❌ New service methods
+	•	❌ New logic
+	•	❌ Role-based branching inside ManagerAudit
+	•	❌ Separate HRBP flow
+
+You just want:
+
+🔥 HRBP to see exactly the same audit as Manager
+Only the button visibility is restricted
+
+So we will NOT touch manager-audit.component.ts at all.
+
+Only minimal change in menu-bar.
+
+⸻
+
+✅ Minimal & Clean Fix
+
+Since your ManagerAuditComponent loads data using:
+
+this.managerUid
+
+All you need to do is:
+
+👉 Pass the same UID for HRBP also.
+
+⸻
+
+✅ STEP 1 — menu-bar.component.ts
+
+You already have:
+
+public isManager = false;
+public managerUid: string | null = null;
+
+Add this:
+
+public isHRBP = false;
+
+Now modify your ngOnInit() subscription:
+
+🔁 Replace this:
+
+this.isManager = info.isManager;
+this.managerUid = info.uid?.toLowerCase() ?? null;
+
+✅ With this:
+
+this.isManager = info.isManager;
+this.isHRBP = info.isHRBP;
+
+// Allow both Manager and HRBP to use managerUid
+if (info.isManager || info.isHRBP) {
+  this.managerUid = info.uid?.toLowerCase() ?? null;
+}
+
+That’s it.
+
+We are reusing the same UID logic.
+
+⸻
+
+✅ STEP 2 — menu-bar.component.html
+
+Currently your Audit button probably looks like:
+
+<button *ngIf="isManager"
+        class="menuButtons"
+        (click)="openManagerAudit()">
+  <i class="pi pi-history mr-1"></i>Audit
+</button>
+
+
+⸻
+
+🔁 Replace with:
+
+<button *ngIf="isManager || isHRBP"
+        class="menuButtons"
+        (click)="openManagerAudit()">
+  <i class="pi pi-history mr-1"></i>Audit
+</button>
+
+That’s all.
+
+⸻
+
+❌ DO NOT CHANGE
+	•	❌ manager-audit.component.ts
+	•	❌ manager-audit.component.html
+	•	❌ sharepoint.service.ts
+
+Leave them untouched.
+
+⸻
+
+🎯 What Happens Now?
+
+Role	Audit Button Visible?	Audit Data Loads?
+Manager	✅ Yes	✅ Yes
+HRBP	✅ Yes	✅ Yes
+Employee	❌ No	❌ No
+
+Because both Manager & HRBP now pass managerUid.
+
+Same logic reused.
+No duplication.
+No complexity.
+No new service.
+
+⸻
+
+🧠 Why This Works
+
+Your audit component doesn’t care who the role is.
+
+It only cares about:
+
+managerUid
+
+So we just make sure HRBP also sends it.
+
+Simple.
+
+⸻
+
+🚀 This is the cleanest possible fix.
+
+If you want next step later:
+	•	We can restrict HRBP view by PIP status
+	•	Or filter draft entries
+	•	Or color-code role
+
+But for now — this solves your requirement perfectly.
+
+⸻
+
+If it still doesn’t load for HRBP, tell me:
+👉 Does HRBP have a different UID format than Manager?
+
+
+
 Yes ✅ — you need one small logical change in the ManagerAuditComponent.
 
 Right now your audit component is built like this:
