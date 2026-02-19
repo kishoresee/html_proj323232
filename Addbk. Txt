@@ -1,3 +1,187 @@
+Perfect 👍 now I clearly understand what you want.
+
+You want this structure:
+
+AuditTrailLibrary
+ └── h24719
+      └── PIP-2026-h24719
+           (MULTIPLE ITEMS HERE)
+
+Inside PIP-2026-h24719 folder, you want:
+	•	Multiple entries (rows)
+	•	Each row = one action
+	•	JSON stored in ActionLogs (multiline text column)
+	•	NO .json files
+	•	NO metadata on parent folder
+
+✔ That is absolutely possible
+✔ You do NOT need .json files
+✔ You do NOT need MERGE
+
+⸻
+
+🚨 Your Current Problem
+
+Right now your flow is:
+	1.	Create employee folder
+	2.	Create pip folder
+	3.	Get folder ListItemAllFields.Id
+	4.	MERGE update that same item
+
+So:
+	•	Folder itself is the item
+	•	You keep updating same item
+	•	That is why only 1 row exists
+
+⸻
+
+🎯 Correct Design (Minimal Change, Clean Fix)
+
+Keep:
+	•	AuditTrailLibrary
+	•	h24719 folder
+	•	PIP-2026-h24719 subfolder
+	•	ActionLogs column
+
+But:
+
+👉 Instead of updating the folder item
+👉 Create a NEW LIST ITEM inside that folder
+
+⸻
+
+✅ EXACT FIX (No .json file)
+
+Inside logActionToDocLib()
+
+Remove this entire block:
+
+const listItemUrl = ...
+...
+'X-HTTP-Method': 'MERGE'
+
+❌ Remove MERGE
+❌ Remove IF-MATCH
+❌ Stop updating folder item
+
+⸻
+
+✅ Replace With This (CREATE NEW ITEM)
+
+After ensureAuditFolder():
+
+switchMap(({ folderPath }) => {
+
+  const addItemUrl =
+    `${this.siteUrl}/_api/web/lists/getbytitle('AuditTrailLibrary')/items`;
+
+  const payload = {
+    __metadata: { type: 'SP.Data.AuditTrailLibraryItem' },
+
+    Title: `${actionType}-${Date.now()}`,
+
+    FileDirRef: folderPath,  // 🔥 THIS IS KEY
+
+    ListName: listName,
+    ActionLogs: JSON.stringify(details),
+    ActionType: actionType,
+    Performer: details.performedBy ?? '',
+    Role: details.role ?? '',
+    ReportPipID: reportPipId,
+    ActionDate: new Date().toISOString()
+  };
+
+  return this.getFormDigest().pipe(
+    switchMap(digest => {
+
+      const hdr = new HttpHeaders({
+        'Accept': 'application/json;odata=verbose',
+        'Content-Type': 'application/json;odata=verbose',
+        'X-RequestDigest': digest
+      });
+
+      return this.http.post(addItemUrl, payload, {
+        headers: hdr,
+        withCredentials: true
+      });
+    })
+  );
+});
+
+
+⸻
+
+🔥 Why This Works
+
+FileDirRef: folderPath tells SharePoint:
+
+👉 Create this item INSIDE this folder
+👉 Not at root
+👉 Not update folder
+👉 Not overwrite
+
+Now:
+
+Save Draft 1 → new item
+Save Draft 2 → new item
+Upload → new item
+
+Each row separate.
+
+⸻
+
+🎯 Final Structure Will Be
+
+AuditTrailLibrary
+ └── h24719
+      └── PIP-2026-h24719
+           ├── Row1 (Save Draft)
+           ├── Row2 (Save Draft)
+           ├── Row3 (Upload)
+
+Each row contains:
+	•	ActionLogs (multiline JSON)
+	•	ListName
+	•	ActionDate
+	•	Performer
+	•	Role
+	•	ActionType
+	•	ReportPipID
+
+Exactly what you want.
+
+⸻
+
+📥 Loading Logs
+
+When loading:
+
+_api/web/lists/getbytitle('AuditTrailLibrary')/items
+?$filter=ReportPipID eq 'PIP-2026-h24719'
+&$orderby=ActionDate desc
+
+It will automatically return only items inside that folder.
+
+No change needed in dashboard.
+
+⸻
+
+🏆 FINAL SUMMARY
+
+You must:
+	1.	Stop using MERGE
+	2.	Stop updating folder metadata
+	3.	Create NEW item with FileDirRef
+	4.	Keep JSON in ActionLogs column
+	5.	Query by ReportPipID
+
+That’s all.
+
+⸻
+
+If you want, I can now rewrite your full logActionToDocLib() method clean and production-ready for copy-paste.
+
+
 Good 👌 this is happening because of how Angular routing works.
 
 When you are:
