@@ -1,3 +1,313 @@
+Perfect 👍 I clearly understand what you want now:
+
+✅ Group audit logs by Employee UID
+✅ Show them like folder view (collapsible)
+✅ When clicking folder → show actions inside
+✅ Apply your green theme → rgba(0,145,90,1)
+✅ Give full revised TS + HTML
+
+I’ll give you a clean production-ready version.
+
+⸻
+
+✅ 1️⃣ FULL REVISED manager-audit.component.ts
+
+Replace your entire TS file content with this:
+
+import { Component, Input } from '@angular/core';
+import { SharePointService } from '../../Services/sharepoint.service';
+import { take, catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
+
+interface AuditRow {
+  Id: number;
+  ActionDate: string;
+  Role: string;
+  Performer: string;
+  ActionType: string;
+  ListName: string;
+  employeeUid: string;
+  payload?: any;
+}
+
+interface GroupedAudit {
+  employeeUid: string;
+  logs: AuditRow[];
+  expanded: boolean;
+}
+
+@Component({
+  selector: 'app-manager-audit',
+  templateUrl: './manager-audit.component.html',
+  styleUrls: ['./manager-audit.component.scss']
+})
+export class ManagerAuditComponent {
+
+  @Input() managerUid!: string;
+
+  visible = false;
+  loading = false;
+
+  groupedAudits: GroupedAudit[] = [];
+
+  constructor(private sp: SharePointService) {}
+
+  /* ==============================
+     OPEN DIALOG
+  ============================== */
+
+  open(): void {
+    if (!this.managerUid) return;
+
+    this.visible = true;
+    this.loading = true;
+    this.groupedAudits = [];
+
+    this.sp.getAuditLogsForManager(this.managerUid)
+      .pipe(
+        take(1),
+        catchError(err => {
+          console.error(err);
+          return of([]);
+        })
+      )
+      .subscribe((rows: AuditRow[]) => {
+
+        const groupedMap = new Map<string, AuditRow[]>();
+
+        rows.forEach(row => {
+          const uid = row.employeeUid;
+          if (!groupedMap.has(uid)) {
+            groupedMap.set(uid, []);
+          }
+          groupedMap.get(uid)!.push(row);
+        });
+
+        this.groupedAudits = Array.from(groupedMap.entries()).map(([uid, logs]) => ({
+          employeeUid: uid,
+          logs: logs.sort((a, b) =>
+            new Date(b.ActionDate).getTime() - new Date(a.ActionDate).getTime()
+          ),
+          expanded: false
+        }));
+
+        this.loading = false;
+      });
+  }
+
+  /* ==============================
+     TOGGLE FOLDER
+  ============================== */
+
+  toggleGroup(group: GroupedAudit): void {
+    group.expanded = !group.expanded;
+  }
+
+}
+
+
+⸻
+
+✅ 2️⃣ FULL REVISED manager-audit.component.html
+
+Replace entire HTML with this:
+
+<p-dialog
+  header="Manager Audit"
+  [(visible)]="visible"
+  [modal]="true"
+  [style]="{ width: '75vw' }"
+  [contentStyle]="{ overflow: 'auto' }"
+  class="green-themed-dialog">
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-container">
+    <i class="pi pi-spin pi-spinner spinner-icon"></i>
+    <div>Loading audit logs...</div>
+  </div>
+
+  <!-- Empty -->
+  <div *ngIf="!loading && !groupedAudits.length" class="empty-state">
+    No audit logs found.
+  </div>
+
+  <!-- Folder View -->
+  <div *ngIf="!loading">
+
+    <div *ngFor="let group of groupedAudits" class="folder-container">
+
+      <!-- Folder Header -->
+      <div
+        class="folder-header"
+        (click)="toggleGroup(group)">
+
+        <i
+          class="pi"
+          [ngClass]="group.expanded ? 'pi-folder-open' : 'pi-folder'">
+        </i>
+
+        <span class="folder-title">
+          Employee UID: {{ group.employeeUid }}
+        </span>
+
+        <span class="count-badge">
+          {{ group.logs.length }}
+        </span>
+      </div>
+
+      <!-- Actions Table -->
+      <div *ngIf="group.expanded" class="folder-content">
+
+        <table class="audit-table">
+          <thead>
+            <tr>
+              <th>Date/Time</th>
+              <th>Role</th>
+              <th>Performed By</th>
+              <th>Action</th>
+              <th>List/Library</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let log of group.logs">
+              <td>{{ log.ActionDate | date:'short' }}</td>
+              <td>{{ log.Role }}</td>
+              <td>{{ log.Performer }}</td>
+              <td>{{ log.ActionType }}</td>
+              <td>{{ log.ListName }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</p-dialog>
+
+
+⸻
+
+✅ 3️⃣ ADD THIS TO manager-audit.component.scss
+
+This applies your green theme rgba(0,145,90,1)
+
+.green-themed-dialog .p-dialog-header {
+  background: rgba(0,145,90,1);
+  color: white;
+}
+
+.folder-container {
+  margin-bottom: 15px;
+  border: 1px solid rgba(0,145,90,0.3);
+  border-radius: 6px;
+}
+
+.folder-header {
+  background: rgba(0,145,90,0.1);
+  padding: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+}
+
+.folder-header:hover {
+  background: rgba(0,145,90,0.2);
+}
+
+.folder-title {
+  flex: 1;
+}
+
+.count-badge {
+  background: rgba(0,145,90,1);
+  color: white;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+.folder-content {
+  padding: 10px;
+  background: #f9f9f9;
+}
+
+.audit-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.audit-table th {
+  background: rgba(0,145,90,0.9);
+  color: white;
+  padding: 8px;
+  text-align: left;
+}
+
+.audit-table td {
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
+}
+
+.spinner-icon {
+  font-size: 2rem;
+  color: rgba(0,145,90,1);
+}
+
+.loading-container {
+  text-align: center;
+  padding: 30px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 20px;
+  color: gray;
+}
+
+
+⸻
+
+🎯 Final Result
+
+Now your UI will look like:
+
+📁 Employee UID: H59131 (2)
+  ↳ shows 2 actions inside
+📁 Employee UID: H24719 (1)
+  ↳ shows 1 action inside
+
+NO duplicate UID rows anymore.
+
+⸻
+
+🔥 What You Achieved
+
+✔ Clean folder grouping
+✔ Expand/collapse UX
+✔ Green themed
+✔ Sorted by latest action
+✔ Modern UI
+
+⸻
+
+If you want next level enhancement:
+	•	Animate expand/collapse
+	•	Add search per employee
+	•	Add date filters
+	•	Add export to Excel
+
+Tell me 😎
+
+
+
+
+
 So you can see the service component code and the perform component code within the text file. I need, so, so far, whenever I click save as draft, it is saving the, it is saving the audit logs inside the audit library, audit trial library, but the thing is, it is storing all the, it is storing all the related column details outside the folder itself. I couldn't see it within the PIP 2026 and the respective UID is within that folder. I couldn't see the column details, the action logs, the performer, role, etc. columns are empty within that root level folder, but it is storing before the normal folder itself, like the details are stored. I don't want the details to be stored there. I want the details to be stored in the root level folder on the audit trial library and also whenever I do, whenever I click save as draft three times, I want the list items, I want the document library to add three new items as save as draft, but whenever I save as draft or I upload, I upload a document or I do some action, it is just updating the same item again and again. I don't want that to happen. Give me the minimal fix to do that within the solid trail library itself. And what are the minimal changes I should do in the code?
 
 
