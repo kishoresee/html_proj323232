@@ -1,3 +1,40 @@
+switchMap(({ folderPath }) => {
+
+  const addItemUrl =
+    `${this.siteUrl}/_api/web/lists/getbytitle('AuditTrailLibrary')/items`;
+
+  const payload = {
+    __metadata: { type: 'SP.Data.AuditTrailLibraryItem' },
+    FileLeafRef: `log-${Date.now()}.txt`,   // new file name
+    FileDirRef: folderPath,                 // IMPORTANT → folder path
+    ActionLogs: JSON.stringify(details),
+    ListName: details.listName,
+    Performer: details.performedBy ?? '',
+    Role: details.role ?? '',
+    ActionType: actionType,
+    ReportPipID: reportPipId,
+    ActionDate: new Date().toISOString()
+  };
+
+  return this.getFormDigest().pipe(
+    switchMap(digest => {
+      const hdr = new HttpHeaders({
+        'Accept': 'application/json;odata=verbose',
+        'Content-Type': 'application/json;odata=verbose',
+        'X-RequestDigest': digest
+      });
+
+      return this.http.post(addItemUrl, payload, {
+        headers: hdr,
+        withCredentials: true
+      });
+    })
+  );
+})
+
+
+
+
 public logActionToLibrary(
   employeeUid: string,
   reportPipId: string,
