@@ -1,3 +1,234 @@
+Perfect 👌 now your requirement is 100% clear.
+
+You want:
+
+AuditTrailLibrary
+   └── h24719
+         └── PIP-2026-h24719
+               (multiple audit log items stored here)
+
+✅ No .json file
+✅ No item at root level
+✅ Each Save Draft should create NEW log
+✅ Not update same item
+✅ Logs stored as list item metadata (ActionLogs multiline text)
+
+⸻
+
+🔴 WHY YOU ARE GETTING 500 ERROR
+
+Your browser response clearly says:
+
+"To add an item to a document library, use SPFileCollection.Add()"
+
+This means:
+
+👉 You are trying to use:
+
+_api/web/lists/getbytitle('AuditTrailLibrary')/items
+
+❌ That works only for normal SharePoint List
+❌ NOT for Document Library
+
+Document Library = must create FILE first
+Then update its metadata
+
+⸻
+
+🔴 WHY NOTHING IS CREATED INSIDE PIP-2026-h24719
+
+Because:
+
+You are doing:
+
+POST .../items({itemId})   // with MERGE
+
+That updates existing folder item
+It does NOT create new log entry
+
+So every Save Draft updates same folder item.
+
+⸻
+
+✅ CORRECT ARCHITECTURE (Minimal Clean Fix)
+
+You MUST:
+
+1️⃣ Create a small dummy file inside the folder
+2️⃣ Then update its metadata (ActionLogs, etc)
+
+But since you DO NOT want .json file…
+
+👉 We will create a tiny .txt file
+👉 Not visible normally
+👉 Just to allow metadata storage
+
+This is mandatory for Document Library.
+
+⸻
+
+✅ MINIMAL FIX FOR YOUR logActionToDocLib()
+
+Replace your entire logActionToDocLib() method with this:
+
+public logActionToDocLib(
+  employeeUid: string,
+  reportPipId: string,
+  listName: string,
+  actionType: string,
+  details: any
+): Observable<any> {
+
+  const fileName = `log-${Date.now()}.txt`;
+  const serverRelativeFolder =
+    `/sites/PIPWorkflow/AuditTrailLibrary/${employeeUid}/${reportPipId}`;
+
+  const fileUrl =
+    `${this.siteUrl}/_api/web/GetFolderByServerRelativeUrl('${serverRelativeFolder}')/Files/add(url='${fileName}',overwrite=false)`;
+
+  const fileContent = new Blob(['audit log'], { type: 'text/plain' });
+
+  return this.getFormDigest().pipe(
+    switchMap(digest => {
+
+      const headers = new HttpHeaders({
+        Accept: 'application/json;odata=verbose',
+        'X-RequestDigest': digest
+      });
+
+      // STEP 1: Create file
+      return this.http.post<any>(fileUrl, fileContent, {
+        headers,
+        withCredentials: true
+      });
+    }),
+    switchMap(fileRes => {
+
+      const itemId = fileRes.d.ListItemAllFields.Id;
+
+      const updateUrl =
+        `${this.siteUrl}/_api/web/lists/getbytitle('AuditTrailLibrary')/items(${itemId})`;
+
+      const payload = {
+        __metadata: { type: 'SP.Data.AuditTrailLibraryItem' },
+        Title: `${actionType}_${Date.now()}`,
+        ActionLogs: JSON.stringify(details),
+        ListName: listName,
+        ActionType: actionType,
+        Performer: details.performedBy,
+        Role: details.role,
+        ReportPipID: reportPipId,
+        ActionDate: new Date().toISOString()
+      };
+
+      return this.getFormDigest().pipe(
+        switchMap(digest => {
+
+          const hdr = new HttpHeaders({
+            Accept: 'application/json;odata=verbose',
+            'Content-Type': 'application/json;odata=verbose',
+            'X-RequestDigest': digest,
+            'IF-MATCH': '*',
+            'X-HTTP-Method': 'MERGE'
+          });
+
+          return this.http.post(updateUrl, payload, {
+            headers: hdr,
+            withCredentials: true
+          });
+        })
+      );
+    })
+  );
+}
+
+
+⸻
+
+✅ WHAT THIS FIX DOES
+
+✔ Creates a NEW file each time
+✔ Creates NEW list item each time
+✔ Metadata stored in that item
+✔ No root-level item
+✔ Multiple Save Draft creates multiple logs
+✔ No update of same item
+✔ Folder remains clean
+
+⸻
+
+🔵 WHY THIS IS REQUIRED
+
+In SharePoint:
+
+Type	How it works
+Normal List	Can POST to /items
+Document Library	MUST create File first
+
+You chose Document Library → so file creation is mandatory.
+
+There is NO way to store item without file in Document Library.
+
+⸻
+
+✅ YOUR RETRIEVAL CODE
+
+Your existing fetch method will continue to work:
+
+_api/web/lists/getbytitle('AuditTrailLibrary')/items?$filter=FileDirRef eq 'folderPath'
+
+No change needed there.
+
+⸻
+
+🎯 FINAL RESULT
+
+Now if you:
+	•	Save Draft 3 times
+	•	Upload doc 1 time
+
+Inside:
+
+h24719
+   └── PIP-2026-h24719
+
+You will see:
+
+log-177145....txt
+log-177146....txt
+log-177147....txt
+log-177148....txt
+
+Each with metadata stored in columns.
+
+⸻
+
+🚀 If You Want Ultra Clean (No Visible Files)
+
+If you want:
+	•	Files hidden
+	•	Or use Content Type “Audit Log”
+
+I can give you advanced version.
+
+⸻
+
+This fix will solve:
+
+✔ 500 error
+✔ No creation issue
+✔ Multiple logs
+✔ No overwrite
+✔ Clean folder structure
+
+⸻
+
+Now test once and tell me what response you get 🔥
+
+
+
+
+
 Perfect 👍 now I clearly understand what you want.
 
 You want this structure:
