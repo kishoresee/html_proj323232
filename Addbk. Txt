@@ -1,3 +1,209 @@
+Good. Now I clearly understand what you want. 👌
+
+You want:
+
+AuditTrailLibrary (Document Library)
+   └── h24719
+         └── PIP-2026-h24719
+               (ONLY list items here)
+
+Inside PIP-2026-h24719 folder, you want:
+	•	ActionLogs → JSON (multiline text column)
+	•	ListName → normal column
+	•	ActionDate → normal column
+	•	Performer → normal column
+	•	Role → normal column
+	•	ActionType → normal column
+	•	ReportPipID → normal column
+
+🚫 NO separate .json file
+🚫 NO metadata at root
+🚫 NO updating same item
+✅ Every save should create NEW log item
+
+⸻
+
+🚨 Important Reality About SharePoint
+
+You are using a Document Library.
+
+In SharePoint:
+
+👉 A Document Library item must have a file.
+👉 You CANNOT create a list item in a document library without creating a file.
+👉 If you try _api/web/lists/getbytitle('AuditTrailLibrary')/items
+You get:
+
+To add an item to a document library, use SPFileCollection.Add()
+
+That is why you are getting 500 error.
+
+So the correct approach is:
+
+✔ Create a file inside the folder
+
+✔ Then store JSON in ActionLogs column
+
+✔ Use metadata columns normally
+
+You DO NOT need a .json file.
+
+You can create a small .txt file just to hold the metadata.
+
+That is the correct and clean way.
+
+⸻
+
+✅ MINIMAL FIX (Only change logActionToDocLib)
+
+Replace your entire logActionToDocLib() with this:
+
+public logActionToDocLib(
+  employeeUid: string,
+  reportPipId: string,
+  listName: string,
+  actionType: string,
+  details: any
+): Observable<any> {
+
+  const folderPath =
+    `/sites/PIPWorkflow/AuditTrailLibrary/${employeeUid}/${reportPipId}`;
+
+  const fileName = `log-${Date.now()}.txt`;
+
+  const addFileUrl =
+    `${this.siteUrl}/_api/web/GetFolderByServerRelativeUrl('${folderPath}')/Files/add(url='${fileName}',overwrite=false)`;
+
+  const fileContent = new Blob(['audit'], { type: 'text/plain' });
+
+  return this.getFormDigest().pipe(
+    switchMap(digest => {
+
+      const headers = new HttpHeaders({
+        Accept: 'application/json;odata=verbose',
+        'X-RequestDigest': digest
+      });
+
+      // STEP 1 – Create file inside folder
+      return this.http.post<any>(addFileUrl, fileContent, {
+        headers,
+        withCredentials: true
+      });
+    }),
+    switchMap(fileRes => {
+
+      const itemId = fileRes.d.ListItemAllFields.Id;
+
+      const updateUrl =
+        `${this.siteUrl}/_api/web/lists/getbytitle('AuditTrailLibrary')/items(${itemId})`;
+
+      const payload = {
+        __metadata: { type: 'SP.Data.AuditTrailLibraryItem' },
+
+        Title: `${actionType}_${Date.now()}`,
+
+        ActionLogs: JSON.stringify(details), // 🔥 JSON stored in multiline column
+
+        ListName: listName,
+        ActionType: actionType,
+        Performer: details.performedBy ?? '',
+        Role: details.role ?? '',
+        ReportPipID: reportPipId,
+        ActionDate: new Date().toISOString()
+      };
+
+      return this.getFormDigest().pipe(
+        switchMap(digest => {
+
+          const hdr = new HttpHeaders({
+            Accept: 'application/json;odata=verbose',
+            'Content-Type': 'application/json;odata=verbose',
+            'X-RequestDigest': digest,
+            'IF-MATCH': '*',
+            'X-HTTP-Method': 'MERGE'
+          });
+
+          // STEP 2 – Update metadata columns
+          return this.http.post(updateUrl, payload, {
+            headers: hdr,
+            withCredentials: true
+          });
+        })
+      );
+    })
+  );
+}
+
+
+⸻
+
+✅ What This Fix Achieves
+
+✔ Creates item ONLY inside h24719/PIP-2026-h24719
+✔ Stores JSON inside ActionLogs column (multiline text)
+✔ Stores normal columns normally
+✔ Creates NEW item every time (because filename unique)
+✔ No overwrite
+✔ No root level storage
+✔ No separate JSON file
+
+⸻
+
+🔥 Why Your Old Code Was Updating Same Item
+
+Because you were:
+
+POST .../items({itemId})
+X-HTTP-Method: MERGE
+
+That updates same folder item again and again.
+
+Now we create a NEW file each time → new item → new log.
+
+⸻
+
+🎯 Retrieval (No Change Needed)
+
+Your fetch method using:
+
+$filter=FileDirRef eq 'folderPath'
+
+Will automatically return only logs inside that folder.
+
+No change needed there.
+
+⸻
+
+Final Result
+
+If you Save Draft 3 times:
+
+Inside:
+
+h24719
+   └── PIP-2026-h24719
+
+You will see:
+
+log-177145.txt
+log-177146.txt
+log-177147.txt
+
+Each with:
+	•	ActionLogs → full JSON
+	•	ActionType → SAVE_DRAFT
+	•	etc.
+
+⸻
+
+If you want, I can now also give you:
+	•	Clean filter query for loading logs only from that folder
+	•	Or a version that hides the file name column in UI
+
+Tell me 👍
+
+
+
 Now I clearly understand what you want 👍
 
 You want:
