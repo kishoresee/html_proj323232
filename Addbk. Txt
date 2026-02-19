@@ -1,3 +1,203 @@
+Yes ✅ — you need one small logical change in the ManagerAuditComponent.
+
+Right now your audit component is built like this:
+
+It loads audit logs by managerUid
+
+That works perfectly for Manager.
+
+But when HRBP clicks Audit:
+	•	You are still passing managerUid
+	•	HRBP is NOT a manager
+	•	So service returns empty
+	•	Hence:
+👉 “No audit entries found for any employee under this manager.”
+
+That is exactly what you’re seeing in your screenshot.
+
+⸻
+
+🎯 What Should Happen?
+
+From HRBP point of view:
+
+You should NOT load audits by manager.
+
+Instead you should:
+	•	Load audit by PIP
+OR
+	•	Load audit by employee
+OR
+	•	Load audit by current record context
+
+⸻
+
+✅ Correct Fix (Clean & Proper)
+
+You need to modify:
+
+1️⃣ menu-bar.component.ts
+
+2️⃣ manager-audit.component.ts
+
+⸻
+
+✅ STEP 1 — Modify menu-bar.component.ts
+
+Right now you are passing:
+
+this.mgrAudit.managerUid = this.managerUid;
+
+Instead modify like this:
+
+if (this.isManager) {
+  this.mgrAudit.managerUid = this.managerUid;
+}
+
+if (this.isHRBP) {
+  this.mgrAudit.employeeUid = this.currentEmployeeUid; 
+}
+
+You need to add:
+
+public currentEmployeeUid: string | null = null;
+
+(You must assign this from the PIP page context.)
+
+⸻
+
+✅ STEP 2 — Modify ManagerAuditComponent (TS)
+
+Inside manager-audit.component.ts
+
+Add new Input:
+
+@Input() managerUid: string | null = null;
+@Input() employeeUid: string | null = null;   // ADD THIS
+
+
+⸻
+
+🔥 Now Modify open() Method
+
+Replace this:
+
+this.sp.getAuditLogsForManager(this.managerUid)
+
+With:
+
+if (this.managerUid) {
+  this.sp.getAuditLogsForManager(this.managerUid)
+}
+
+else if (this.employeeUid) {
+  this.sp.getAuditLogsForEmployee(this.employeeUid)
+}
+
+Example full structure:
+
+public open(): void {
+
+  this.visible = true;
+  this.loading = true;
+  this.auditRows = [];
+
+  if (this.managerUid) {
+
+    this.sp.getAuditLogsForManager(this.managerUid)
+      .subscribe(rows => {
+        this.auditRows = rows;
+        this.loading = false;
+      });
+
+  }
+
+  else if (this.employeeUid) {
+
+    this.sp.getAuditLogsForEmployee(this.employeeUid)
+      .subscribe(rows => {
+        this.auditRows = rows;
+        this.loading = false;
+      });
+
+  }
+}
+
+
+⸻
+
+🚨 IMPORTANT
+
+If you don’t have:
+
+getAuditLogsForEmployee()
+
+You must add that in sharepoint.service.ts.
+
+⸻
+
+💡 Why This Is Happening
+
+Because your dialog title still says:
+
+“Manager audit – h59604”
+
+So it is filtering using manager ID.
+
+But HRBP is not manager → result empty.
+
+So it is NOT a UI problem.
+It is filtering logic problem.
+
+⸻
+
+🟢 Final Clean Architecture
+
+Role	Filter Type
+Manager	By manager UID
+HRBP	By employee UID
+Admin	(Optional: full list)
+
+
+⸻
+
+🎯 Do You Need HTML Changes?
+
+❌ No change needed in HTML.
+
+Only logic change in:
+	•	menu-bar.component.ts
+	•	manager-audit.component.ts
+
+⸻
+
+🔥 One More Improvement (Optional)
+
+You may also want to dynamically change dialog header:
+
+Instead of:
+
+header="Manager audit – {{ managerUid }}"
+
+Change to:
+
+header="{{ managerUid ? 'Manager Audit - ' + managerUid : 'Employee Audit - ' + employeeUid }}"
+
+That will look professional.
+
+⸻
+
+If you want, I can now give:
+	•	Full corrected manager-audit.component.ts
+	•	Clean architecture version
+	•	Or best production-ready structure
+
+Tell me 👌
+
+
+
+
+
 Perfect 👍 I clearly understand your requirement.
 
 You want:
