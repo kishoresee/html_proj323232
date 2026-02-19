@@ -1,3 +1,173 @@
+Good 👍 now I can see your exact open() method.
+
+You currently have this (manager-only logic):
+
+this.sp.getAuditLogsForManager(this.managerUid)...
+
+We will NOT remove this.
+
+We will only wrap it with an if condition and add HRBP logic.
+
+⸻
+
+✅ EXACT MODIFICATION FOR YOUR FILE
+
+Do this step-by-step.
+
+⸻
+
+✅ STEP 1 — Add imports (TOP of file)
+
+Add this if not present:
+
+import { forkJoin } from 'rxjs';
+
+
+⸻
+
+✅ STEP 2 — Add flag in component (inside class)
+
+Above @Input() managerUid, add:
+
+@Input() isHRBP: boolean = false;
+
+
+⸻
+
+✅ STEP 3 — MODIFY ONLY THE SERVICE CALL PART
+
+In your open() method,
+REMOVE this block:
+
+this.sp.getAuditLogsForManager(this.managerUid).pipe(
+...
+).subscribe({
+...
+});
+
+And REPLACE it with this:
+
+⸻
+
+🔥 FINAL WORKING VERSION FOR YOUR FILE
+
+if (!this.isHRBP) {
+
+  // =============================
+  // ✅ MANAGER FLOW (UNCHANGED)
+  // =============================
+
+  this.sp.getAuditLogsForManager(this.managerUid).pipe(
+    take(1),
+    catchError(err => {
+      console.error('[ManagerAudit] getAuditLogsForManager FAILED', err);
+      return of([]);
+    })
+  ).subscribe(rows => {
+
+    this.auditRows = rows as AuditRow[];
+    this.groupedAuditRows =
+      this.groupByEmployeeUid(this.auditRows);
+
+    this.loading = false;
+  });
+
+} else {
+
+  // =============================
+  // ✅ HRBP FLOW
+  // =============================
+
+  const currentUid = this.managerUid?.toLowerCase();
+
+  this.sp.getAllPIPs().pipe(take(1)).subscribe(pips => {
+
+    // 1️⃣ Find managers mapped to this HRBP
+    const managerUids = [
+      ...new Set(
+        pips
+          .filter((p: any) =>
+            p.HRBPUID?.toLowerCase() === currentUid
+          )
+          .map((p: any) => p.ManagerUID)
+      )
+    ];
+
+    if (!managerUids.length) {
+      this.auditRows = [];
+      this.groupedAuditRows = [];
+      this.loading = false;
+      return;
+    }
+
+    // 2️⃣ Load audits for those managers
+    const calls = managerUids.map(uid =>
+      this.sp.getAuditLogsForManager(uid)
+    );
+
+    forkJoin(calls).subscribe(results => {
+
+      const merged = results.flat();
+
+      this.auditRows = merged as AuditRow[];
+      this.groupedAuditRows =
+        this.groupByEmployeeUid(this.auditRows);
+
+      this.loading = false;
+    });
+
+  });
+}
+
+
+⸻
+
+✅ STEP 4 — Pass HRBP flag from MenuBar
+
+When opening dialog:
+
+this.mgrAudit.isHRBP = this.isHRBP;
+
+And:
+
+this.mgrAudit.managerUid = this.managerUid;
+
+
+⸻
+
+🎯 What Happens Now
+
+Role	Behaviour
+Manager	Works exactly same
+HRBP	Sees audits of managers mapped in PIP
+Download	Works
+Folder	Works
+Expand	Works
+Zero changes to getAuditLogsForManager	✅
+
+
+⸻
+
+🚀 Why Your HRBP Was Seeing Empty
+
+Because:
+
+getAuditLogsForManager(this.managerUid)
+
+For HRBP, managerUid was HRBP UID —
+but HRBP does NOT own audit logs directly.
+
+Now we:
+	1.	Find related managers via getAllPIPs()
+	2.	Then fetch their audits
+
+⸻
+
+If you want, I can now give you a clean optimized version (shorter code) after this works.
+
+
+
+
 Perfect ✅ — now I clearly understand.
 
 You do NOT want:
