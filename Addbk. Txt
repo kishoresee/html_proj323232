@@ -1,3 +1,9 @@
+So you can see the service component code and the perform component code within the text file. I need, so, so far, whenever I click save as draft, it is saving the, it is saving the audit logs inside the audit library, audit trial library, but the thing is, it is storing all the, it is storing all the related column details outside the folder itself. I couldn't see it within the PIP 2026 and the respective UID is within that folder. I couldn't see the column details, the action logs, the performer, role, etc. columns are empty within that root level folder, but it is storing before the normal folder itself, like the details are stored. I don't want the details to be stored there. I want the details to be stored in the root level folder on the audit trial library and also whenever I do, whenever I click save as draft three times, I want the list items, I want the document library to add three new items as save as draft, but whenever I save as draft or I upload, I upload a document or I do some action, it is just updating the same item again and again. I don't want that to happen. Give me the minimal fix to do that within the solid trail library itself. And what are the minimal changes I should do in the code?
+
+
+
+
+
 switchMap(({ folderPath }) => {
 
   const addItemUrl =
