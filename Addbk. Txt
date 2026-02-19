@@ -1,3 +1,208 @@
+
+Perfect 🔥 very good enhancement.
+Now you’re building something production-level.
+
+You want:
+
+✅ Folder per Employee UID
+✅ Eye expand for each action
+✅ Download icon next to each folder
+✅ On click → download neat Excel with all logs under that employee
+
+We will NOT touch your existing structure.
+We will just ADD the Excel export feature.
+
+⸻
+
+✅ STEP 1 — Install Excel Library (ONLY ONCE)
+
+In your Angular project:
+
+npm install xlsx file-saver
+
+
+⸻
+
+✅ STEP 2 — Import in TS File
+
+In manager-audit.component.ts
+
+Add at top:
+
+import * as XLSX from 'xlsx';
+import * as FileSaver from 'file-saver';
+
+
+⸻
+
+✅ STEP 3 — Add Download Method in TS
+
+Add this method inside your component:
+
+downloadEmployeeExcel(group: any): void {
+
+  if (!group?.logs?.length) {
+    return;
+  }
+
+  // Transform logs into flat exportable structure
+  const exportData = group.logs.map((log: any) => {
+
+    const payload = log.payload || {};
+
+    return {
+      EmployeeUID: log.employeeUid,
+      ActionDate: log.ActionDate,
+      Role: log.Role,
+      Performer: log.Performer,
+      ActionType: log.ActionType,
+      ListName: log.ListName,
+      PIP_ID: payload.pipId || '',
+      Timestamp: payload.timestamp || '',
+      Status: payload.status || '',
+      RawPayload: JSON.stringify(payload)
+    };
+  });
+
+  const worksheet = XLSX.utils.json_to_sheet(exportData);
+  const workbook = {
+    Sheets: { 'AuditLogs': worksheet },
+    SheetNames: ['AuditLogs']
+  };
+
+  const excelBuffer = XLSX.write(workbook, {
+    bookType: 'xlsx',
+    type: 'array'
+  });
+
+  const blob = new Blob([excelBuffer], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8'
+  });
+
+  FileSaver.saveAs(blob, `Audit_${group.employeeUid}.xlsx`);
+}
+
+
+⸻
+
+✅ STEP 4 — Add Download Icon in Folder Row (HTML)
+
+Inside your folder row:
+
+Find this:
+
+<tr class="folder-row" (click)="toggleFolder(group)">
+
+Replace with this:
+
+<tr class="folder-row">
+
+  <td colspan="7" style="font-weight:600;">
+
+    <div class="folder-header">
+
+      <div class="folder-left"
+           (click)="toggleFolder(group)"
+           style="cursor:pointer;">
+
+        <i class="pi"
+           [ngClass]="group.expanded ? 'pi-folder-open' : 'pi-folder'">
+        </i>
+
+        &nbsp; Employee UID: {{ group.employeeUid }}
+        &nbsp; ({{ group.logs.length }})
+
+      </div>
+
+      <!-- Download Icon -->
+      <div class="folder-right">
+        <i class="pi pi-download download-icon"
+           (click)="downloadEmployeeExcel(group); $event.stopPropagation()">
+        </i>
+      </div>
+
+    </div>
+
+  </td>
+</tr>
+
+
+⸻
+
+✅ STEP 5 — Add Minimal CSS
+
+In manager-audit.component.scss add:
+
+.folder-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.download-icon {
+  font-size: 16px;
+  cursor: pointer;
+  color: rgba(0,145,90,1);
+  transition: 0.2s ease;
+}
+
+.download-icon:hover {
+  transform: scale(1.15);
+  opacity: 0.8;
+}
+
+
+⸻
+
+✅ What Happens Now
+
+UI will look like:
+
+📁 Employee UID: h24719 (3)        ⬇
+
+Click:
+
+⬇ → Downloads Excel
+📁 → Expands Folder
+
+Perfect separation of actions.
+
+⸻
+
+✅ Excel Output Example
+
+Excel sheet will contain columns like:
+
+| EmployeeUID | ActionDate | Role | Performer | ActionType | ListName | PIP_ID | Timestamp | RawPayload |
+
+Each row = one action inside that folder.
+
+⸻
+
+🚀 Result
+
+You now have:
+	•	Folder UI
+	•	Expand eye
+	•	Payload details
+	•	Excel export per employee
+	•	Clean architecture
+	•	No break in existing logic
+
+⸻
+
+If you want:
+	•	Styled Excel headers (green theme)
+	•	Multiple sheets (one sheet per action type)
+	•	Auto-format dates
+	•	Remove RawPayload column
+
+Tell me — we can make it enterprise-grade 💼🔥
+
+
+
+
+
 Good 👌 I understand clearly now.
 
 You want:
