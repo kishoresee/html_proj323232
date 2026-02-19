@@ -1,3 +1,218 @@
+/* ===============================
+   GREEN THEME VARIABLES
+=================================*/
+:host {
+  --primary-green: rgba(0,145,90,1);
+  --light-green: rgba(0,145,90,0.08);
+  --medium-green: rgba(0,145,90,0.15);
+  --border-green: rgba(0,145,90,0.25);
+  --text-dark: #2f2f2f;
+}
+
+/* ===============================
+   DIALOG HEADER
+=================================*/
+
+:host ::ng-deep .p-dialog .p-dialog-header {
+  background: var(--primary-green);
+  color: white;
+  font-weight: 600;
+  font-size: 18px;
+  padding: 1rem 1.5rem;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+
+:host ::ng-deep .p-dialog {
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* ===============================
+   MAIN TABLE CARD STYLE
+=================================*/
+
+.audit-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 10px; /* space between rows */
+}
+
+/* remove old ugly backgrounds */
+.audit-main-row {
+  background: white;
+  transition: 0.2s ease;
+}
+
+.audit-main-row:hover {
+  background: var(--light-green);
+}
+
+/* ===============================
+   FOLDER HEADER ROW
+=================================*/
+
+.folder-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  background: var(--light-green);
+  border: 1px solid var(--border-green);
+  border-radius: 8px;
+  font-weight: 600;
+  color: var(--text-dark);
+  transition: 0.2s ease;
+}
+
+.folder-header:hover {
+  background: var(--medium-green);
+}
+
+.folder-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.folder-left i {
+  font-size: 18px;
+  color: var(--primary-green);
+}
+
+.folder-right {
+  display: flex;
+  align-items: center;
+}
+
+/* ===============================
+   DOWNLOAD ICON
+=================================*/
+
+.download-icon {
+  font-size: 18px;
+  color: var(--primary-green);
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.download-icon:hover {
+  transform: scale(1.2);
+  color: #007a4d;
+}
+
+/* ===============================
+   LOG ROWS INSIDE FOLDER
+=================================*/
+
+.audit-main-row td {
+  padding: 12px 14px;
+  font-size: 14px;
+  color: var(--text-dark);
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* Remove vertical messy lines */
+.audit-expanded-row {
+  background: #f9fdfb;
+  border-left: none;
+}
+
+/* ===============================
+   PAYLOAD (DETAILS) CARD
+=================================*/
+
+.payload-wrapper {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid var(--border-green);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+}
+
+.payload-title {
+  font-weight: 600;
+  color: var(--primary-green);
+  margin-bottom: 12px;
+  font-size: 15px;
+}
+
+/* ===============================
+   INNER PAYLOAD TABLE
+=================================*/
+
+.payload-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.payload-table thead {
+  background: var(--primary-green);
+  color: white;
+}
+
+.payload-table th {
+  padding: 8px 10px;
+  font-weight: 600;
+  font-size: 13px;
+  text-align: left;
+}
+
+.payload-table td {
+  padding: 8px 10px;
+  font-size: 13px;
+  border-bottom: 1px solid #eeeeee;
+}
+
+.payload-key {
+  font-weight: 600;
+  background: var(--light-green);
+  width: 30%;
+}
+
+.payload-value pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ===============================
+   EYE ICON
+=================================*/
+
+.expand-icon i {
+  font-size: 16px;
+  color: var(--primary-green);
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.expand-icon i:hover {
+  transform: scale(1.15);
+}
+
+/* ===============================
+   EMPTY STATE
+=================================*/
+
+.p-text-center {
+  color: #777;
+  padding: 20px;
+}
+
+/* ===============================
+   SCROLL FIX
+=================================*/
+
+:host ::ng-deep .p-dialog-content {
+  padding: 20px;
+  background: #fafafa;
+}
+
+
+
+
 /* ============================= */
 /* MAIN AUDIT TABLE              */
 /* ============================= */
