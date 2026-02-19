@@ -1,3 +1,14 @@
+if (this.isHRBP) {
+  this.mgrAudit.managerUid = this.managerUid!;  // ✅ use same UID
+  this.mgrAudit.isHRBP = true;
+} else {
+  this.mgrAudit.managerUid = this.managerUid!;
+  this.mgrAudit.isHRBP = false;
+}
+
+
+
+
 Good 👍 now I can clearly see the issue.
 
 Everything inside ManagerAuditComponent is correct.
