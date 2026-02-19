@@ -1,3 +1,57 @@
+this.sp.getAllPIPs().pipe(take(1)).subscribe(pips => {
+
+  // ✅ Declare FIRST
+  const currentUid = this.managerUid?.toLowerCase();
+
+  // Step 1: filter employees for this HRBP
+  const validEmployeeUids = new Set(
+    pips
+      .filter((p: any) =>
+        p.HRBPUID?.toLowerCase() === currentUid
+      )
+      .map((p: any) => p.EmployeeUID?.toLowerCase())
+  );
+
+  if (!validEmployeeUids.size) {
+    this.auditRows = [];
+    this.groupedAuditRows = [];
+    this.loading = false;
+    return;
+  }
+
+  // Step 2: find managers
+  const managerUids = [
+    ...new Set(
+      pips
+        .filter((p: any) =>
+          p.HRBPUID?.toLowerCase() === currentUid
+        )
+        .map((p: any) => p.ManagerUID)
+    )
+  ];
+
+  const calls = managerUids.map(uid =>
+    this.sp.getAuditLogsForManager(uid)
+  );
+
+  forkJoin(calls).subscribe(results => {
+
+    const merged = results.flat();
+
+    const filtered = merged.filter((log: any) =>
+      validEmployeeUids.has(log.employeeUid?.toLowerCase())
+    );
+
+    this.auditRows = filtered;
+    this.groupedAuditRows =
+      this.groupByEmployeeUid(this.auditRows);
+
+    this.loading = false;
+  });
+});
+
+
+
 const currentUid = this.managerUid?.toLowerCase();
 
 this.sp.getAllPIPs().pipe(take(1)).subscribe(pips => {
