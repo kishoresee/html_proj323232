@@ -1,3 +1,226 @@
+/* ============================= */
+/* MAIN AUDIT TABLE              */
+/* ============================= */
+
+.audit-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+/* Header */
+.audit-table thead {
+  background: rgba(0,145,90,1);
+  color: white;
+}
+
+.audit-table th {
+  padding: 10px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.3px;
+}
+
+/* Body rows */
+.audit-table td {
+  padding: 10px;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+/* Hover effect */
+.audit-main-row:hover {
+  background: rgba(0,145,90,0.06);
+  transition: 0.2s ease;
+}
+
+/* Expanded row highlight */
+.audit-row-expanded {
+  background: rgba(0,145,90,0.05);
+}
+
+
+/* ============================= */
+/* FOLDER ROW (Employee UID)    */
+/* ============================= */
+
+.folder-row {
+  background: rgba(0,145,90,0.08);
+  font-weight: 600;
+}
+
+.folder-row:hover {
+  background: rgba(0,145,90,0.12);
+  cursor: pointer;
+}
+
+.folder-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 5px;
+}
+
+.folder-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.folder-left i {
+  color: rgba(0,145,90,1);
+  font-size: 18px;
+}
+
+.folder-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+
+/* ============================= */
+/* DOWNLOAD ICON                 */
+/* ============================= */
+
+.download-icon {
+  font-size: 16px;
+  cursor: pointer;
+  color: rgba(0,145,90,1);
+  transition: all 0.2s ease;
+}
+
+.download-icon:hover {
+  transform: scale(1.2);
+  opacity: 0.85;
+}
+
+
+/* ============================= */
+/* EXPAND (EYE) ICON             */
+/* ============================= */
+
+.expand-icon {
+  font-size: 1.2rem;
+  color: rgba(0,145,90,1);
+  transition: 0.2s ease;
+}
+
+.expand-icon:hover {
+  transform: scale(1.15);
+}
+
+
+/* ============================= */
+/* PAYLOAD PANEL (Expanded View) */
+/* ============================= */
+
+.audit-expanded-row td {
+  background: #f9fbfa;
+  padding: 15px;
+  border-left: 4px solid rgba(0,145,90,1);
+}
+
+.payload-wrapper {
+  background: white;
+  padding: 15px;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+/* Payload title */
+.payload-title {
+  color: rgba(0,145,90,1);
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+/* Inner payload table */
+.payload-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.payload-table th {
+  text-align: left;
+  background: rgba(0,145,90,0.08);
+  padding: 8px;
+  font-weight: 600;
+}
+
+.payload-table td {
+  padding: 8px;
+  border-bottom: 1px solid #efefef;
+}
+
+/* Key column */
+.payload-key {
+  font-weight: 600;
+  background: rgba(0,145,90,0.05);
+  width: 180px;
+}
+
+/* JSON formatting */
+.payload-value pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: Consolas, monospace;
+  margin: 0;
+}
+
+
+/* ============================= */
+/* EMPTY STATE                   */
+/* ============================= */
+
+.empty-state {
+  text-align: center;
+  padding: 25px;
+  color: rgba(0,145,90,0.8);
+  font-weight: 500;
+}
+
+
+/* ============================= */
+/* DIALOG HEADER                 */
+/* ============================= */
+
+::ng-deep .green-themed-dialog .p-dialog-header {
+  background: rgba(0,145,90,1) !important;
+  color: white !important;
+}
+
+::ng-deep .green-themed-dialog .p-dialog-title {
+  font-weight: 600;
+}
+
+::ng-deep .green-themed-dialog .p-dialog-header-icon {
+  color: white !important;
+}
+
+
+/* ============================= */
+/* SCROLLBAR (optional nice UI)  */
+/* ============================= */
+
+::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0,145,90,0.4);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0,145,90,0.6);
+}
+
+
+
+
 
 Perfect 🔥 very good enhancement.
 Now you’re building something production-level.
