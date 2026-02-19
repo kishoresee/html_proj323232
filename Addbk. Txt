@@ -1,3 +1,224 @@
+Now I clearly understand what you want 👍
+
+You want:
+
+AuditTrailLibrary (Document Library)
+   └── h24719              (folder)
+        └── PIP-2026-h24719   (folder)
+              ↳ metadata rows only (ActionLogs, Performer, etc.)
+
+❌ No .txt
+❌ No .json
+❌ No dummy file
+❌ No extra document
+
+And you want multiple logs:
+	•	Save Draft → log 1
+	•	Save Draft → log 2
+	•	Upload → log 3
+
+⸻
+
+🚨 VERY IMPORTANT (SharePoint Rule)
+
+In SharePoint:
+
+A Document Library cannot store a list item without a file.
+
+Every row in a document library = a file (or folder).
+
+So when you try:
+
+_api/web/lists/getbytitle('AuditTrailLibrary')/items
+
+SharePoint throws:
+
+To add an item to a document library, use SPFileCollection.Add()
+
+Because:
+
+👉 Document Library item = File
+👉 Folder = also a file item
+👉 There is NO “metadata-only” item inside a folder
+
+⸻
+
+🎯 So What Is Actually Happening In Your Code?
+
+You are:
+	•	Creating folder ✔
+	•	Getting folder itemId ✔
+	•	Doing MERGE update on that folder item ❌
+
+That means:
+
+You are updating the folder metadata itself.
+
+So every Save Draft updates same folder.
+
+That’s why only one row.
+
+⸻
+
+🔴 What You Are Asking Is Technically Impossible
+
+You cannot:
+
+Store multiple metadata rows inside a folder without files
+
+Because:
+
+📌 SharePoint Document Library = File-based system
+📌 Metadata attaches to files
+📌 No file → no item
+
+⸻
+
+✅ THE CORRECT ARCHITECTURE (Clean & Professional Way)
+
+You need TWO things:
+
+1️⃣ AuditTrailLibrary (Document Library)
+
+Only for folder structure:
+
+h24719
+   └── PIP-2026-h24719
+
+2️⃣ AuditTrailList (Normal SharePoint List)
+
+Store logs here:
+
+Columns:
+	•	EmployeeUid
+	•	ReportPipID
+	•	ActionLogs
+	•	ActionType
+	•	Performer
+	•	Role
+	•	ActionDate
+
+Then filter by:
+
+EmployeeUid eq 'h24719'
+and ReportPipID eq 'PIP-2026-h24719'
+
+
+⸻
+
+🔥 WHY THIS IS THE CORRECT SOLUTION
+
+Because:
+
+Requirement	Document Library	Normal List
+Folder structure	✅	❌
+Multiple logs	❌ (needs files)	✅
+Metadata only	❌	✅
+No dummy files	❌	✅
+Clean architecture	❌	✅
+
+
+⸻
+
+💡 What Big Companies Do
+
+They always:
+	•	Use Document Library → for documents
+	•	Use List → for logs, audit trail
+
+Never mix both.
+
+⸻
+
+🚀 Minimal Fix For You
+
+Step 1: Create new SharePoint List
+
+Name: AuditTrailLogs
+
+Step 2: Replace your logActionToDocLib with:
+
+public logAction(
+  employeeUid: string,
+  reportPipId: string,
+  listName: string,
+  actionType: string,
+  details: any
+): Observable<any> {
+
+  const url = `${this.siteUrl}/_api/web/lists/getbytitle('AuditTrailLogs')/items`;
+
+  const payload = {
+    __metadata: { type: 'SP.Data.AuditTrailLogsListItem' },
+    Title: `${actionType}_${Date.now()}`,
+    EmployeeUid: employeeUid,
+    ReportPipID: reportPipId,
+    ActionLogs: JSON.stringify(details),
+    ListName: listName,
+    ActionType: actionType,
+    Performer: details.performedBy,
+    Role: details.role,
+    ActionDate: new Date().toISOString()
+  };
+
+  return this.getFormDigest().pipe(
+    switchMap(digest => {
+      const headers = new HttpHeaders({
+        Accept: 'application/json;odata=verbose',
+        'Content-Type': 'application/json;odata=verbose',
+        'X-RequestDigest': digest
+      });
+
+      return this.http.post(url, payload, {
+        headers,
+        withCredentials: true
+      });
+    })
+  );
+}
+
+
+⸻
+
+✅ Then Fetch Like This
+
+_api/web/lists/getbytitle('AuditTrailLogs')/items?
+$filter=EmployeeUid eq 'h24719' and ReportPipID eq 'PIP-2026-h24719'
+&$orderby=ActionDate desc
+
+
+⸻
+
+🎯 Final Result
+
+You will have:
+
+✔ Folder structure in library
+✔ Unlimited audit logs
+✔ No dummy file
+✔ No JSON file
+✔ No overwrite issue
+✔ No 500 error
+✔ Clean architecture
+
+⸻
+
+⚠ Final Honest Answer
+
+If you insist:
+
+“I want metadata-only rows inside a document library folder without files”
+
+That is technically not possible in SharePoint.
+
+It is platform limitation — not coding issue.
+
+⸻
+
+If you want, I can redesign your whole audit architecture cleanly in 10 minutes 🔥
+
+
+
 Perfect 👌 now your requirement is 100% clear.
 
 You want:
