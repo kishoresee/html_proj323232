@@ -1,3 +1,203 @@
+Perfect 👍 I clearly understand your requirement.
+
+You want:
+	1.	Rename “Manager Audit” button → just “Audit”
+	2.	Show Audit button:
+	•	✅ For Manager → always (like now)
+	•	✅ For HRBP → only when status is NOT Draft
+	•	❌ Hide for HRBP when status = Draft
+
+I’ll give you exact modifications for:
+	•	✅ menu-bar.component.ts
+	•	✅ menu-bar.component.html
+
+No unnecessary changes.
+
+⸻
+
+✅ STEP 1 — Modify menu-bar.component.ts
+
+You already have RoleService.
+
+Now we add:
+	•	isHRBP
+	•	currentStatus
+	•	A computed getter canViewAudit
+
+⸻
+
+🔹 Add These Variables
+
+Inside MenuBarComponent:
+
+public isManager = false;
+public isHRBP = false;
+public managerUid: string | null = null;
+public currentStatus: string | null = null;   // <-- ADD THIS
+
+
+⸻
+
+🔹 Modify ngOnInit()
+
+Update your subscription:
+
+ngOnInit(): void {
+
+  this.roleSrv.roles().subscribe((info: RoleInfo) => {
+
+    this.isManager = info.isManager;
+    this.isHRBP = info.isHRBP;      // <-- ADD THIS
+    this.managerUid = info.uid?.toLowerCase() ?? null;
+
+  });
+
+}
+
+
+⸻
+
+🔹 Add This Getter (IMPORTANT)
+
+This controls visibility of Audit button:
+
+get canViewAudit(): boolean {
+
+  // Manager → always can see
+  if (this.isManager) {
+    return true;
+  }
+
+  // HRBP → only when status is NOT Draft
+  if (this.isHRBP && this.currentStatus !== 'Draft') {
+    return true;
+  }
+
+  return false;
+}
+
+
+⸻
+
+🔹 Now How Do We Get Status?
+
+If you’re already storing status somewhere (like from pipform or route), just assign:
+
+Example:
+
+this.currentStatus = this.pipStatus;
+
+If status comes from route:
+
+this.route.queryParams.subscribe(params => {
+  this.currentStatus = params['status'];
+});
+
+(Use whichever matches your flow.)
+
+⸻
+
+✅ STEP 2 — Modify menu-bar.component.html
+
+Now change button block.
+
+⸻
+
+🔴 REMOVE THIS
+
+<button *ngIf="isManager"
+        class="menuButtons"
+        (click)="openManagerAudit()">
+  <i class="pi pi-history p-mr-1"></i>Manager Audit
+</button>
+
+
+⸻
+
+✅ REPLACE WITH THIS
+
+<button *ngIf="canViewAudit"
+        class="menuButtons"
+        (click)="openManagerAudit()">
+  <i class="pi pi-history p-mr-1"></i>
+  Audit
+</button>
+
+That’s it.
+
+⸻
+
+✅ Final Behavior
+
+Role	Status	Audit Button
+Manager	Draft	✅ Visible
+Manager	Any	✅ Visible
+HRBP	Draft	❌ Hidden
+HRBP	Review	✅ Visible
+HRBP	InProgress	✅ Visible
+
+Exactly as you requested.
+
+⸻
+
+💡 Clean Version (Copy-Paste Ready)
+
+menu-bar.component.ts (Important Parts Only)
+
+public isManager = false;
+public isHRBP = false;
+public managerUid: string | null = null;
+public currentStatus: string | null = null;
+
+ngOnInit(): void {
+
+  this.roleSrv.roles().subscribe((info: RoleInfo) => {
+
+    this.isManager = info.isManager;
+    this.isHRBP = info.isHRBP;
+    this.managerUid = info.uid?.toLowerCase() ?? null;
+
+  });
+
+}
+
+get canViewAudit(): boolean {
+
+  if (this.isManager) {
+    return true;
+  }
+
+  if (this.isHRBP && this.currentStatus !== 'Draft') {
+    return true;
+  }
+
+  return false;
+}
+
+
+⸻
+
+menu-bar.component.html
+
+<button *ngIf="canViewAudit"
+        class="menuButtons"
+        (click)="openManagerAudit()">
+  <i class="pi pi-history p-mr-1"></i>
+  Audit
+</button>
+
+
+⸻
+
+If you want, I can next:
+	•	Improve button styling for HRBP (slightly lighter green)
+	•	Or disable instead of hide
+	•	Or show tooltip “Not available in Draft”
+
+Tell me which one you prefer 👌
+
+
+
 /* ============================= */
 /* MAIN AUDIT TABLE              */
 /* ============================= */
