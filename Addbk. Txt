@@ -1,3 +1,89 @@
+Good question 👍 I can already guess the reason.
+
+Your button is enabled because you are using PrimeNG p-checkbox, and #ack.checked does NOT work the same way as normal HTML checkbox.
+
+In PrimeNG:
+
+<p-checkbox #ack></p-checkbox>
+
+ack.checked is NOT automatically bound like native <input type="checkbox">.
+
+So Angular sees ack.checked as undefined → which is not false → so button stays enabled.
+
+⸻
+
+✅ ✅ Correct Minimal Fix (For PrimeNG p-checkbox)
+
+You must bind it using [(ngModel)].
+
+⸻
+
+🔥 Fix Like This:
+
+1️⃣ Add a local model variable (NO backend, just template level)
+
+<p-checkbox [(ngModel)]="isAcknowledged" binary="true"></p-checkbox>
+<label style="margin-left:6px;">
+  I acknowledge I understand my PIP plan.
+</label>
+
+
+⸻
+
+2️⃣ Disable button using that variable:
+
+<button pButton
+    label="Save comment"
+    type="button"
+    class="p-button-sm"
+    [disabled]="!isAcknowledged"
+    (click)="saveEmployeeComment()">
+</button>
+
+
+⸻
+
+⚠️ Important
+
+Make sure you have FormsModule imported.
+
+If not, import in your module:
+
+import { FormsModule } from '@angular/forms';
+
+and add in imports:
+
+imports: [
+  FormsModule
+]
+
+
+⸻
+
+🧠 Why Yours Didn’t Work
+
+Because:
+	•	#ack on p-checkbox does not expose .checked like native input.
+	•	PrimeNG wraps it internally.
+	•	So Angular couldn’t detect the state properly.
+
+⸻
+
+🏆 Result After Fix
+
+Checkbox	Button
+❌ Not ticked	Disabled
+✅ Ticked	Enabled
+
+Exactly what you want.
+
+⸻
+
+If you want to do this using reactive forms instead (since you are already using pipForm), I can give even cleaner version.
+
+
+
+
 Perfect 👍 this is very simple.
 No backend. No TS logic. Only HTML level control.
 
