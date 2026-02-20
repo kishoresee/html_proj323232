@@ -1,3 +1,32 @@
+onSaveDetailsDraft(): void {
+  this.isDraftLoading = true;
+  this.isSaving = true;
+
+  this.saveOrUpdate(PipStatus.Draft, false)
+    .subscribe(res => {
+
+      // ✅ NOW SharePoint item is created
+      const generatedId = res?.ReportPipID || res?.Title;
+
+      // Update form
+      this.pipForm.patchValue({
+        reportPipId: generatedId
+      });
+
+      // ✅ Now audit
+      this.audit('SAVE_DRAFT', {
+        listName: 'PIPDetails',
+        pipId: generatedId
+      });
+
+    });
+}
+
+
+
+
+
+
 this.sp.getAllPIPs().pipe(take(1)).subscribe(pips => {
 
   // ✅ Declare FIRST
