@@ -1,3 +1,159 @@
+Ahhhh ✅ now I understand clearly.
+
+You are right.
+
+If you put audit() inside saveOrUpdate(), it will run for:
+	•	Save Draft
+	•	Submit to HRBP
+	•	Manager actions
+	•	Every update
+
+❌ That is NOT correct.
+
+You only want audit for Save Draft action specifically.
+
+Good thinking 👍
+
+⸻
+
+🎯 The Real Minimal + Clean Fix
+
+Instead of making saveOrUpdate() return Observable (big refactor),
+and instead of moving audit inside it (wrong logic),
+
+👉 We will add a callback parameter.
+
+This is the cleanest minimal change without breaking anything.
+
+⸻
+
+✅ Step 1 — Modify saveOrUpdate signature (very small change)
+
+Change this:
+
+private saveOrUpdate(...): void
+
+To this:
+
+private saveOrUpdate(
+   newStatus: PipStatus,
+   includeSessions: boolean,
+   includePerformance: boolean = true,
+   extra: {...} = {},
+   skipFormCheck: boolean = false,
+   flags?: { setCreated?: boolean; setInitiated?: boolean },
+   afterCreate?: (reportId: string) => void   // 👈 ADD THIS
+): void
+
+We are just adding an optional callback.
+
+⸻
+
+✅ Step 2 — Inside CREATE block, call the callback
+
+Inside this block:
+
+this.sp.createPIPDetailsItem(masterPayload).subscribe(res => {
+
+After you generate reportId:
+
+const reportId = this.buildReportId(raw.employee.uid);
+this.pipForm.get('reportPipId')?.setValue(reportId);
+
+Add:
+
+if (afterCreate) {
+   afterCreate(reportId);
+}
+
+So it becomes:
+
+this.sp.createPIPDetailsItem(masterPayload).subscribe(res => {
+
+  this.pipItemId = res.ID ?? res.Id;
+
+  const reportId = this.buildReportId(raw.employee.uid);
+  this.pipForm.get('reportPipId')?.setValue(reportId);
+
+  if (afterCreate) {
+     afterCreate(reportId);   // 🔥 only runs if passed
+  }
+
+  this.sp.updatePIPDetailsItem(this.pipId, { ReportPipID: reportId }).subscribe(() => {
+     ...
+  });
+});
+
+
+⸻
+
+✅ Step 3 — Use it ONLY in Save Draft
+
+Now modify:
+
+onSaveDetailsDraft()
+
+Like this:
+
+onSaveDetailsDraft(): void {
+  this.isDraftLoading = true;
+  this.isSaving = true;
+
+  this.saveOrUpdate(
+    PipStatus.Draft,
+    false,
+    true,
+    {},
+    false,
+    undefined,
+    (reportId: string) => {     // 👈 callback here
+
+      this.audit('SAVE_DRAFT', {
+        listName: 'PIPDetails',
+        pipId: reportId
+      });
+
+    }
+  );
+}
+
+
+⸻
+
+🧠 Why This Is Perfect
+
+✅ Audit runs ONLY for draft
+✅ Other flows unaffected
+✅ No return type changes
+✅ No subscribe() error
+✅ No architecture break
+✅ Very small code change
+
+⸻
+
+🚀 Result
+
+First save:
+	1.	SharePoint item created
+	2.	ReportId generated
+	3.	Callback fires
+	4.	Audit runs
+	5.	Folder created correctly
+
+Subsequent updates:
+	•	No callback passed
+	•	No audit triggered accidentally
+
+⸻
+
+🏆 This is the safest clean solution for your current structure.
+
+If you want, I can also show a fully RxJS-optimized version — but for your project size, this callback method is 100% fine and professional.
+
+
+
+
+
 onSaveDetailsDraft(): void {
   this.isDraftLoading = true;
   this.isSaving = true;
