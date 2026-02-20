@@ -1,3 +1,88 @@
+Perfect 👍 this is very simple.
+No backend. No TS logic. Only HTML level control.
+
+You just need:
+	•	One checkbox
+	•	Button disabled until checkbox is checked
+
+We’ll use Angular template reference variable.
+
+⸻
+
+✅ ✅ Minimal Change (Only HTML)
+
+🔥 Add checkbox ABOVE the save button:
+
+<!-- Acknowledgement Checkbox -->
+<div style="margin-top:10px;">
+  <p-checkbox binary="true" #ack></p-checkbox>
+  <label style="margin-left:6px;">
+    I acknowledge I understand my PIP plan.
+  </label>
+</div>
+
+
+⸻
+
+🔥 Then modify your Save button like this:
+
+<div style="text-align:right; margin-top:8px;">
+  <button pButton
+      label="Save"
+      icon="pi pi-save"
+      type="button"
+      class="p-button-sm"
+      [disabled]="!ack.checked"
+      (click)="saveEmployeeComment()">
+  </button>
+</div>
+
+
+⸻
+
+🎯 What Happens Now
+
+Checkbox	Button State
+❌ Not checked	Disabled
+✅ Checked	Enabled
+
+No TS change needed.
+No form control needed.
+Pure template-level control.
+
+⸻
+
+⚡ If You’re Not Using PrimeNG p-checkbox
+
+If you prefer simple HTML checkbox:
+
+<input type="checkbox" #ack />
+<label style="margin-left:6px;">
+  I acknowledge I understand my PIP plan.
+</label>
+
+Button stays same:
+
+[disabled]="!ack.checked"
+
+
+⸻
+
+🏆 Final Result
+
+Textarea
+⬇
+☑ I acknowledge…
+⬇
+Small Save button (enabled only when checked)
+
+⸻
+
+If you want the checkbox to automatically uncheck after save, tell me — that’s one small extra line 😎
+
+
+
+
 I shared you all the details like the PUC form, the PUC component, service component, dashboard component, and then the HTML for the PUC form component. Now the thing what I want is, I've already mentioned that employee comments, I'll give you in the description, the employee comments div part. I want, when I view as an employee, I'm viewing the div part, but I couldn't able to edit it. So it is disabled. But I want the employee to even edit the form, so in the dashboard, I want the employee to see the edit icon. And once the employee comes to the edit icon, in the PUC details, I'm already having that employee comments section, but below that, I want, below that, I want a save button, which what it should do means, I already have employee comments in the PUC details, you can see in the payload, payload in the PUC form component, which is already there. Just I need to save this comment. I want an employee. I already have an employee box, employee comments box. Below that I want an acknowledgement, and I want to save that comment. Save that comment to the PUC details, PUC details column, employee comments column is already available. So what is the minimal change I should do in this code to implement this feature? And I want that edit icon to be shown for the employee also in the dashboard. While it is only in the PUC in progress, I want the employee to see it.
 
 
