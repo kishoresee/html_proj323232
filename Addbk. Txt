@@ -1,3 +1,9 @@
+So what I have given the dashboard component, PIP form component, PIP HTML component, and then SharePoint service component. Analyze it thoroughly, you will see an admin feature that is added to that. Our admin can see all the PIPs irrespective of manager, HRBP, and employee. He can see all the PIPs raised. The thing I want now is, analyze everything, and I want a download icon near the eye and edit icon in the dashboard, nearby the eye and edit icon, I need a download option for admin only, only for admin. And if he clicks, if he clicks, if admin clicks download, it should download as an Excel copy of the PIP, whatever, above the PIP details, like PIP details and the check-in tabs and PIP logs if it is available, or else download till what are all the details available in an Excel sheet neatly. This is what I want to implement, and analyze the document thoroughly, give where and what I have to modify clearly. I need a clear fix and I need a clean solution. Tell me where and what to modify exactly.
+
+
+
+
+
 Good question 👍 I can already guess the reason.
 
 Your button is enabled because you are using PrimeNG p-checkbox, and #ack.checked does NOT work the same way as normal HTML checkbox.
