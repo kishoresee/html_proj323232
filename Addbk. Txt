@@ -1,3 +1,10 @@
+So now I have given all the dashboard components and manager audit components and then the service component. You can see that the download option in the both manager audit template and dashboard template for the admin purpose, both for the download option I kept the entire book details will be downloaded for the admin and dashboard component, I have the download option for the audit log. So for the both, for example, first starting with the audit log, if I click the download, it should be downloading the audit option, but including that, I want to download the supporting document. Refer the get supporting docs by report ID in the service component. You can see a method like that. Using that performance parent group ID in that method, I want to download the corresponding, corresponding document also along with the Excel sheet which I delivered. So both supporting document and the Excel sheet should be in a compressed form, compressed download which I should get as a output for the both.
+
+
+
+
+
+
 So in the menu bar, menu bar component and manager audit component which I have given, the thing I need is, I already have that audit feature, audit button available in the menu bar, but only manager and HRVP can able to see the things. Like manager can see the audit logs of the employees who are under him. Now, what I want is, I want, when an admin logs in, I want the admin to let see the audits of all the existing employees, entire existing employees, irrespective of anything. I want to see, I want, I also want the admin to allow to see the audit button in the menu bar and make the necessary changes and also refer the service component which I have given and add the necessary service and remember I am using audit trial library in my SharePoint. So it is not audit log, it is audit trial library. Refer the SharePoint service and give the necessary changes so that admin can see all the audits, all the existing audits to download.
 
 
