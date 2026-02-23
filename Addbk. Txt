@@ -1,3 +1,184 @@
+Perfect 👍 Instead of fireAlert, we’ll properly redirect to a dedicated Unauthorized Page Component with a clean green light theme.
+
+I’ll give you everything step-by-step:
+
+⸻
+
+✅ Step 1: Generate Unauthorized Component
+
+Run this:
+
+ng generate component Pages/unauthorized
+
+This creates:
+
+src/app/Pages/unauthorized/
+
+
+⸻
+
+✅ Step 2: Update Your Dashboard Logic
+
+Inside your dashboard.component.ts
+
+🔴 Remove this:
+
+this.fireAlert('You do not have permission to view the dashboard', 'error');
+return;
+
+✅ Replace with:
+
+if (!this.isAuthorized) {
+  this.router.navigate(['/unauthorized']);
+  return;
+}
+
+Make sure constructor has Router:
+
+constructor(private router: Router) {}
+
+And import:
+
+import { Router } from '@angular/router';
+
+
+⸻
+
+✅ Step 3: Add Route in app-routing.module.ts
+
+Open app-routing.module.ts
+
+Add this import:
+
+import { UnauthorizedComponent } from './Pages/unauthorized/unauthorized.component';
+
+Now update routes:
+
+const routes: Routes = [
+  { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+
+  {
+    path: 'dashboard',
+    loadComponent: () =>
+      import('./Pages/dashboard/dashboard.component').then(m => m.DashboardComponent),
+  },
+
+  {
+    path: 'unauthorized',
+    component: UnauthorizedComponent
+  },
+
+  { path: '**', redirectTo: 'dashboard' }
+];
+
+
+⸻
+
+✅ Step 4: Create Beautiful Green Theme UI
+
+unauthorized.component.html
+
+<div class="unauthorized-container">
+  <div class="card">
+    <h1>🚫 Access Denied</h1>
+    <p>You are not authorized to view this page.</p>
+
+    <button (click)="goToDashboard()">Go Back to Dashboard</button>
+  </div>
+</div>
+
+
+⸻
+
+unauthorized.component.ts
+
+import { Component } from '@angular/core';
+import { Router } from '@angular/router';
+
+@Component({
+  selector: 'app-unauthorized',
+  templateUrl: './unauthorized.component.html',
+  styleUrls: ['./unauthorized.component.css']
+})
+export class UnauthorizedComponent {
+
+  constructor(private router: Router) {}
+
+  goToDashboard() {
+    this.router.navigate(['/dashboard']);
+  }
+}
+
+
+⸻
+
+unauthorized.component.css (Green Light Theme)
+
+.unauthorized-container {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #d4fc79, #96e6a1);
+}
+
+.card {
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0, 128, 0, 0.2);
+  width: 400px;
+}
+
+.card h1 {
+  color: #2e7d32;
+  margin-bottom: 10px;
+}
+
+.card p {
+  color: #4caf50;
+  margin-bottom: 20px;
+}
+
+.card button {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.card button:hover {
+  background-color: #2e7d32;
+}
+
+
+⸻
+
+✅ What Happens Now
+	•	Unauthorized user → Automatically redirected to /unauthorized
+	•	No popup alert
+	•	Clean green theme page shown
+	•	User can click button to go back
+
+⸻
+
+🔥 Even Better (Professional Way)
+
+Instead of checking inside Dashboard, you can move this logic to a Route Guard (like your ManagerGuard) and directly block navigation.
+
+If you want, I can give you the guard-based clean architecture version also 👌
+
+⸻
+
+If you apply this and still something doesn’t work, send me the updated routing file screenshot — I’ll fix it exactly for your structure.
+
+
+
+
 So now I have given all the dashboard components and manager audit components and then the service component. You can see that the download option in the both manager audit template and dashboard template for the admin purpose, both for the download option I kept the entire book details will be downloaded for the admin and dashboard component, I have the download option for the audit log. So for the both, for example, first starting with the audit log, if I click the download, it should be downloading the audit option, but including that, I want to download the supporting document. Refer the get supporting docs by report ID in the service component. You can see a method like that. Using that performance parent group ID in that method, I want to download the corresponding, corresponding document also along with the Excel sheet which I delivered. So both supporting document and the Excel sheet should be in a compressed form, compressed download which I should get as a output for the both.
 
 
