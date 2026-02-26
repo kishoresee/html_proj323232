@@ -1,3 +1,253 @@
+Super clear 👍 I understood your requirement.
+
+✅ Current Situation
+	•	You are saving Performance Issues into a normal SharePoint list (PerformanceIssues)
+	•	Now you created a Document Library → PerformanceIssuesLib
+	•	Requirement:
+
+PerformanceIssuesLib
+    → EmployeeUID (Folder)
+          → Performance details (items/files)
+
+
+	•	Similar to your Audit feature → which already:
+	•	Creates folder
+	•	Uploads file
+	•	Updates metadata
+
+Now you want same structure for Performance Issues.
+
+⸻
+
+🎯 What You Need To Change
+
+Since PerformanceIssuesLib is a Document Library, you cannot use:
+
+/_api/web/lists/getbytitle('PerformanceIssues')/items
+
+Instead you must:
+	1.	✅ Create Employee Folder (if not exists)
+	2.	✅ Create file (or empty file)
+	3.	✅ Update metadata (columns like PerformanceIssue, Timeline, etc.)
+
+Exactly same pattern as your AuditTrailLibrary.
+
+⸻
+
+🔥 Step-By-Step Changes
+
+⸻
+
+✅ STEP 1: Add Library Name
+
+In your sharepoint.service.ts
+
+Replace:
+
+private readonly perfIssuesList = 'PerformanceIssues';
+
+With:
+
+private readonly perfIssuesLib = 'PerformanceIssuesLib';
+
+
+⸻
+
+✅ STEP 2: Create Folder Structure
+
+Add this function (copy pattern from audit):
+
+ensurePerformanceFolder(employeeUid: string): Observable<string> {
+
+  const library = this.perfIssuesLib;
+  const empPath = `${library}/${employeeUid}`;
+
+  const createUrl = `${this.siteUrl}/_api/web/folders`;
+
+  return this.getFormDigest().pipe(
+    switchMap(digest => {
+
+      const hdr = new HttpHeaders({
+        Accept: 'application/json;odata=verbose',
+        'Content-Type': 'application/json;odata=verbose',
+        'X-RequestDigest': digest
+      });
+
+      return this.http.post<any>(createUrl, {
+        __metadata: { type: 'SP.Folder' },
+        ServerRelativeUrl: empPath
+      }, { headers: hdr, withCredentials: true }).pipe(
+        catchError(() => of(null)),
+        map(() => empPath)
+      );
+    })
+  );
+}
+
+
+⸻
+
+✅ STEP 3: Replace createPerformanceIssueItem()
+
+🚫 REMOVE this old list-based method:
+
+/_api/web/lists/getbytitle('PerformanceIssues')/items
+
+
+⸻
+
+✅ STEP 4: New Method to Save Performance in Library
+
+Add this:
+
+createPerformanceIssueFile(
+  employeeUid: string,
+  issue: any
+): Observable<any> {
+
+  const fileName = `Performance_${new Date().getTime()}.txt`;
+  const folderPath = `${this.perfIssuesLib}/${employeeUid}`;
+
+  const addFileUrl =
+    `${this.siteUrl}/_api/web/GetFolderByServerRelativeUrl('${folderPath}')/Files/add(url='${fileName}',overwrite=true)`;
+
+  return this.getFormDigest().pipe(
+    switchMap(digest => {
+
+      const hdr = new HttpHeaders({
+        Accept: 'application/json;odata=verbose',
+        'Content-Type': 'application/json;odata=verbose',
+        'X-RequestDigest': digest
+      });
+
+      // 1️⃣ Create empty file
+      return this.http.post<any>(
+        addFileUrl,
+        '',
+        { headers: hdr, withCredentials: true }
+      );
+    }),
+    switchMap(fileRes => {
+
+      const listItemUrl =
+        `${this.siteUrl}/_api/web/GetFileByServerRelativeUrl('${fileRes.d.ServerRelativeUrl}')/ListItemAllFields`;
+
+      const metaPayload = {
+        __metadata: { type: 'SP.Data.PerformanceIssuesLibItem' },
+        Title: issue.issue,
+        CurrentPerformanceAssessment: issue.currentAssessment,
+        PerformanceStandards: issue.standard,
+        Timeline: issue.timeline,
+        PerformanceSequence: issue.performanceSequence
+      };
+
+      return this.getFormDigest().pipe(
+        switchMap(digest => {
+
+          const hdr = new HttpHeaders({
+            Accept: 'application/json;odata=verbose',
+            'Content-Type': 'application/json;odata=verbose',
+            'X-RequestDigest': digest,
+            'X-HTTP-Method': 'MERGE',
+            'IF-MATCH': '*'
+          });
+
+          return this.http.post<any>(
+            listItemUrl,
+            metaPayload,
+            { headers: hdr, withCredentials: true }
+          );
+        })
+      );
+    });
+}
+
+
+⸻
+
+✅ STEP 5: Modify savePerformanceIssues()
+
+Change this:
+
+return this.sp.createPerformanceIssueItem(this.pipId, payload, parentId);
+
+To this:
+
+return this.sp.ensurePerformanceFolder(employeeUid).pipe(
+  switchMap(() =>
+    this.sp.createPerformanceIssueFile(employeeUid, issue)
+  )
+);
+
+
+⸻
+
+🎯 Final Flow Will Be
+
+When saving:
+
+PerformanceIssuesLib
+   └── EMP001
+         ├── Performance_1718989.txt
+         ├── Performance_1718990.txt
+
+Each file will store:
+	•	Timeline
+	•	Standards
+	•	Assessment
+	•	Sequence
+	•	etc (as metadata columns)
+
+⸻
+
+🚀 Important
+
+Make sure:
+
+✔ Library internal name
+
+Check:
+
+PerformanceIssuesLib
+
+✔ List item entity type name
+
+Run:
+
+/_api/web/lists/getbytitle('PerformanceIssuesLib')?$select=ListItemEntityTypeFullName
+
+It will return something like:
+
+SP.Data.PerformanceIssuesLibItem
+
+Use that exact name in:
+
+__metadata: { type: 'SP.Data.PerformanceIssuesLibItem' }
+
+
+⸻
+
+💡 Why This Is Better
+	•	Clean folder per employee
+	•	Structured storage
+	•	Same design pattern as Audit
+	•	Scalable
+	•	No mixing list + library logic
+
+⸻
+
+If you want I can now:
+	•	🔍 Refactor your exact existing method cleanly
+	•	OR
+	•	✨ Merge audit + performance logic into reusable generic folder service
+
+Tell me 👍
+
+
+
+
+
+
 Perfect 👍 Instead of fireAlert, we’ll properly redirect to a dedicated Unauthorized Page Component with a clean green light theme.
 
 I’ll give you everything step-by-step:
