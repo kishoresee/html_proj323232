@@ -1,3 +1,185 @@
+
+Perfect 👍 now I clearly see your error.
+
+Your Network tab shows:
+
+System.IO.DirectoryNotFoundException
+"File Not Found"
+
+That means 👇
+
+👉 The folder path does NOT exist
+👉 And you are trying to upload file into that folder directly
+
+SharePoint will NOT auto-create folders when uploading files.
+You MUST create folder first via API.
+
+⸻
+
+✅ Correct Solution (Auto Create Employee Folder via Code)
+
+You must follow this exact order:
+
+1️⃣ Ensure Employee Folder exists
+2️⃣ Then upload file inside it
+
+
+⸻
+
+🔥 Correct Working Folder Creation Code (Production Safe)
+
+Replace your folder creation logic with this:
+
+ensureEmployeeFolder(employeeUid: string): Observable<string> {
+
+  const folderPath = `${this.perfIssuesLib}/${employeeUid}`;
+
+  const createFolderUrl = `${this.siteUrl}/_api/web/folders`;
+
+  return this.getFormDigest().pipe(
+    switchMap(digest => {
+
+      const headers = new HttpHeaders({
+        Accept: 'application/json;odata=verbose',
+        'Content-Type': 'application/json;odata=verbose',
+        'X-RequestDigest': digest
+      });
+
+      return this.http.post<any>(
+        createFolderUrl,
+        {
+          __metadata: { type: 'SP.Folder' },
+          ServerRelativeUrl: `${this.webUrl}/${folderPath}`
+        },
+        { headers, withCredentials: true }
+      ).pipe(
+        catchError(() => {
+          // Folder already exists → ignore error
+          return of(null);
+        }),
+        map(() => folderPath)
+      );
+    })
+  );
+}
+
+
+⸻
+
+⚠️ IMPORTANT FIX
+
+From your screenshot I suspect you’re using:
+
+GetFolderByServerRelativeUrl('PerformanceIssuesLib/EMP001')
+
+❌ That is WRONG.
+
+It must be FULL server relative path:
+
+/sites/PIPWorkflow/PerformanceIssuesLib/EMP001
+
+So always build like this:
+
+const fullPath = `${this.webUrl}/${this.perfIssuesLib}/${employeeUid}`;
+
+Where:
+
+this.webUrl = '/sites/PIPWorkflow'
+
+NOT full https URL
+Only server relative path.
+
+⸻
+
+✅ Then Upload File Only After Folder Creation
+
+Modify your save method like this:
+
+this.sp.ensureEmployeeFolder(employeeUid).pipe(
+  switchMap(folderPath => {
+
+    const fileName = `Performance_${Date.now()}.txt`;
+
+    const uploadUrl =
+      `${this.siteUrl}/_api/web/GetFolderByServerRelativeUrl('${this.webUrl}/${folderPath}')/Files/add(url='${fileName}',overwrite=true)`;
+
+    return this.getFormDigest().pipe(
+      switchMap(digest => {
+
+        const headers = new HttpHeaders({
+          Accept: 'application/json;odata=verbose',
+          'Content-Type': 'application/json;odata=verbose',
+          'X-RequestDigest': digest
+        });
+
+        return this.http.post(uploadUrl, '', {
+          headers,
+          withCredentials: true
+        });
+      })
+    );
+  })
+).subscribe();
+
+
+⸻
+
+🎯 Why Your Current Code Fails
+
+Because you’re doing:
+
+GetFolderByServerRelativeUrl('folder')/Files/add(...)
+
+But the folder:
+
+PerformanceIssuesLib/EMP001
+
+Does NOT exist yet.
+
+So SharePoint throws:
+
+DirectoryNotFoundException
+
+
+⸻
+
+🚀 Clean Architecture (Recommended)
+
+Instead of repeating logic like Audit + Performance:
+
+Create reusable function:
+
+ensureFolder(library: string, folderName: string)
+
+Then reuse everywhere.
+
+⸻
+
+🧠 Debug Checklist
+
+Before testing again:
+
+✅ Check library internal name exactly
+✅ Check server relative URL is correct
+✅ Use full path /sites/SiteName/Library/Folder
+✅ Create folder first
+✅ Then upload file
+
+⸻
+
+If you want, send me:
+	•	Your siteUrl
+	•	Your webUrl
+	•	Your perfIssuesLib value
+
+I will give you EXACT corrected URL string for your case.
+
+We’ll make it production ready 💪
+
+
+
+
+
 Super clear 👍 I understood your requirement.
 
 ✅ Current Situation
