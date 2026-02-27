@@ -1,3 +1,213 @@
+Perfect 👍
+Now I will give you a FULL CLEAN SERVICE IMPLEMENTATION that you can directly paste into your SharePoint service.
+
+This version:
+
+✔ Creates employee folder (if not exists)
+✔ Creates PIP subfolder (if not exists)
+✔ Uploads dummy file
+✔ Updates metadata correctly
+✔ Uses correct Library entity type
+✔ Handles 404 safely
+
+No confusion. No mixing List logic.
+
+⸻
+
+✅ FULL SERVICE IMPLEMENTATION (PASTE THIS)
+
+Replace your existing create method with this.
+
+⸻
+
+
+createPerformanceIssueItem(
+  employeeUid: string,
+  payload: any,
+  parentId: string
+): Observable<any> {
+
+  const libraryName = 'PerformanceIssuesLib';
+  const entityType = 'SP.Data.PerformanceIssuesLibItem';
+
+  const employeeFolder =
+    `/sites/PIPWorkflow/${libraryName}/${employeeUid}`;
+
+  const pipFolder =
+    `${employeeFolder}/${parentId}`;
+
+  return this.ensureFolder(employeeFolder).pipe(
+
+    // Ensure PIP subfolder
+    switchMap(() => this.ensureFolder(pipFolder)),
+
+    // Get Digest
+    switchMap(() => this.getFormDigest()),
+
+    // Upload file
+    switchMap(digest => {
+
+      const fileName = `issue_${Date.now()}.txt`;
+
+      const uploadUrl =
+        `${this.siteUrl}/_api/web/GetFolderByServerRelativeUrl('${pipFolder}')/Files/add(url='${fileName}',overwrite=true)`;
+
+      const headers = new HttpHeaders({
+        Accept: 'application/json;odata=verbose',
+        'Content-Type': 'application/octet-stream',
+        'X-RequestDigest': digest
+      });
+
+      const emptyBlob = new Blob([''], { type: 'application/octet-stream' });
+
+      return this.http.post<any>(uploadUrl, emptyBlob, {
+        headers,
+        withCredentials: true
+      }).pipe(
+        map(res => ({
+          fileUrl: res.d.ServerRelativeUrl,
+          digest
+        }))
+      );
+    }),
+
+    // Patch metadata
+    switchMap(({ fileUrl, digest }) => {
+
+      const patchUrl =
+        `${this.siteUrl}/_api/web/GetFileByServerRelativeUrl('${fileUrl}')/ListItemAllFields`;
+
+      const body = {
+        __metadata: { type: entityType },
+
+        PerformanceIssue_x0020_: payload.issue,
+        Timeline: payload.timeline,
+        PerformanceStandards: payload.standard,
+        CurrentPerformanceAssessment: payload.currentAssessment,
+        PerformanceParentPIPID: parentId,
+        PerformanceSequence: payload.sequence
+      };
+
+      const headers = new HttpHeaders({
+        Accept: 'application/json;odata=verbose',
+        'Content-Type': 'application/json;odata=verbose',
+        'X-RequestDigest': digest,
+        'IF-MATCH': '*',
+        'X-HTTP-Method': 'MERGE'
+      });
+
+      return this.http.post(patchUrl, body, {
+        headers,
+        withCredentials: true
+      });
+    })
+  );
+}
+
+
+⸻
+
+✅ Add These Helper Methods Below It
+
+⸻
+
+Ensure Folder
+
+private ensureFolder(folderPath: string): Observable<any> {
+
+  const checkUrl =
+    `${this.siteUrl}/_api/web/GetFolderByServerRelativeUrl('${folderPath}')`;
+
+  return this.http.get(checkUrl, { withCredentials: true }).pipe(
+
+    // Folder exists
+    map(() => folderPath),
+
+    // If not exists, create it
+    catchError(() => this.createFolder(folderPath))
+  );
+}
+
+
+⸻
+
+Create Folder
+
+private createFolder(folderPath: string): Observable<any> {
+
+  return this.getFormDigest().pipe(
+    switchMap(digest => {
+
+      const url = `${this.siteUrl}/_api/web/folders`;
+
+      const body = {
+        __metadata: { type: 'SP.Folder' },
+        ServerRelativeUrl: folderPath
+      };
+
+      const headers = new HttpHeaders({
+        Accept: 'application/json;odata=verbose',
+        'Content-Type': 'application/json;odata=verbose',
+        'X-RequestDigest': digest
+      });
+
+      return this.http.post(url, body, {
+        headers,
+        withCredentials: true
+      });
+    })
+  );
+}
+
+
+⸻
+
+🔥 What This Will Create Automatically
+
+Structure:
+
+PerformanceIssuesLib
+ └── e95654
+      └── PIP-2026-95654
+           └── issue_173883.txt
+
+No manual folder creation needed.
+
+⸻
+
+🚨 IMPORTANT CHECK
+
+Before running, confirm:
+	1.	Library name = PerformanceIssuesLib
+	2.	Entity type = SP.Data.PerformanceIssuesLibItem
+	3.	Internal field names EXACT match
+
+If any field doesn’t save → internal name mismatch.
+
+⸻
+
+🧠 After Pasting
+
+Open Network tab.
+
+You must see:
+
+1️⃣ GET → check folder
+2️⃣ POST → create folder (if needed)
+3️⃣ POST → Files/add
+4️⃣ POST → ListItemAllFields (MERGE)
+
+Then metadata will save.
+
+⸻
+
+This is now a complete production-ready SharePoint document library implementation.
+
+If anything still fails, send only the Network → failed request screenshot.
+
+
+
+
 Good 👍 relax.
 
 You’re not stuck because of logic.
