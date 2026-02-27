@@ -1,4 +1,241 @@
 
+Good 👍 this is actually a very clear technical issue, and from your screenshots I can see exactly what is happening.
+
+You are:
+	1.	✅ Creating folder correctly
+	2.	✅ Uploading 2 dummy files correctly
+	3.	❌ PATCHing metadata — but columns stay empty
+
+So the problem is NOT folder creation
+The problem is your metadata PATCH step.
+
+⸻
+
+🔎 The REAL Problem
+
+From your screenshot, this is your PATCH body:
+
+const body = {
+  __metadata: { type: 'SP.Data.PerformanceIssuesListItem' },
+  ...payload,
+  ReportPIPID: parentId
+};
+
+And in debugger your payload looks like:
+
+payload = {
+  issue: "gngn",
+  timeline: null,
+  standard: "",
+  currentAssessment: ""
+}
+
+But your SharePoint columns are:
+
+CurrentPerformanceAssessment
+PerformanceParentPIPID
+PerformanceIssue_x0020_
+PerformanceSequence
+PerformanceStandards
+Timeline
+
+⚠️ See the mismatch?
+
+⸻
+
+❌ Why SharePoint is ignoring your data
+
+SharePoint only stores values when:
+	•	Internal column name matches EXACTLY
+	•	Correct ListItemEntityTypeFullName is used
+	•	Field names match case-sensitive internal names
+
+Right now your payload keys are:
+
+issue
+timeline
+standard
+currentAssessment
+
+But SharePoint expects:
+
+PerformanceIssue_x0020_
+Timeline
+PerformanceStandards
+CurrentPerformanceAssessment
+
+So SharePoint receives unknown fields → silently ignores them → saves empty columns.
+
+That is why:
+
+✔ Folder created
+✔ Files created
+❌ Columns empty
+
+⸻
+
+🎯 ROOT CAUSE
+
+You are spreading raw form payload directly:
+
+...payload
+
+Instead of mapping to SharePoint internal column names.
+
+⸻
+
+✅ CORRECT FIX (Minimal & Proper)
+
+Instead of:
+
+const body = {
+  __metadata: { type: 'SP.Data.PerformanceIssuesListItem' },
+  ...payload,
+  ReportPIPID: parentId
+};
+
+You MUST map fields properly:
+
+const body = {
+  __metadata: { type: 'SP.Data.PerformanceIssuesListItem' },
+
+  PerformanceIssue_x0020_: payload.issue,
+  Timeline: payload.timeline,
+  PerformanceStandards: payload.standard,
+  CurrentPerformanceAssessment: payload.currentAssessment,
+  PerformanceParentPIPID: parentId,
+  PerformanceSequence: payload.sequence
+};
+
+🚨 IMPORTANT:
+Use the Internal Name, NOT Display Name.
+
+You can verify internal names from:
+
+List Settings → Click Column → Check URL:
+
+Field=PerformanceIssue_x0020_
+
+
+⸻
+
+⚠️ SECOND POSSIBLE ISSUE (Very Important)
+
+In your screenshot I also noticed:
+
+'X-HTTP-Method': 'MERGE'
+
+For document library ListItem update, it is better to use:
+
+'X-HTTP-Method': 'MERGE',
+'IF-MATCH': '*'
+
+OR even safer:
+
+this.http.patch(itemUrl, body, {
+  headers: hdr,
+  withCredentials: true
+});
+
+Using Angular PATCH is cleaner than manual MERGE.
+
+⸻
+
+🧠 Why Folder + File Works But Metadata Fails
+
+Because:
+	•	File upload → hits Files/add endpoint → works fine
+	•	Metadata update → hits ListItem endpoint → wrong field names → SharePoint ignores
+
+SharePoint NEVER throws error for unknown fields.
+It just ignores them.
+
+That is why debugging was confusing.
+
+⸻
+
+🛠 Final Clean Version of PATCH Section
+
+Replace your PATCH part completely with this:
+
+switchMap(([listItemId, digest]) => {
+
+  const itemUrl = `${this.siteUrl}/_api/web/lists/getbytitle('${this.perfIssuesList}')/items(${listItemId})`;
+
+  const body = {
+    __metadata: { type: 'SP.Data.PerformanceIssuesListItem' },
+
+    PerformanceIssue_x0020_: payload.issue,
+    Timeline: payload.timeline,
+    PerformanceStandards: payload.standard,
+    CurrentPerformanceAssessment: payload.currentAssessment,
+    PerformanceParentPIPID: parentId,
+    PerformanceSequence: payload.sequence
+  };
+
+  const hdr = new HttpHeaders({
+    Accept: 'application/json;odata=verbose',
+    'Content-Type': 'application/json;odata=verbose',
+    'X-RequestDigest': digest,
+    'IF-MATCH': '*',
+    'X-HTTP-Method': 'MERGE'
+  });
+
+  return this.http.post(itemUrl, body, {
+    headers: hdr,
+    withCredentials: true
+  });
+
+});
+
+
+⸻
+
+✅ After Fix You Will See
+	•	Folder created
+	•	2 files created
+	•	All columns populated correctly
+	•	Draft save works
+	•	Edit works
+
+⸻
+
+📌 Quick Self-Check
+
+Open DevTools → Network → PATCH call
+Check Request Payload.
+
+If you do NOT see:
+
+PerformanceIssue_x0020_
+
+Then it will NOT save.
+
+⸻
+
+🎯 Final Conclusion
+
+The issue is NOT:
+	•	Folder logic
+	•	Dummy file logic
+	•	Digest
+	•	ParentId
+
+The issue is:
+
+❌ Wrong field names in payload
+❌ Direct spread of form object
+
+Map fields manually → problem solved.
+
+⸻
+
+If you want, next I can also help you clean this into a reusable mapping function so your code stays professional and maintainable.
+
+
+
+
+
 Perfect 👍 now I clearly see your error.
 
 Your Network tab shows:
