@@ -1,3 +1,243 @@
+Good 👍 relax.
+
+You’re not stuck because of logic.
+You’re stuck because List → Library conversion changes the entire SharePoint behavior, and SharePoint silently ignores wrong field names.
+
+Let me give you everything clearly, cleanly, and correctly structured.
+
+No confusion. No mixing. Just correct implementation.
+
+⸻
+
+🔥 FIRST — Understand What Changed
+
+OLD (Working Version)
+
+You were using a SharePoint List:
+
+POST /_api/web/lists/getbytitle('PerformanceIssues')/items
+
+That creates a row directly.
+
+⸻
+
+NEW (Current Version)
+
+You are using a Document Library:
+
+You must:
+	1.	Create folder (optional)
+	2.	Upload a file
+	3.	Get its ListItem
+	4.	PATCH metadata on that file’s ListItem
+
+Completely different flow.
+
+⸻
+
+✅ FINAL CORRECT IMPLEMENTATION (Document Library)
+
+This is the FULL CLEAN VERSION.
+
+Copy this structure exactly.
+
+⸻
+
+✅ Step 1 — Get Entity Type Once (Very Important)
+
+Open browser:
+
+/_api/web/lists/getbytitle('PerformanceIssuesLib')?$select=ListItemEntityTypeFullName
+
+You will get:
+
+SP.Data.PerformanceIssuesLibItem
+
+Keep that value.
+
+⸻
+
+✅ Step 2 — Correct Working Method
+
+createPerformanceIssueItem(
+  employeeUid: string,
+  payload: any,
+  parentId: string
+): Observable<any> {
+
+  const libraryName = 'PerformanceIssuesLib';
+  const entityType = 'SP.Data.PerformanceIssuesLibItem'; // confirm from API
+
+  return this.ensureEmployeeFolder(libraryName, employeeUid).pipe(
+
+    // STEP 1: Get Digest
+    switchMap(folderPath =>
+      this.getFormDigest().pipe(
+        map(digest => ({ folderPath, digest }))
+      )
+    ),
+
+    // STEP 2: Upload Dummy File
+    switchMap(({ folderPath, digest }) => {
+
+      const fileName = `issue_${Date.now()}.txt`;
+
+      const uploadUrl =
+        `${this.siteUrl}/_api/web/GetFolderByServerRelativeUrl('${folderPath}')/Files/add(url='${fileName}',overwrite=true)`;
+
+      const headers = new HttpHeaders({
+        Accept: 'application/json;odata=verbose',
+        'Content-Type': 'application/octet-stream',
+        'X-RequestDigest': digest
+      });
+
+      const emptyBlob = new Blob([''], { type: 'application/octet-stream' });
+
+      return this.http.post<any>(uploadUrl, emptyBlob, {
+        headers,
+        withCredentials: true
+      }).pipe(
+        map(res => ({
+          fileUrl: res.d.ServerRelativeUrl,
+          digest
+        }))
+      );
+    }),
+
+    // STEP 3: PATCH Metadata
+    switchMap(({ fileUrl, digest }) => {
+
+      const patchUrl =
+        `${this.siteUrl}/_api/web/GetFileByServerRelativeUrl('${fileUrl}')/ListItemAllFields`;
+
+      const body = {
+        __metadata: { type: entityType },
+
+        PerformanceIssue_x0020_: payload.issue,
+        Timeline: payload.timeline,
+        PerformanceStandards: payload.standard,
+        CurrentPerformanceAssessment: payload.currentAssessment,
+        PerformanceParentPIPID: parentId,
+        PerformanceSequence: payload.sequence
+      };
+
+      const headers = new HttpHeaders({
+        Accept: 'application/json;odata=verbose',
+        'Content-Type': 'application/json;odata=verbose',
+        'X-RequestDigest': digest,
+        'IF-MATCH': '*',
+        'X-HTTP-Method': 'MERGE'
+      });
+
+      return this.http.post(patchUrl, body, {
+        headers,
+        withCredentials: true
+      });
+    })
+  );
+}
+
+
+⸻
+
+🚨 VERY IMPORTANT
+
+If only PerformanceIssue_x0020_ saves but others blank:
+
+That means:
+
+Your internal names are wrong.
+
+⸻
+
+✅ How To Get Exact Internal Names
+
+Run:
+
+/_api/web/lists/getbytitle('PerformanceIssuesLib')/fields?$select=Title,InternalName
+
+It will return:
+
+Title: Timeline
+InternalName: Timeline
+
+OR
+
+Title: Current Performance Assessment
+InternalName: Current_x0020_Performance_x0020_Assessment
+
+Use the InternalName only.
+
+⸻
+
+⚠️ Example of What You Might Need
+
+If your display name is:
+
+Current Performance Assessment
+
+Correct body must be:
+
+Current_x0020_Performance_x0020_Assessment: payload.currentAssessment
+
+NOT:
+
+CurrentPerformanceAssessment
+
+
+⸻
+
+🔎 How To Debug Correctly
+
+Open Network tab.
+
+You MUST see:
+	1.	POST → Files/add
+	2.	POST → ListItemAllFields (MERGE)
+
+If you see:
+
+/lists/getbytitle()/items()
+
+Then you are using old List logic.
+
+⸻
+
+🧠 Why This Was So Confusing
+
+Because:
+	•	List logic is simple
+	•	Library logic is 3-step
+	•	SharePoint ignores wrong field names silently
+	•	Metadata type must match exactly
+	•	Internal names are not display names
+
+So it looks like logic problem, but it is naming problem.
+
+⸻
+
+🎯 Final Checklist
+
+✔ Entity type = SP.Data.PerformanceIssuesLibItem
+✔ Endpoint = GetFileByServerRelativeUrl(…)/ListItemAllFields
+✔ Internal names exactly match
+✔ IF-MATCH = ‘*’
+✔ X-HTTP-Method = MERGE
+
+⸻
+
+You are not far.
+
+You were mixing List thinking with Library behavior.
+
+Now everything is structured clearly.
+
+If you want, next I can draw you a simple visual flow diagram so you never get confused between List vs Library again.
+
+
+
+
+
 Perfect 👍
 Now I can clearly see your current structure.
 
