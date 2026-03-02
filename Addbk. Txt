@@ -1,3 +1,212 @@
+
+Excellent 👏 now this is not a coding bug — this is ICS behavior.
+
+What you’re seeing is 100% expected behavior based on how your ICS is currently generated.
+
+Let me explain clearly.
+
+⸻
+
+🔎 Why You Cannot Accept the Meeting
+
+In your Outlook window it shows:
+
+“As the meeting organizer, you do not need to respond.”
+
+That means:
+
+👉 The ICS file is marking YOU as the organizer.
+
+So Outlook thinks:
+	•	You created the meeting
+	•	You don’t need to accept your own meeting
+	•	Therefore it won’t show Accept / Tentative / Decline properly
+
+And because it’s just a calendar file attachment,
+it does NOT auto-add to calendar unless accepted.
+
+⸻
+
+🎯 Why It’s Happening
+
+In your ICS generation method, you are likely generating something like:
+
+ORGANIZER:MAILTO:from_email
+
+And your from_email is probably:
+
+EMANP--CIB--SSCECMSHAREPOINTAPPS
+
+Since you are CC’d and also inside the system,
+Outlook interprets you as organizer.
+
+⸻
+
+📌 Important Concept
+
+There are 2 types of ICS files:
+
+1️⃣ Simple Calendar File
+	•	Just opens as a meeting
+	•	No RSVP system
+	•	No Accept/Decline
+	•	Just adds event
+
+2️⃣ Meeting Request (Proper Invite)
+	•	Contains:
+	•	METHOD:REQUEST
+	•	ORGANIZER
+	•	ATTENDEE with RSVP=TRUE
+	•	Allows Accept / Decline
+	•	Auto appears in calendar
+	•	Sends response back
+
+Right now, your ICS is behaving like type #1.
+
+⸻
+
+🧠 What You Actually Want
+
+You want:
+	•	Employee → should receive meeting invite
+	•	Manager → should be attendee
+	•	HRBP → should be attendee
+	•	All should see Accept/Decline
+	•	It should appear in calendar
+
+So you need to generate real meeting invite ICS, not simple event ICS.
+
+⸻
+
+✅ THE FIX (Update generateICS)
+
+Your generateICS() must include:
+
+METHOD:REQUEST
+ORGANIZER
+ATTENDEE (for each person)
+RSVP=TRUE
+
+
+⸻
+
+🚀 Correct generateICS Method
+
+Replace your generateICS() completely with this:
+
+private generateICS(
+  title: string,
+  start: Date,
+  end: Date,
+  uid: string,
+  employeeMail: string,
+  managerMail: string,
+  hrbpMail: string
+): string {
+
+  const format = (d: Date) =>
+    d.getUTCFullYear().toString() +
+    String(d.getUTCMonth() + 1).padStart(2, '0') +
+    String(d.getUTCDate()).padStart(2, '0') + 'T' +
+    String(d.getUTCHours()).padStart(2, '0') +
+    String(d.getUTCMinutes()).padStart(2, '0') +
+    String(d.getUTCSeconds()).padStart(2, '0') + 'Z';
+
+  return `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//PIP Workflow//EN
+METHOD:REQUEST
+BEGIN:VEVENT
+UID:${uid}
+DTSTAMP:${format(new Date())}
+DTSTART:${format(start)}
+DTEND:${format(end)}
+SUMMARY:${title}
+DESCRIPTION:PIP Check-in Session
+ORGANIZER;CN=PIP System:MAILTO:${environment.from_email}
+ATTENDEE;CN=Employee;RSVP=TRUE:MAILTO:${employeeMail}
+ATTENDEE;CN=Manager;RSVP=TRUE:MAILTO:${managerMail}
+ATTENDEE;CN=HRBP;RSVP=TRUE:MAILTO:${hrbpMail}
+STATUS:CONFIRMED
+SEQUENCE:0
+END:VEVENT
+END:VCALENDAR`;
+}
+
+
+⸻
+
+✅ Then Call It Like This
+
+Inside sendCalendarInvites():
+
+const icsContent = this.generateICS(
+  `PIP Check-in Session ${index + 1}`,
+  startDate,
+  endDate,
+  `${Date.now()}-${index}`,
+  employeeMail,
+  managerMail,
+  hrbpMail
+);
+
+
+⸻
+
+🎯 What Will Change After This
+
+Now when mail arrives:
+
+✔ Accept / Tentative / Decline will appear
+✔ It will automatically show in calendar
+✔ Manager can respond
+✔ HRBP can respond
+✔ Employee can respond
+✔ Proper meeting workflow
+
+⸻
+
+🏁 Final Answer To Your Question
+
+Is current behavior expected?
+
+YES.
+Because your ICS is currently a simple calendar file.
+
+To make it a real meeting invite,
+you must add:
+
+METHOD:REQUEST
+ATTENDEE
+RSVP=TRUE
+
+
+⸻
+
+💡 One More Important Thing
+
+If you want employee to be the organizer instead of system,
+you can change ORGANIZER line.
+
+But usually system remains organizer.
+
+⸻
+
+Now update generateICS and test one session.
+
+Tell me:
+
+👉 After update, do you see Accept / Decline buttons?
+
+
+
+
+
+
+
+
+
+
 private sendCalendarInvites(
   employeeMail: string,
   managerMail: string,
