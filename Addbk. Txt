@@ -1,3 +1,27 @@
+const formData = new FormData();
+
+formData.append('FromEmail', environment.from_email);
+formData.append('Subject', `PIP Check-in Session ${index + 1}`);
+formData.append('Body', 'Please find attached calendar invite.');
+formData.append('ClientName', 'Team PIP');
+formData.append('IsBodyHtml', 'true');
+
+formData.append('ToEmail', employeeMail);
+formData.append('CcEmail', managerMail);
+formData.append('CcEmail', hrbpMail);
+
+// 🔥 This is the important part
+const blob = new Blob([icsContent], { type: 'text/calendar' });
+formData.append('attachment', blob, `PIP-Session-${index + 1}.ics`);
+
+this.http.post(
+  'https://ssc-ecm-api.staging.echonet/securedmail/api/mailer/queue',
+  formData
+).subscribe();
+
+
+
+
 const mailObj = {
   FromEmail: environment.from_email,
   ToEmail: [employeeMail],
