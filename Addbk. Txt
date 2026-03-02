@@ -1,3 +1,200 @@
+Perfect. Now we will build this cleanly from scratch, properly, calmly, no mixing.
+
+You want:
+	•	✅ Keep your existing sendMail() method structure
+	•	✅ Just support attachment
+	•	✅ Use /queueform
+	•	✅ Correct Angular implementation
+	•	✅ No 415
+	•	✅ No IFormFile error
+
+Good. Let’s do it properly.
+
+⸻
+
+🚨 First Understand One Important Rule
+
+You CANNOT use the same sendMail() JSON method for attachments.
+
+Because:
+	•	/queue → expects JSON
+	•	/queueform → expects multipart/form-data
+	•	JSON and FormData cannot share the same headers
+
+So we will:
+	•	Keep your old sendMail() unchanged (for normal mails)
+	•	Add a new method sendMailWithAttachment() (for ICS)
+
+That is the clean architecture.
+
+⸻
+
+✅ FINAL CLEAN IMPLEMENTATION (FROM SCRATCH)
+
+⸻
+
+1️⃣ sharepointservice.ts (Service Layer)
+
+Add this new method:
+
+public sendMailWithAttachment(formData: FormData): Observable<any> {
+  const url = `${environment.emailerservice}/queueform`;
+
+  return this.http.post<any>(url, formData, {
+    withCredentials: true
+  });
+}
+
+⚠️ VERY IMPORTANT:
+	•	Do NOT set headers
+	•	Do NOT set Content-Type
+	•	Do NOT JSON.stringify
+	•	Do NOT use httpOptions()
+
+Let browser handle multipart boundary automatically.
+
+⸻
+
+2️⃣ Component File (pipform.component.ts)
+
+Now inside your sendCalendarInvites() method:
+
+Remove JSON mailObj completely.
+
+Replace with this:
+
+private sendCalendarInvites(
+  employeeMail: string,
+  managerMail: string,
+  hrbpMail: string
+) {
+
+  this.checkInSessions.controls.forEach((ctrl, index) => {
+
+    const start = ctrl.get('sessionStart')?.value;
+    const end = ctrl.get('sessionEnd')?.value;
+
+    if (!start || !end) return;
+
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+
+    const icsContent = this.generateICS(
+      `PIP Check-in Session ${index + 1}`,
+      startDate,
+      endDate,
+      `${Date.now()}-${index}`
+    );
+
+    const formData = new FormData();
+
+    formData.append('FromEmail', environment.from_email);
+    formData.append('ToEmail', employeeMail);
+    formData.append('CcEmail', managerMail);
+    formData.append('CcEmail', hrbpMail);
+    formData.append('Subject', `PIP Check-in Session ${index + 1}`);
+    formData.append('Body', 'Please find attached calendar invite.');
+    formData.append('IsBodyHtml', 'true');
+    formData.append('ClientName', 'Team PIP');
+
+    const blob = new Blob([icsContent], { type: 'text/calendar' });
+
+    formData.append(
+      'Attachment',
+      blob,
+      `PIP-Session-${index + 1}.ics`
+    );
+
+    this.sp.sendMailWithAttachment(formData).subscribe({
+      next: () => console.log('Mail sent successfully'),
+      error: (err) => console.error('Mail failed', err)
+    });
+
+  });
+}
+
+
+⸻
+
+🔥 What This Now Does Correctly
+
+Thing	Correct Now?
+Uses /queueform	✅
+Uses FormData	✅
+Uses Blob for ICS	✅
+No JSON headers	✅
+No stringify	✅
+Matches official JS snippet	✅
+Supports IFormFile backend	✅
+
+
+⸻
+
+❌ DO NOT DO THESE AGAIN
+
+Do NOT:
+
+JSON.stringify(mailObj)
+
+Do NOT:
+
+headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+
+Do NOT:
+
+/queue
+
+For attachment use ONLY:
+
+/queueform
+
+
+⸻
+
+🧠 Why This Will Work
+
+Backend error earlier:
+
+Deserialization of interface types is not supported.
+Type Microsoft.AspNetCore.Http.IFormFile
+
+That error ONLY happens when:
+	•	Backend expects IFormFile
+	•	But you send JSON
+
+Now we are sending real multipart form-data.
+
+So IFormFile will bind correctly.
+
+⸻
+
+🧘 Final Calm Statement
+
+You were very close.
+
+The only real mistake was:
+	•	Using JSON endpoint for file upload
+
+Now it is architecturally correct.
+
+⸻
+
+If this still fails, then it is:
+	•	Authentication issue
+	•	Backend permission issue
+	•	Or wrong base URL
+
+But technically, this implementation is correct.
+
+⸻
+
+Now implement exactly this.
+
+And tell me what response you get.
+
+
+
+
 const mailObj = {
   FromEmail: environment.from_email,
   Subject: `PIP Check-in Session ${index + 1}`,
