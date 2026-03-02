@@ -9,6 +9,32 @@ const mailObj = {
   attachment: [
     {
       fileName: `PIP-Session-${index + 1}.ics`,
+      content: btoa(icsContent),   // base64
+      contentType: 'text/calendar'
+    }
+  ]
+};
+
+this.http.post(
+  'https://ssc-ecm-api.staging.echonet/securedmail/api/mailer/queue',
+  mailObj
+).subscribe();
+
+
+
+
+
+const mailObj = {
+  FromEmail: environment.from_email,
+  Subject: `PIP Check-in Session ${index + 1}`,
+  Body: 'Please find attached calendar invite.',
+  ClientName: 'Team PIP',
+  IsBodyHtml: true,
+  ToEmail: [employeeMail],
+  CcEmail: [managerMail, hrbpMail],
+  attachment: [
+    {
+      fileName: `PIP-Session-${index + 1}.ics`,
       content: btoa(icsContent),   // ⚠ ONLY this
       contentType: 'text/calendar'
     }
