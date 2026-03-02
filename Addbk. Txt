@@ -1,3 +1,166 @@
+Good 👌 now I can clearly see the real issue from your screenshot.
+
+You are getting:
+
+ERROR TS-992012: Component imports must be standalone components,
+directives, pipes, or must be NgModules.
+
+And I can see this line highlighted:
+
+CheckBoxModule, AutoCompleteModule, TableModule, HttpClient
+
+🔥 The mistake is here:
+
+You added HttpClient inside the imports array of your component.
+
+That is WRONG.
+
+⸻
+
+🧠 Why You Don’t Have app.module.ts
+
+Your project is using Angular Standalone Components (Angular 15+ style).
+
+That means:
+	•	❌ No app.module.ts
+	•	✅ Each component manages its own imports
+
+So the solution is slightly different.
+
+⸻
+
+🚨 The Real Mistake
+
+You probably added:
+
+imports: [
+  CheckBoxModule,
+  AutoCompleteModule,
+  TableModule,
+  HttpClient   ❌
+]
+
+But HttpClient is NOT a module.
+
+It must NOT be added to imports.
+
+⸻
+
+✅ CORRECT FIX FOR STANDALONE COMPONENT
+
+⸻
+
+🔹 Step 1 — REMOVE HttpClient from imports
+
+In your component decorator:
+
+@Component({
+  standalone: true,
+  imports: [
+    CheckBoxModule,
+    AutoCompleteModule,
+    TableModule
+    // ❌ remove HttpClient from here
+  ]
+})
+
+Delete HttpClient from there.
+
+⸻
+
+🔹 Step 2 — Import HttpClientModule Instead
+
+At the top:
+
+import { HttpClientModule } from '@angular/common/http';
+
+Then inside the imports array:
+
+imports: [
+  CheckBoxModule,
+  AutoCompleteModule,
+  TableModule,
+  HttpClientModule   ✅
+]
+
+⚠ Important: It must be HttpClientModule, NOT HttpClient.
+
+⸻
+
+🔹 Step 3 — Keep Constructor Injection
+
+Your constructor should remain:
+
+constructor(
+  private http: HttpClient,
+  private sp: SharepointService
+) {}
+
+That is correct.
+
+⸻
+
+💡 Why This Works
+
+Angular needs:
+	•	HttpClientModule → to register provider
+	•	HttpClient → injected into constructor
+
+You mixed them earlier.
+
+⸻
+
+🔥 Final Structure (Standalone Angular)
+
+Top imports:
+
+import { HttpClient } from '@angular/common/http';
+import { HttpClientModule } from '@angular/common/http';
+
+Component decorator:
+
+@Component({
+  standalone: true,
+  imports: [
+    CheckBoxModule,
+    AutoCompleteModule,
+    TableModule,
+    HttpClientModule
+  ]
+})
+
+Constructor:
+
+constructor(private http: HttpClient) {}
+
+
+⸻
+
+🎯 After Fix
+
+Your error:
+
+Component imports must be standalone...
+
+will disappear.
+
+Then:
+	•	500 error will disappear
+	•	Attachment will work
+	•	Outlook will show meeting invite properly
+
+⸻
+
+You are extremely close now 🔥
+
+Fix the HttpClientModule import and run again.
+
+Tell me what happens next.
+
+
+
+
+
 const formData = new FormData();
 
 formData.append('FromEmail', environment.from_email);
