@@ -1,3 +1,75 @@
+private sendCalendarInvites(
+  managerMail: string,
+  hrbpMail: string
+): void {
+
+  this.checkInSessions.controls.forEach((ctrl, index) => {
+
+    const date: Date = ctrl.get('sessionDate')?.value;
+    const start: Date = ctrl.get('sessionStart')?.value;
+    const end: Date = ctrl.get('sessionEnd')?.value;
+
+    if (!date || !start || !end) return;
+
+    // ✅ Combine real date with selected start time
+    const startDate = new Date(date);
+    startDate.setHours(
+      start.getHours(),
+      start.getMinutes(),
+      0,
+      0
+    );
+
+    // ✅ Combine real date with selected end time
+    const endDate = new Date(date);
+    endDate.setHours(
+      end.getHours(),
+      end.getMinutes(),
+      0,
+      0
+    );
+
+    console.log('ICS Start:', startDate);
+    console.log('ICS End:', endDate);
+
+    const icsContent = this.generateICS(
+      `PIP Check-in Session ${index + 1}`,
+      startDate,
+      endDate,
+      `${Date.now()}-${index}`
+    );
+
+    const formData = new FormData();
+
+    formData.append('FromEmail', environment.from_email);
+    formData.append('ToEmail', this.employeeMail);
+    formData.append('CcEmail', managerMail);
+    formData.append('CcEmail', hrbpMail);
+    formData.append('Subject', `PIP Check-in Session ${index + 1}`);
+    formData.append('Body', 'Please find attached calendar invite.');
+    formData.append('IsBodyHtml', 'true');
+    formData.append('ClientName', 'Team PIP');
+
+    const blob = new Blob([icsContent], { type: 'text/calendar' });
+
+    formData.append(
+      'Attachment',
+      blob,
+      `PIP-Session-${index + 1}.ics`
+    );
+
+    this.sp.sendMailWithAttachment(formData).subscribe({
+      next: () => console.log('Mail sent successfully'),
+      error: (err) => console.error('Mail failed', err)
+    });
+
+  });
+}
+
+
+
+
+
 Perfect. Now we will build this cleanly from scratch, properly, calmly, no mixing.
 
 You want:
