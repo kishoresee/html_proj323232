@@ -1,6 +1,24 @@
+const mailObj = {
+  FromEmail: environment.from_email,
+  ToEmail: [employeeMail],
+  CcEmail: [managerMail, hrbpMail],
+  Subject: `PIP Check-in Session ${index + 1}`,
+  Body: "Please find attached calendar invite.",
+  ClientName: 'Team PIP',
+  IsBodyHtml: true,
+  attachment: [
+    {
+      fileName: `PIP-Session-${index + 1}.ics`,
+      content: btoa(unescape(encodeURIComponent(icsContent))),
+      contentType: "text/calendar"
+    }
+  ]
+};
+
+
 Perfect 👍 good you told this clearly.
 
-Since you don’t have graphClient, we need the simplest working solution without Graph setup complexity.
+ppl Since you don’t have graphClient, we need the simplest working solution without Graph setup complexity.
 
 Because adding Microsoft Graph in an existing Angular + SharePoint app means:
 	•	Azure App registration
