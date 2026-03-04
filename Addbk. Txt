@@ -1,3 +1,197 @@
+Great — now the picture is very clear. You already have a perfect hook point in your code. We should not create new flows or new functions. Instead, we extend the existing logic exactly inside afterSaveActions() under this.isExtendedSubmit.
+
+That way the system behaves consistently with your current architecture. 👍
+
+⸻
+
+What Happens Now in Your Code
+
+Inside afterSaveActions():
+
+if (this.isExtendedSubmit) {
+
+   sendTemplateMail(...)
+
+   return
+}
+
+So when extension happens:
+	1.	Mail template Manager-Decision-Extend-Submitted is sent.
+	2.	Then the function exits.
+
+We simply need to send ICS invites before that mail is triggered.
+
+⸻
+
+Correct Approach
+
+Inside this block:
+
+if (this.isExtendedSubmit)
+
+we will call a new function:
+
+this.sendExtendedSessionInvites(employeeMail, managerMail, hrbpMail);
+
+This function will send ICS invites for sessionSequence > 8.
+
+⸻
+
+Step 1 — Modify afterSaveActions()
+
+Change this block:
+
+if (this.isExtendedSubmit) {
+
+to this:
+
+if (this.isExtendedSubmit) {
+
+  // 🔹 Send calendar invites for extended sessions (9-12)
+  this.sendExtendedSessionInvites(employeeMail, managerMail, hrbpMail);
+
+  const title = 'Manager-Decision-Extend-Submitted';
+  const to = [employeeMail];
+  const cc = [managerMail, hrbpMail];
+
+  const pipData = {
+    ManagerName: this.pipForm.get('manager.name')?.value,
+    EmployeeName: this.pipForm.get('employee.name')?.value,
+    HRBPName: this.pipForm.get('hrbp.name')?.value
+  };
+
+  this.sendTemplateMail(title, to, cc, pipData);
+
+  this.isExtendedSubmit = false;
+  return;
+}
+
+
+⸻
+
+Step 2 — Add This New Method
+
+Add this below your existing sendCalendarInvites() method.
+
+private sendExtendedSessionInvites(
+  employeeMail: string,
+  managerMail: string,
+  hrbpMail: string
+): void {
+
+  const extendedSessions = this.checkInSessions.controls
+    .filter(ctrl => ctrl.get('sessionSequence')?.value > 8);
+
+  extendedSessions.forEach(ctrl => {
+
+    const seq = ctrl.get('sessionSequence')?.value;
+    const date: Date = ctrl.get('sessionDate')?.value;
+    const start: Date = ctrl.get('sessionStart')?.value;
+    const end: Date = ctrl.get('sessionEnd')?.value;
+
+    if (!date || !start || !end) return;
+
+    const startDate = new Date(date);
+    startDate.setHours(start.getHours(), start.getMinutes(), 0, 0);
+
+    const endDate = new Date(date);
+    endDate.setHours(end.getHours(), end.getMinutes(), 0, 0);
+
+    const icsContent = this.generateICS(
+      `PIP Check-in Session ${seq}`,
+      startDate,
+      endDate,
+      `${Date.now()}-${seq}`,
+      employeeMail,
+      managerMail,
+      hrbpMail
+    );
+
+    const formData = new FormData();
+
+    formData.append('FromEmail', environment.from_email);
+    formData.append('ToEmail', employeeMail);
+    formData.append('CcEmail', managerMail);
+    formData.append('CcEmail', hrbpMail);
+    formData.append('Subject', `PIP Check-in Session ${seq}`);
+    formData.append('Body', 'Please find attached calendar invite.');
+    formData.append('IsBodyHtml', 'true');
+    formData.append('ClientName', 'Team PIP');
+
+    const blob = new Blob([icsContent], { type: 'text/calendar' });
+
+    formData.append(
+      'Attachment',
+      blob,
+      `PIP-Session-${seq}.ics`
+    );
+
+    this.sp.sendMailWithAttachment(formData).subscribe({
+      next: () => console.log(`Extended session ${seq} invite sent`),
+      error: (err) => console.error(`Session ${seq} invite failed`, err)
+    });
+
+  });
+
+}
+
+
+⸻
+
+Result After Implementation
+
+When manager clicks Submit Extended Sessions:
+
+Mail 1
+
+Template:
+
+Manager-Decision-Extend-Submitted
+
+with extension summary.
+
+⸻
+
+Mail 2-5 (calendar invites)
+
+ICS invites for:
+
+Session 9
+Session 10
+Session 11
+Session 12
+
+Each will appear in Outlook calendar with Accept / Decline buttons.
+
+⸻
+
+Important Advantage of This Design
+
+✔ No duplication of logic
+✔ Uses existing generateICS()
+✔ Uses your current afterSaveActions() architecture
+✔ Works for both flows:
+
+Flow	ICS Sent
+Initial sessions	1-8
+Extension	9-12
+
+
+⸻
+
+Optional Improvement (Much Cleaner)
+
+Right now you will send 4 separate emails.
+
+You could instead send 1 mail with 4 ICS attachments.
+
+If you want, I can show that version too — it is more enterprise-grade and your senior developers would prefer it.
+
+
+
+
+
+
 
 Excellent 👏 now this is not a coding bug — this is ICS behavior.
 
