@@ -1,3 +1,112 @@
+I clearly understood your issue 👍
+Your SharePoint values are correct (2:07–3:07 PM) but the calendar invite shows 6:37–7:37 PM.
+
+This is happening because of UTC conversion in your ICS generation.
+
+Your generateICS() function is converting time to UTC using getUTC..., which shifts the time.
+
+India timezone = UTC +5:30
+So:
+
+2:07 PM + 5:30 = 7:37 PM
+
+That is exactly why your calendar invite shows 6:37 / 7:37.
+
+⸻
+
+✅ Minimal Fix (Just 1 Change)
+
+In your generateICS() function change UTC functions → local functions.
+
+❌ Current Code
+
+const format = (d: Date) =>
+  d.getUTCFullYear().toString() +
+  String(d.getUTCMonth() + 1).padStart(2, '0') +
+  String(d.getUTCDate()).padStart(2, '0') + 'T' +
+  String(d.getUTCHours()).padStart(2, '0') +
+  String(d.getUTCMinutes()).padStart(2, '0') +
+  String(d.getUTCSeconds()).padStart(2, '0') + 'Z';
+
+
+⸻
+
+✅ Replace with
+
+const format = (d: Date) =>
+  d.getFullYear().toString() +
+  String(d.getMonth() + 1).padStart(2, '0') +
+  String(d.getDate()).padStart(2, '0') + 'T' +
+  String(d.getHours()).padStart(2, '0') +
+  String(d.getMinutes()).padStart(2, '0') +
+  String(d.getSeconds()).padStart(2, '0');
+
+
+⸻
+
+🎯 That’s the ONLY change needed
+
+Just replace:
+
+getUTCFullYear()
+getUTCMonth()
+getUTCDate()
+getUTCHours()
+getUTCMinutes()
+getUTCSeconds()
+
+with
+
+getFullYear()
+getMonth()
+getDate()
+getHours()
+getMinutes()
+getSeconds()
+
+
+⸻
+
+After Fix
+
+Stored in SharePoint:
+
+2:07 PM → 3:07 PM
+
+Calendar invite will show:
+
+2:07 PM → 3:07 PM
+
+instead of
+
+6:37 PM → 7:37 PM
+
+
+⸻
+
+⚡ Small Extra Fix (optional but safer)
+
+Also remove the Z at the end:
+
++ 'Z'
+
+because Z means UTC timezone.
+
+⸻
+
+✅ Minimal fix = change UTC functions to normal Date functions.
+
+⸻
+
+If you want, I can also show you a slightly safer 2-line fix used in production ICS files so Outlook never shifts time again.
+
+
+
+
+
+
+
+
 Great — now the picture is very clear. You already have a perfect hook point in your code. We should not create new flows or new functions. Instead, we extend the existing logic exactly inside afterSaveActions() under this.isExtendedSubmit.
 
 That way the system behaves consistently with your current architecture. 👍
