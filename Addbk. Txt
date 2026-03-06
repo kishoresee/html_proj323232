@@ -1,3 +1,16 @@
+<p-calendar
+  id="editDate"
+  formControlName="sessionDate"
+  dateFormat="dd/mm/yy"
+  [showIcon]="true"
+  [disabledDays]="[0,6]"
+  class="full-width"
+  [pAutoFocus]="false">
+</p-calendar>
+
+
+
+
 I clearly understood your issue 👍
 Your SharePoint values are correct (2:07–3:07 PM) but the calendar invite shows 6:37–7:37 PM.
 
