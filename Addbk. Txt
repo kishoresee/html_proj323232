@@ -1,3 +1,18 @@
+public canEditEmployeeComment(): boolean {
+  if (!this.roleInfo?.isEmployee) return false;
+
+  const status = this.pipForm.get('status')?.value as PipStatus;
+  const comment = this.pipForm.get('employeeComments')?.value;
+
+  // allow edit only if no comment already saved
+  return status === PipStatus.InProgress && !comment;
+}
+
+
+
+
+
+
 <p-calendar
   id="editDate"
   formControlName="sessionDate"
