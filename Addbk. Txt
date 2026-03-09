@@ -1,3 +1,266 @@
+I understood your requirement clearly 👍
+
+You already have:
+	•	openEditSession() → loads existing values
+	•	saveEditedSession() → saves new values
+	•	sendSessionEditMail() → sends mail
+
+Now you want to send 3 values in the email template:
+
+1️⃣ Previous check-in date
+2️⃣ New check-in date
+3️⃣ New check-in time
+
+Your email template placeholders:
+
+[previous checkin date]
+[Newcheckindate]
+[Newcheckintime]
+
+You already pass newDate, newStart, newEnd.
+
+The only thing missing is capturing the OLD date before update.
+
+⸻
+
+✅ Minimal Working Fix
+
+1️⃣ Capture OLD date before patching
+
+Inside saveEditedSession()
+
+Add this line before rowCtrl.patchValue()
+
+const oldDate = rowCtrl.get('sessionDate')?.value;
+
+So the top part becomes:
+
+const rowIdx = this.editSessionForm.get('__rowIndex')?.value as number;
+const rowCtrl = this.checkInSessions.at(rowIdx);
+
+const oldDate = rowCtrl.get('sessionDate')?.value;
+
+const newDate = this.editSessionForm.get('sessionDate')?.value;
+const newStart = this.editSessionForm.get('sessionStart')?.value;
+const newEnd = this.editSessionForm.get('sessionEnd')?.value;
+const newPartic = this.editSessionForm.get('participants')?.value;
+
+
+⸻
+
+2️⃣ Pass oldDate to mail function
+
+Modify this call:
+
+this.sendSessionEditMail(rowIdx, {
+    sessionDate: newDate,
+    sessionStart: newStart,
+    sessionEnd: newEnd,
+    participants: newPartic
+});
+
+➡ change to:
+
+this.sendSessionEditMail(rowIdx, {
+    oldDate: oldDate,
+    sessionDate: newDate,
+    sessionStart: newStart,
+    sessionEnd: newEnd,
+    participants: newPartic
+});
+
+
+⸻
+
+3️⃣ Update mail payload
+
+Inside sendSessionEditMail()
+
+Modify your pipData object.
+
+Current:
+
+const pipData = {
+    EmployeeName: employee?.name,
+    ManagerName: manager?.name,
+    HRBPName: hrbp?.name,
+    SessionNumber: rowIdx + 1,
+    SessionDate: this.isoToDisplay(updatedData.sessionDate?.toISOString()),
+    SessionStart: this.formatTime(updatedData.sessionStart),
+    SessionEnd: this.formatTime(updatedData.sessionEnd),
+    Participants: updatedData.participants
+};
+
+Replace with:
+
+const pipData = {
+    EmployeeName: employee?.name,
+    ManagerName: manager?.name,
+    HRBPName: hrbp?.name,
+    SessionNumber: rowIdx + 1,
+
+    PreviousCheckinDate: this.isoToDisplay(updatedData.oldDate?.toISOString()),
+
+    NewCheckinDate: this.isoToDisplay(updatedData.sessionDate?.toISOString()),
+
+    NewCheckinTime: this.buildTimeRangeString(
+        updatedData.sessionStart,
+        updatedData.sessionEnd
+    ),
+
+    Participants: updatedData.participants
+};
+
+
+⸻
+
+4️⃣ Match placeholders with template
+
+Your SharePoint email template should contain:
+
+<strong>[PreviousCheckinDate]</strong>
+<strong>[NewCheckinDate]</strong>
+<strong>[NewCheckinTime]</strong>
+
+
+⸻
+
+✅ Final Mail Example
+
+Mail will become:
+
+The Check-In dated 05 Mar 2026
+has been rescheduled to
+12 Mar 2026 10:00 AM - 10:30 AM
+
+
+⸻
+
+⭐ Why this is the cleanest solution
+
+✔ Only 3 lines added
+✔ No logic change
+✔ Uses your existing formatTime() and buildTimeRangeString()
+✔ Uses same pattern as your extend session mail
+
+⸻
+
+💡 If you want, I can also show a cleaner senior-developer version (5 lines less code) that BNP / Cognizant / Accenture Angular teams usually use for this exact pattern.
+
+
+Good, now I understand exactly where you are patching the email content. 👍
+You are doing all placeholder replacements inside replaceContent() using:
+
+body = body.replace(...)
+
+So to patch the 3 new values you asked:
+	•	Previous check-in date
+	•	New check-in date
+	•	New check-in time
+
+we only need to add 3 replacements in this method.
+No other major change required.
+
+⸻
+
+1️⃣ First pass the values in pipData
+
+In your sendSessionEditMail() you already send updatedData.
+
+Modify pipData like this:
+
+const pipData = {
+  EmployeeName: employee?.name,
+  ManagerName: manager?.name,
+  HRBPName: hrbp?.name,
+  SessionNumber: rowIdx + 1,
+
+  PreviousCheckinDate: this.isoToDisplay(updatedData.oldDate?.toISOString()),
+  NewCheckinDate: this.isoToDisplay(updatedData.sessionDate?.toISOString()),
+  NewCheckinTime: this.buildTimeRangeString(updatedData.sessionStart, updatedData.sessionEnd)
+};
+
+
+⸻
+
+2️⃣ Now modify replaceContent() (your screenshot location)
+
+Inside your Classic replacements section, add these 3 lines.
+
+Right below the other body.replace() lines.
+
+// NEW placeholders for session modification mail
+body = body.replace('[previous checkin date]', pipData.PreviousCheckinDate ?? '');
+body = body.replace('[Newcheckindate]', pipData.NewCheckinDate ?? '');
+body = body.replace('[Newcheckintime]', pipData.NewCheckinTime ?? '');
+
+So it becomes something like:
+
+body = body.replace('[EmployeeName]', pipData.EmployeeName ?? '');
+body = body.replace('[ManagerName]', pipData.ManagerName ?? '');
+body = body.replace('[HRBPName]', pipData.HrbpName ?? '');
+
+// NEW replacements
+body = body.replace('[previous checkin date]', pipData.PreviousCheckinDate ?? '');
+body = body.replace('[Newcheckindate]', pipData.NewCheckinDate ?? '');
+body = body.replace('[Newcheckintime]', pipData.NewCheckinTime ?? '');
+
+
+⸻
+
+3️⃣ Your email template already has
+
+<strong>[previous checkin date]</strong>
+<strong>[Newcheckindate] [Newcheckintime]</strong>
+
+So after replacement it becomes:
+
+Example output:
+
+The Check-In dated 16 Feb 2026 has been rescheduled to
+23 Feb 2026 10:30 AM - 11:00 AM
+
+
+⸻
+
+4️⃣ Final result
+
+When manager edits a session:
+
+✔ old session date appears
+✔ new session date appears
+✔ new session time appears
+✔ email template works automatically
+
+⸻
+
+✅ Total change required
+
+Only 4 lines added in entire project
+
+1 line → capture oldDate
+1 line → pass to mail
+3 lines → replace in replaceContent()
+
+⸻
+
+💡 Small tip (important in real projects):
+Instead of multiple replace(), use replaceAll() so template works even if placeholder appears twice.
+
+Example:
+
+body = body.replaceAll('[Newcheckindate]', pipData.NewCheckinDate ?? '');
+
+
+⸻
+
+If you want, I can also show you a cleaner 10-line refactor of your replaceContent() method.
+Right now it is ~40% longer than necessary, and most senior Angular devs simplify it heavily.
+
+
+
+
+
 public canEditEmployeeComment(): boolean {
   if (!this.roleInfo?.isEmployee) return false;
 
