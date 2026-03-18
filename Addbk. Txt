@@ -1,3 +1,9 @@
+When I click share extended PIP button, previously when the session, when I extend the mails will be like the mails will be five mails will be sent, like four mails for the session check-in 9 to check-in 12 will be sent along with the extended notification mail will be sent. But now when ER extends the case, we have modified many changes for ER and when ER extends, it will be the session 13 to 16. And as a manager, I feel the session 13 to 16 and I click on share extended PIP button. Now it has to send mail for only session check-in 13 to check-in 16 along with another mail PIP has been extended. But now it is sending totally nine mails, that is it is including previous four mails, four things also, check-in 8 to check-in 9 to check-in 12, it is also including that. I don't want that to happen. It should only send the mails for check-in 13 to check-in 16. Now tell the modifications I have to do, minimal fix.
+
+
+
+
+
 public get hasSequenceGreaterThan12(): boolean {
   return this.checkInSessions.controls.some((ctrl) => {
     const seq = ctrl.get('sessionSequence')?.value;
