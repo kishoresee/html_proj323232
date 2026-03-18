@@ -1,3 +1,10 @@
+So after all these changes for the ER, now I have an extend feature for ER. There is a case where before the flow comes to ER, there is a case where manager also wishes to extend from the 8 sessions to 12. And if HRBP agrees, then it will become 12 sessions. Now the max can be 12. But after the 12 sessions got over, if manager wishes to exit and HRBP also agrees to exit, it comes to ER again. Now ER if we clicks extend, now it will become like 16 sessions. So now it becomes 16 sessions, but I have some validations in my code which prevents me from creating that 4 sessions when 4 sessions which will add on to 16 from ER side in my code. Just tell me what to modify so that I can allow ER also to create additional 4 sessions to make it 16 in some worst cases. So this should happen after all these changes. Just tell me what to change in code with a minimal fix.
+
+
+
+
+
+
 I understood your requirement clearly 👍
 
 You already have:
