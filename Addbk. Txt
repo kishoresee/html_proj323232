@@ -1,3 +1,11 @@
+So now I'm currently moving to a new project called Bogart. I don't know anything about that, and I got these PPTs and things. Can you explain me these things in a proper way so that I can get... So that I can get a better idea and I have to give a reverse KT to my mentors and I'm a very much beginner in this and I don't know anything about it. I have to give a proper explanation with some points, the main points to be highlighted and I should show my understanding. Can you help me with this from the beginning? Like I don't know anything. It's a new project and a new thing for me. Can you please explain and teach me in a very good manner? Give all the things. Don't give in a short manner. Elaborate and explain everything clearly and give key terms to highlight also.
+
+
+
+
+
+
+
 return this.roleSrv.roles().pipe(
   take(1),
   switchMap(role => {
