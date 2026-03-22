@@ -1,3 +1,38 @@
+import pandas as pd
+from sqlalchemy import create_engine
+
+# Your SQL credentials
+server = 'eurv0id10877.xmp.net.intra,14330'
+database = 'dh-core-data'
+username = 'YOUR_USERNAME'
+password = 'YOUR_PASSWORD'
+
+# Correct connection string for SQL Authentication
+connection_string = f"mssql+pyodbc://{username}:{password}@{server}/{database}?driver=ODBC+Driver+17+for+SQL+Server"
+
+engine = create_engine(connection_string)
+
+query = """
+SELECT 
+    BATCH_DATE,
+    FILE_TYPE,
+    FILE_NAME_RAW,
+    FILE_NAME_FED,
+    SEQUENCE_ID
+FROM dbo.orion_file_trace
+ORDER BY BATCH_DATE DESC
+"""
+
+df = pd.read_sql(query, engine)
+
+df.to_excel("report.xlsx", index=False)
+
+print("✅ Report generated successfully!")
+
+
+
+
+
 Perfect — your setup is actually ready 👍 (SSMS working + PyCharm working).
 Now I’ll guide you step-by-step like a beginner, and we’ll build exactly what your mentor asked.
 
