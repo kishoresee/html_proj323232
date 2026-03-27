@@ -1,3 +1,308 @@
+Perfect — your folder structure is clear from the image 👍
+I’ll tell you exactly where to place it (no confusion).
+
+⸻
+
+✅ 📁 Where to create dynamic.env.ts
+
+👉 You already have this folder:
+
+src/app/environments
+
+
+⸻
+
+🔥 👉 Create file HERE:
+
+src/app/environments/dynamic.env.ts
+
+
+⸻
+
+⚠️ IMPORTANT (don’t miss this)
+
+Angular default usually uses:
+
+src/environments/
+
+But in YOUR project, I can see:
+
+src/app/environments/
+
+So follow your project structure only ✅
+
+⸻
+
+✅ 📌 Final structure should look like:
+
+src
+ └── app
+     └── environments
+         ├── environment.ts
+         ├── dynamic.env.ts   ✅ (NEW FILE HERE)
+
+
+⸻
+
+✅ STEP 2: Import correctly
+
+In your environment.ts:
+
+import { DynamicEnv } from './dynamic.env';
+
+
+⸻
+
+❌ Common mistake (avoid)
+
+Don’t do this:
+
+import { DynamicEnv } from 'src/environments/dynamic.env'; ❌
+
+
+⸻
+
+✅ STEP 3: Use inside services
+
+Wherever you used:
+
+private readonly siteUrl = 'https://...';
+
+Change to:
+
+import { environment } from '../environments/environment';
+
+private readonly siteUrl = environment.site_url;
+
+
+⸻
+
+🔥 Quick sanity check
+
+After setup:
+	•	Run app in staging URL → should pick staging config
+	•	Run in dev URL → should auto switch
+	•	No hardcoded URLs anywhere
+
+⸻
+
+💡 Pro Tip (based on your project)
+
+Since you’re using SharePoint URLs, better match like this:
+
+if (host.includes('sp-apps-cib.staging')) { ... }
+
+Instead of just "staging" (more accurate)
+
+⸻
+
+✅ Done
+
+That’s it — just create file in:
+👉 src/app/environments/dynamic.env.ts
+
+⸻
+
+If you want, next I can:
+👉 scan your code and tell exact 5–6 places you must replace URLs (fast fix)
+👉 or verify your dynamic env is working (debug step-by-step)
+
+
+
+
+
+Good — now I clearly understand your requirement 👍
+You want NO hardcoding of staging/dev/prod URLs and instead use dynamic.env.ts based on environment automatically.
+
+I’ll give you the clean exact implementation for your project (step-by-step, minimal changes only).
+
+⸻
+
+✅ 🧠 What you are trying to achieve
+
+Right now ❌:
+
+site_url: 'https://sp-apps-cib.staging.echonet/sites/PIPWorkflow'
+
+You want ✅:
+
+site_url: DynamicEnv.getEnv().sharepoint_site_url
+
+
+⸻
+
+✅ STEP 1: Create dynamic.env.ts
+
+📁 Create file:
+
+src/environments/dynamic.env.ts
+
+
+⸻
+
+🔥 Paste this FULL code (customized for YOU)
+
+export interface Environment {
+  site_url: string;
+  emailerservice: string;
+  emailerserviceattachment: string;
+  pipDashboardUrl: string;
+}
+
+export class DynamicEnv {
+  public static getEnv(): Environment {
+
+    const host = window.location.origin.toLowerCase();
+
+    // ✅ DEV
+    if (host.includes('dev')) {
+      return {
+        site_url: 'https://sp-apps-apac-cib.dev.echonet/sites/PIPWorkflow',
+        emailerservice: 'https://ssc-ecm-api.dev.echonet/securedmail/api/mailer/queue',
+        emailerserviceattachment: 'https://ssc-ecm-api.dev.echonet/securedmail/api/mailer/queueform',
+        pipDashboardUrl: 'https://sp-apps-apac-cib.dev.echonet/sites/PIPWorkflow/SitePages/PIPForm.aspx/dashboard'
+      };
+    }
+
+    // ✅ STAGING
+    if (host.includes('staging')) {
+      return {
+        site_url: 'https://sp-apps-cib.staging.echonet/sites/PIPWorkflow',
+        emailerservice: 'https://ssc-ecm-api.staging.echonet/securedmail/api/mailer/queue',
+        emailerserviceattachment: 'https://ssc-ecm-api.staging.echonet/securedmail/api/mailer/queueform',
+        pipDashboardUrl: 'https://sp-apps-cib.staging.echonet/sites/PIPWorkflow/SitePages/PIPForm.aspx/dashboard'
+      };
+    }
+
+    // ✅ PROD (default fallback)
+    return {
+      site_url: 'https://sp-apps-apac-cib.echonet/sites/PerformanceImprovementProgramPortal',
+      emailerservice: 'https://ssc-ecm-api.echonet/securedmail/api/mailer/queue',
+      emailerserviceattachment: 'https://ssc-ecm-api.echonet/securedmail/api/mailer/queueform',
+      pipDashboardUrl: 'https://sp-apps-apac-cib.echonet/sites/PerformanceImprovementProgramPortal/SitePages/PIPForm.aspx/dashboard'
+    };
+  }
+}
+
+
+⸻
+
+✅ STEP 2: Replace ALL hardcoded URLs
+
+⸻
+
+🔥 In environment.ts
+
+❌ REMOVE:
+
+site_url: '...'
+emailerservice: '...'
+
+
+⸻
+
+✅ REPLACE WITH:
+
+import { DynamicEnv } from './dynamic.env';
+
+const dynamic = DynamicEnv.getEnv();
+
+export const environment = {
+  site_url: dynamic.site_url,
+  emailerservice: dynamic.emailerservice,
+  emailerserviceattachment: dynamic.emailerserviceattachment,
+  pipDashboardUrl: dynamic.pipDashboardUrl
+};
+
+
+⸻
+
+✅ STEP 3: Replace in services (VERY IMPORTANT)
+
+⸻
+
+❌ Before:
+
+private readonly siteUrl = 'https://sp-apps-cib.staging.echonet/sites/PIPWorkflow';
+
+
+⸻
+
+✅ After:
+
+import { environment } from 'src/environments/environment';
+
+private readonly siteUrl = environment.site_url;
+
+
+⸻
+
+✅ STEP 4: Replace everywhere (quick find)
+
+Search in project:
+
+https://sp-apps
+ssc-ecm-api
+
+Replace with:
+
+environment.site_url
+environment.emailerservice
+environment.emailerserviceattachment
+environment.pipDashboardUrl
+
+
+⸻
+
+⚠️ Common mistakes (YOU must avoid)
+
+❌ Don’t use this.roleSrv inside env
+❌ Don’t keep ANY hardcoded URL anywhere
+❌ Don’t mix dynamic + static
+
+⸻
+
+🧪 How it works (simple)
+
+URL you open	Automatically used
+dev site	DEV config
+staging site	STAGING config
+prod site	PROD config
+
+
+⸻
+
+🔥 FINAL RESULT
+	•	No hardcoding ✅
+	•	One code works for all environments ✅
+	•	No rebuild needed for env change ✅
+
+⸻
+
+💥 Bonus (optional improvement)
+
+If your URL doesn’t contain dev/staging, use:
+
+if (host.includes('sp-apps-cib.staging')) { ... }
+
+
+⸻
+
+✅ Done
+
+This is exact implementation for your project based on your screenshots.
+
+⸻
+
+If you want next:
+👉 I’ll help you fix your Extend button disabling issue (100% working logic)
+👉 or clean your role-based logic (ER / Manager2 confusion)
+
+
+
+
+
+
 import pandas as pd
 from sqlalchemy import create_engine
 
