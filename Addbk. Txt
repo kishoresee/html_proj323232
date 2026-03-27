@@ -1,3 +1,18 @@
+const host = window.location.origin.toLowerCase();
+
+// ✅ LOCALHOST → use STAGING
+if (host.includes('localhost')) {
+  return {
+    site_url: 'https://sp-apps-cib.staging.echonet/sites/PIPWorkflow',
+    emailerservice: 'https://ssc-ecm-api.staging.echonet/securedmail/api/mailer/queue',
+    emailerserviceattachment: 'https://ssc-ecm-api.staging.echonet/securedmail/api/mailer/queueform',
+    pipDashboardUrl: 'https://sp-apps-cib.staging.echonet/sites/PIPWorkflow/SitePages/PIPForm.aspx/dashboard'
+  };
+}
+
+
+
+
 Perfect — your folder structure is clear from the image 👍
 I’ll tell you exactly where to place it (no confusion).
 
