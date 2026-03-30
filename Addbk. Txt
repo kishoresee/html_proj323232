@@ -1,3 +1,12 @@
+private formatEmployeeName(first: string, last: string): string {
+  const f = (first ?? '').trim();
+  const l = (last ?? '').trim();
+  return l ? `${f} ${l}` : f;
+}
+
+
+
+
 return this.http.get<any>(url, this.httpOptions()).pipe(
 
   map(resp => resp.d?.results ?? resp.value ?? []),
