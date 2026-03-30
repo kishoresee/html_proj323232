@@ -1,3 +1,28 @@
+return this.http.get<any>(url, this.httpOptions()).pipe(
+
+  map(resp => resp.d?.results ?? resp.value ?? []),
+
+  // ✅ ADD THIS BLOCK
+  map((rows: any[]) => {
+    console.log("FULL API RESPONSE:", rows);   // 🔥 CHECK HERE
+
+    return rows.map(r => {
+      console.log("EACH ROW:", r);             // 🔥 CHECK HERE
+
+      return {
+        uid: r.EmpUID,
+        name: this.formatEmployeeName(r.NAME, r.LASTNAME), // or correct internal name
+        email: r.EmployeeEmail ?? ''
+      };
+    });
+  })
+
+);
+
+
+
+
+
 const host = window.location.origin.toLowerCase();
 
 // ✅ LOCALHOST → use STAGING
