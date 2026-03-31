@@ -1,3 +1,23 @@
+Here’s a shorter version with your added point included:
+
+⸻
+
+Hi Kanak,
+
+I checked from my side — the code is working fine, and ER access has already been provided. However, as shown in the attachment, you do not have site access.
+
+Only managers can raise a PIP, and your name is listed under employees (not managers) in the latest Excel sheet from my loader. You will need site owner access; otherwise, you will continue to see the access denied page.
+
+Indrani has manager access and can proceed with the sanity check.
+
+Thanks and regards,
+Kishore S
+
+⸻
+
+
+
+
 private formatEmployeeName(first: string, last: string): string {
   const f = (first ?? '').trim();
   const l = (last ?? '').trim();
