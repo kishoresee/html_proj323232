@@ -1,5 +1,74 @@
 from common.db_access.database import data_bases
 from common.parameters import ENV_PARAM as ENVIRON
+from common.utils.emails.email_module import Mailer, Message
+import pandas as pd
+
+try:
+    print("🔄 Starting process...")
+
+    # ✅ DB
+    core_data_db = data_bases[f"core-data-{ENVIRON.lower()}"]
+
+    query = """
+    SELECT 
+        BATCH_DATE,
+        FILE_TYPE,
+        SEQUENCE_ID,
+        FILE_NAME_RAW,
+        FILE_NAME_FED
+    FROM dbo.ORION_FILE_TRACE
+    """
+
+    rows = core_data_db.get_row_list_from_query(query)
+
+    df = pd.DataFrame(rows, columns=[
+        "BATCH_DATE",
+        "FILE_TYPE",
+        "SEQUENCE_ID",
+        "FILE_NAME_RAW",
+        "FILE_NAME_FED"
+    ])
+
+    print("✅ Data fetched")
+    print(df.head())
+
+    # ✅ Save Excel
+    file_path = "orion_file_trace.xlsx"
+    df.to_excel(file_path, index=False)
+
+    print(f"📁 Excel created: {file_path}")
+
+    # -----------------------------------
+    # ✅ PYCORE EMAIL (IMPORTANT)
+    # -----------------------------------
+
+    print("📧 Sending email using PyCore...")
+
+    msg = Message()
+    msg.sender = "your_email@company.com"
+    msg.to = "your_email@company.com"   # send to yourself
+    msg.subject = "ORION FILE TRACE REPORT"
+    msg.body = "Hi,\n\nPlease find attached report.\n\nThanks"
+
+    # ✅ Attach file
+    msg.attach(file_path)
+
+    # ✅ Mailer (NO SMTP NEEDED)
+    mailer = Mailer()   # PyCore will auto handle host, creds
+
+    mailer.send(msg)
+
+    print("✅ Email sent successfully via PyCore!")
+
+except Exception as e:
+    print("❌ Error:", e)
+
+
+
+
+
+from common.db_access.database import data_bases
+from common.parameters import ENV_PARAM as ENVIRON
 import pandas as pd
 import smtplib
 from email.message import EmailMessage
