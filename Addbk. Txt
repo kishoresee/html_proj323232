@@ -1,3 +1,36 @@
+from common.db_access.database import data_bases
+from common.parameters import ENV_PARAM as ENVIRON
+import pandas as pd
+
+try:
+    # ✅ Same as reference (dynamic env handling)
+    core_data_db = data_bases[f"core-data-{ENVIRON.lower()}"]
+
+    # ✅ Get connection (PyCore handles everything)
+    conn = core_data_db.get_connection()
+
+    print("✅ Connected using PyCore")
+
+    # ✅ Query (your requirement)
+    query = """
+    SELECT 
+        BATCH_DATE,
+        FILE_TYPE,
+        SEQUENCE_ID
+    FROM dbo.ORION_FILE_TRACE
+    """
+
+    # ✅ Pandas extraction (instead of Spark)
+    df = pd.read_sql(query, conn)
+
+    print(df)
+
+except Exception as e:
+    print("❌ Error:", e)
+
+
+
+
 from common.db_access.database import DataBase
 import pandas as pd
 
