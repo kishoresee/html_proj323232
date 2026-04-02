@@ -2,6 +2,8 @@ private static HashSet<string> LoadTargetItems(ClientContext ctx)
 
 var existingUsers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
+ctx.Load(items, each => each.Include(i => i["UID"]));
+
 
 
 Here’s a shorter version with your added point included:
