@@ -1,3 +1,9 @@
+private static HashSet<string> LoadTargetItems(ClientContext ctx)
+
+var existingUsers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+
+
 Here’s a shorter version with your added point included:
 
 ⸻
