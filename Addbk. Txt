@@ -3,6 +3,39 @@ from common.parameters import ENV_PARAM as ENVIRON
 import pandas as pd
 
 try:
+    # ✅ Same as repo
+    core_data_db = data_bases[f"core-data-{ENVIRON.lower()}"]
+
+    print("✅ Using PyCore DB object")
+
+    # ✅ Your query
+    query = """
+    SELECT 
+        BATCH_DATE,
+        FILE_TYPE,
+        SEQUENCE_ID
+    FROM dbo.ORION_FILE_TRACE
+    """
+
+    # ✅ Use SAME method as repo (IMPORTANT)
+    rows = core_data_db.get_row_list_from_query(query)
+
+    # ✅ Convert to pandas DataFrame
+    df = pd.DataFrame(rows, columns=["BATCH_DATE", "FILE_TYPE", "SEQUENCE_ID"])
+
+    print(df)
+
+except Exception as e:
+    print("❌ Error:", e)
+
+
+
+
+from common.db_access.database import data_bases
+from common.parameters import ENV_PARAM as ENVIRON
+import pandas as pd
+
+try:
     # ✅ Same as reference (dynamic env handling)
     core_data_db = data_bases[f"core-data-{ENVIRON.lower()}"]
 
