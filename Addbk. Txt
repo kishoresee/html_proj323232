@@ -1,3 +1,32 @@
+from common.db_access.database import DataBase
+import pandas as pd
+
+try:
+    # 🔹 Connect using PyCore config
+    db_obj = DataBase("core-data-prd")
+    conn = db_obj.get_connection()
+
+    print("✅ Connected using PyCore")
+
+    # 🔹 Query
+    query = """
+    SELECT 
+        BATCH_DATE,
+        FILE_TYPE,
+        SEQUENCE_ID
+    FROM dbo.ORION_FILE_TRACE
+    """
+
+    # 🔹 Fetch data
+    df = pd.read_sql(query, conn)
+
+    print(df)
+
+except Exception as e:
+    print("❌ Error:", e)
+
+
+
 private static HashSet<string> LoadTargetItems(ClientContext ctx)
 
 var existingUsers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
