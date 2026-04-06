@@ -1,3 +1,61 @@
+validateHRBP(uid: string) {
+
+  const control = this.pipForm.get('hrbp.uid');
+
+  if (!uid) {
+    control?.setErrors({ required: true });
+    return;
+  }
+
+  // 🔹 mark as validating
+  control?.setErrors({ validating: true });
+  this.isHRBPValidating = true;
+
+  this.sp.ensureUser(uid).subscribe({
+
+    next: (user) => {
+
+      // 🔥 IMPORTANT: stop validating
+      this.isHRBPValidating = false;
+
+      this.pipForm.patchValue({
+        hrbp: {
+          name: user.Title,
+          email: user.Email
+        }
+      });
+
+      // 🔥 CRITICAL FIX (ADD THESE 3 LINES)
+      control?.setErrors(null);
+      control?.markAsTouched();
+      control?.updateValueAndValidity();
+    },
+
+    error: () => {
+
+      // 🔥 IMPORTANT: stop validating
+      this.isHRBPValidating = false;
+
+      control?.setErrors({ invalidUID: true });
+
+      this.pipForm.patchValue({
+        hrbp: {
+          name: '',
+          email: ''
+        }
+      });
+
+      // optional but safe
+      control?.markAsTouched();
+      control?.updateValueAndValidity();
+    }
+  });
+}
+
+
+
+
+
 
 Good questions — you’re very close now. I’ll give you exact placement + minimal changes so you don’t break anything.
 
