@@ -1,3 +1,35 @@
+<div class="field"
+     [ngClass]="{'p-invalid': pipForm.get('hrbp.uid')?.invalid && (pipForm.get('hrbp.uid')?.touched || pipForm.get('hrbp.uid')?.dirty)}">
+
+  <label>HRBP UID *</label>
+
+  <input 
+    pInputText 
+    formControlName="uid"
+    (blur)="pipForm.get('hrbp.uid')?.markAsTouched()"
+  />
+
+  <div *ngIf="pipForm.get('hrbp.uid')?.invalid && (pipForm.get('hrbp.uid')?.touched || pipForm.get('hrbp.uid')?.dirty)">
+
+    <small *ngIf="pipForm.get('hrbp.uid')?.hasError('required')" style="color:red">
+      UID is required
+    </small>
+
+    <small *ngIf="pipForm.get('hrbp.uid')?.hasError('pattern')" style="color:red">
+      UID must be exactly 6 alphanumeric characters
+    </small>
+
+  </div>
+
+</div>
+
+
+
+
+
+
+
+
 <div class="field" [ngClass]="{'p-invalid': pipForm.get('hrbp.uid')?.invalid && pipForm.get('hrbp.uid')?.touched}">
 
   <label>HRBP UID *</label>
