@@ -1,4 +1,32 @@
 
+
+from common.utils.emails.email_sender import send_email
+
+print("📧 Sending email using PyCore...")
+
+subject = "ORION FILE TRACE REPORT"
+body = "Hi,\n\nPlease find attached ORION FILE TRACE report.\n\nThanks"
+
+to_list = ["kishore.srinivasan@bnpparibas.com"]
+
+send_email(
+    process_name="ORION_JOB",
+    subject=subject,
+    body=body,
+    to=to_list,
+    cc=[],
+    bcc=[],
+    sender=None,
+    attachments=[file_path],
+    environ=ENVIRON.lower()
+)
+
+print("✅ Email sent successfully!")
+
+
+
+
+
 from common.db_access.database import data_bases
 from common.parameters import ENV_PARAM as ENVIRON
 from common.utils.emails import email_module
