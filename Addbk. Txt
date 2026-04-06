@@ -1,4 +1,144 @@
 
+
+Perfect 👍 — this is a much cleaner approach. Forget SharePoint validation, just do a simple frontend UID format validation.
+
+⸻
+
+✅ Your Requirement (cleanly defined)
+
+UID must be:
+	•	Exactly 6 characters
+	•	Can be:
+	•	only numbers ✅ (123456)
+	•	only letters ✅ (ABCDEF)
+	•	alphanumeric ✅ (A1B2C3)
+	•	❌ No special characters
+	•	❌ No length < 6 or > 6
+
+⸻
+
+🔥 BEST & SIMPLEST SOLUTION
+
+✅ Use Regex Validator
+
+/^[a-zA-Z0-9]{6}$/
+
+✔ Allows only letters + numbers
+✔ Exactly 6 characters
+
+⸻
+
+✅ STEP 1 — Add Validator in buildForm()
+
+Find where you define hrbp.uid
+
+🔴 Before:
+
+hrbp: {
+  uid: ['']
+}
+
+✅ Replace with:
+
+hrbp: this.fb.group({
+  uid: ['', [
+    Validators.required,
+    Validators.pattern(/^[a-zA-Z0-9]{6}$/)
+  ]]
+})
+
+
+⸻
+
+✅ STEP 2 — Show Error in HTML
+
+Below your HRBP UID input:
+
+<div *ngIf="pipForm.get('hrbp.uid')?.touched && pipForm.get('hrbp.uid')?.invalid">
+
+  <small *ngIf="pipForm.get('hrbp.uid')?.errors?.['required']" class="text-danger">
+    UID is required
+  </small>
+
+  <small *ngIf="pipForm.get('hrbp.uid')?.errors?.['pattern']" class="text-danger">
+    UID must be exactly 6 alphanumeric characters
+  </small>
+
+</div>
+
+
+⸻
+
+✅ STEP 3 — Disable Buttons (IMPORTANT)
+
+🔥 Save as Draft button:
+
+[disabled]="pipForm.get('hrbp.uid')?.invalid"
+
+
+⸻
+
+🔥 Submit button:
+
+[disabled]="pipForm.get('hrbp.uid')?.invalid"
+
+
+⸻
+
+✅ OPTIONAL (Better UX)
+
+Trigger validation immediately when typing:
+
+<input formControlName="uid" (input)="pipForm.get('hrbp.uid')?.markAsTouched()" />
+
+
+⸻
+
+🧠 RESULT
+
+Input	Result
+123456	✅ Valid
+ABC123	✅ Valid
+abcd12	✅ Valid
+12345	❌ Too short
+1234567	❌ Too long
+abc@12	❌ Invalid char
+
+
+⸻
+
+🚀 IMPORTANT NOTE
+
+👉 This works immediately
+👉 No API calls needed
+👉 No loading issues
+👉 No stuck button problem
+
+⸻
+
+💯 FINAL ANSWER
+
+👉 Just use:
+	•	Validators.pattern(/^[a-zA-Z0-9]{6}$/)
+	•	Disable button using .invalid
+
+⸻
+
+If you want next step later:
+👉 We can combine this with ensureUser() only after format is valid
+
+But for now — this alone will fix your issue cleanly ✅
+
+
+
+
+
+
+
+
+
+
+
 Perfect — now I can see your exact code, so I’ll give you precise minimal edits (no theory, only what to change).
 
 ⸻
