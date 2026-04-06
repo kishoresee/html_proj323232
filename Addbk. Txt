@@ -1,4 +1,34 @@
+
+Hi Arvind,
+
+I have been assigned a task to read data from the ORION_FILE_TRACE table in SQL Server and generate an Excel report containing the following fields:
+
+- BATCH_DATE  
+- FILE_TYPE  
+- SEQUENCE_ID  
+- FILE_NAME_RAW  
+- FILE_NAME_FED  
+
+The data is required to be ordered by BATCH_DATE, followed by FILE_TYPE.
+
+I have successfully completed the Excel generation and have attached the file for your review. However, I am currently facing issues with the PyCore mailer service on the server side, which is not accessible at the moment. As a result, I was unable to complete the email automation part.
+
+Please review the attached file and let me know if any changes are required.
+
+Thanks & Regards,  
+Kishore
+
+
+
+
+
+
 import os
+
+
+
+
+
 
 file_name = "orion_file_trace.xlsx"
 file_path = os.path.abspath(file_name)
