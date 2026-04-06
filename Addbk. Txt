@@ -1,3 +1,25 @@
+
+<small 
+  *ngIf="
+    pipForm.get('hrbp.uid')?.value &&
+    (pipForm.get('hrbp.uid')?.value === pipForm.get('manager.uid')?.value ||
+     pipForm.get('hrbp.uid')?.value === pipForm.get('employee.uid')?.value)
+  "
+  style="color:red"
+>
+  HRBP UID cannot be same as Manager or Employee UID
+</small>
+
+
+
+
+
+
+
+
+
+
+
 <div class="field"
      [ngClass]="{'p-invalid': pipForm.get('hrbp.uid')?.invalid && (pipForm.get('hrbp.uid')?.touched || pipForm.get('hrbp.uid')?.dirty)}">
 
