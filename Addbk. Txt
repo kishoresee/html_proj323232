@@ -1,4 +1,37 @@
 
+const masterPayload: any = {
+  ManagerUID: raw.manager.uid,
+  ...
+  HRBPUID: raw.hrbp.uid,
+  HRBPEmail: raw.hrbp.email,
+};
+
+const hrbpUid = raw.hrbp.uid;
+
+this.sp.getUserId(hrbpUid).subscribe(hrbpId => {
+
+  masterPayload.HRBPNameId = hrbpId;   // ✅ correct ID
+
+  // 🔥 MOVE EVERYTHING BELOW INSIDE THIS BLOCK
+
+  const isCreate = !this.pipItemId;
+
+  if (isCreate) {
+    this.sp.createPIPDetailsItem(masterPayload).subscribe(res => {
+      ...
+    });
+  } else {
+    this.sp.updatePIPDetailsItem(this.pipItemId, masterPayload).subscribe(() => {
+      ...
+    });
+  }
+
+});
+
+
+
+
+
 
 from common.utils.emails.email_sender import send_email
 
