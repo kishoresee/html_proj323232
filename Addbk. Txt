@@ -1,3 +1,154 @@
+
+Perfect 👍 now I clearly see your last gap.
+
+✅ Current situation
+	•	UID → you call ensureUser / getUserId ✔
+	•	Name → coming correctly ✔
+	•	Email → still old value ❌
+
+👉 Because:
+You are only taking ID, not full user object (Email) from ensureUser.
+
+⸻
+
+🔥 EXACT FIX (MINIMAL CHANGE)
+
+Your current flow:
+
+this.sp.getUserId(uid).subscribe(hrbpUserId => {
+  masterPayload.HRBPNameId = hrbpUserId;
+});
+
+❌ This gives ONLY ID → not email
+
+⸻
+
+✅ ✅ WHAT YOU SHOULD DO
+
+👉 Use ensureUser() instead of getUserId()
+
+Because ensureUser returns:
+
+{
+  Id,
+  Title,
+  Email,
+  LoginName
+}
+
+
+⸻
+
+🔥 FINAL CHANGE (CREATE + UPDATE BOTH)
+
+🔁 Replace this:
+
+this.sp.getUserId(uid).subscribe(hrbpUserId => {
+  masterPayload.HRBPNameId = hrbpUserId;
+});
+
+
+⸻
+
+✅ WITH THIS:
+
+this.sp.ensureUser(uid).subscribe(user => {
+
+  masterPayload.HRBPNameId = user.Id;   // for Person field
+  masterPayload.HRBPEmail = user.Email; // 🔥 FIX: update email also
+
+});
+
+
+⸻
+
+📍 WHERE EXACTLY TO CHANGE
+
+1. CREATE BLOCK
+
+Replace:
+
+this.sp.getUserId(uid).subscribe(...)
+
+👉 with ensureUser block
+
+⸻
+
+2. UPDATE BLOCK
+
+Same replacement:
+
+this.sp.getUserId(uid)
+
+👉 replace with ensureUser
+
+⸻
+
+⚠️ IMPORTANT (VERY IMPORTANT)
+
+Your payload already has:
+
+HRBPEmail: raw.hrbp.email
+
+👉 This is WRONG now ❌
+👉 It should ALWAYS come from ensureUser ✅
+
+⸻
+
+🔥 FINAL PAYLOAD RULE
+
+masterPayload.HRBPNameId = user.Id;
+masterPayload.HRBPEmail = user.Email;
+
+❌ DO NOT use:
+
+raw.hrbp.email
+
+
+⸻
+
+💡 WHY THIS FIX WORKS
+
+Field	Source BEFORE	Source NOW
+HRBP UID	Manual	Manual
+HRBP Name	ensureUser	ensureUser
+HRBP Email	Old form value ❌	ensureUser.Email ✅
+
+
+⸻
+
+🚀 RESULT
+
+✔ Change UID → Name updates
+✔ Change UID → Email updates
+✔ No mismatch anymore
+✔ Works for Draft + Submit
+
+⸻
+
+🧠 BONUS (clean approach)
+
+If you want cleaner:
+👉 Create helper:
+
+setHRBPFromUID(uid: string) {
+  return this.sp.ensureUser(uid);
+}
+
+
+⸻
+
+If anything still mismatches (especially SharePoint saving), send me payload screenshot — I’ll pinpoint instantly 👍
+
+
+
+
+
+
+
+
+
+
 Got it 👍 — you don’t want snippets, you want the FULL BLOCK (create + update) exactly as in your file, with the HRBP fix properly integrated.
 
 I’ll give you drop-in replacement code for BOTH sections.
