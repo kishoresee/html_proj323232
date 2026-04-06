@@ -1,3 +1,15 @@
+[disabled]="
+  isSubmitted || 
+  isViewMode || 
+  !hasAnyPerformanceData || 
+  employeeEmailMissing ||
+  pipForm.get('hrbp.uid')?.invalid
+"
+
+
+
+
+
 
 Got it — you want exact placement (no confusion). I’ll map it directly to your screen/code.
 
