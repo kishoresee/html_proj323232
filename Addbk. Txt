@@ -1,3 +1,84 @@
+
+from common.db_access.database import data_bases
+from common.parameters import ENV_PARAM as ENVIRON
+from common.utils.emails import email_module
+import pandas as pd
+
+try:
+    print("🔄 Starting process...")
+
+    # -------------------------
+    # DB FETCH
+    # -------------------------
+    core_data_db = data_bases[f"core-data-{ENVIRON.lower()}"]
+
+    query = """
+    SELECT 
+        BATCH_DATE,
+        FILE_TYPE,
+        SEQUENCE_ID,
+        FILE_NAME_RAW,
+        FILE_NAME_FED
+    FROM dbo.ORION_FILE_TRACE
+    """
+
+    rows = core_data_db.get_row_list_from_query(query)
+
+    df = pd.DataFrame(rows, columns=[
+        "BATCH_DATE",
+        "FILE_TYPE",
+        "SEQUENCE_ID",
+        "FILE_NAME_RAW",
+        "FILE_NAME_FED"
+    ])
+
+    print("✅ Data fetched")
+    print(df.head())
+
+    # -------------------------
+    # EXCEL
+    # -------------------------
+    file_path = "orion_file_trace.xlsx"
+    df.to_excel(file_path, index=False)
+
+    print(f"📁 Excel created: {file_path}")
+
+    # -------------------------
+    # EMAIL (PYCORE CORRECT WAY)
+    # -------------------------
+    print("📧 Sending email using PyCore...")
+
+    subject = "ORION FILE TRACE REPORT"
+    body = "Hi,\n\nPlease find attached ORION FILE TRACE report.\n\nThanks"
+
+    to_list = ["your_email@company.com"]   # MUST BE LIST
+
+    # ✅ Use PyCore send_email wrapper (IMPORTANT)
+    email_module.send_email(
+        process_name="ORION_JOB",
+        subject=subject,
+        body=body,
+        to=to_list,
+        cc=[],
+        bcc=[],
+        sender=None,  # let PyCore default handle
+        attachments=[file_path],  # MUST BE LIST
+        environ=ENVIRON.lower()
+    )
+
+    print("✅ Email sent successfully!")
+
+except Exception as e:
+    print("❌ Error:", e)
+
+
+
+
+
+
+
+
+
 from common.db_access.database import data_bases
 from common.parameters import ENV_PARAM as ENVIRON
 from common.utils.emails.email_module import Mailer, Message
