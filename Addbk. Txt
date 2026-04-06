@@ -1,4 +1,83 @@
 
+from common.db_access.database import data_bases
+from common.parameters import ENV_PARAM as ENVIRON
+import pandas as pd
+
+try:
+    print("Starting process...")
+
+    core_data_db = data_bases[f"core-data-{ENVIRON.lower()}"]
+
+    query = """
+    SELECT 
+        BATCH_DATE,
+        FILE_TYPE,
+        SEQUENCE_ID,
+        FILE_NAME_RAW,
+        FILE_NAME_FED
+    FROM dbo.ORION_FILE_TRACE
+    ORDER BY 
+        CASE 
+            WHEN FILE_TYPE = 'incoming' THEN 1
+            WHEN FILE_TYPE = 'outgoing' THEN 2
+            WHEN FILE_TYPE = 'return' THEN 3
+            ELSE 4
+        END,
+        BATCH_DATE ASC
+    """
+
+    rows = core_data_db.get_row_list_from_query(query)
+
+    df = pd.DataFrame(rows, columns=[
+        "BATCH_DATE",
+        "FILE_TYPE",
+        "SEQUENCE_ID",
+        "FILE_NAME_RAW",
+        "FILE_NAME_FED"
+    ])
+
+    print("Data fetched")
+    print(df.head(20))
+
+    # Save to Excel
+    file_path = "orion_file_trace.xlsx"
+    df.to_excel(file_path, index=False)
+
+    print(f"Excel created: {file_path}")
+
+    # ---------------------------
+    # EMAIL PART (DISABLED)
+    # ---------------------------
+    """
+    from common.utils.emails.email_sender import send_email
+
+    print("Sending email using PyCore...")
+
+    subject = "ORION FILE TRACE REPORT"
+    body = "Hi,\n\nPlease find attached ORION FILE TRACE report.\n\nThanks"
+
+    send_email(
+        process_name="ORION_JOB",
+        subject=subject,
+        body=body,
+        to=["your_email@company.com"],
+        cc="",
+        bcc="",
+        sender="your_email@company.com",
+        attachments=[file_path],
+        environ="dev"
+    )
+    """
+
+except Exception as e:
+    print("Error:", e)
+
+
+
+
+
+
+
 <small 
   *ngIf="
     pipForm.get('hrbp.uid')?.value &&
