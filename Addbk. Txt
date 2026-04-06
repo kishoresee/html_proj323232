@@ -1,3 +1,17 @@
+import os
+
+file_name = "orion_file_trace.xlsx"
+file_path = os.path.abspath(file_name)
+
+df.to_excel(file_path, index=False)
+
+print(f"✅ Excel created at: {file_path}")
+
+
+
+
+
+
 
 from common.db_access.database import data_bases
 from common.parameters import ENV_PARAM as ENVIRON
