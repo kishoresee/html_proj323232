@@ -1,4 +1,143 @@
 
+Got it — you want exact placement (no confusion). I’ll map it directly to your screen/code.
+
+⸻
+
+✅ WHERE TO ADD (EXACTLY)
+
+📍 1. Inside ngOnInit()
+
+In your screenshot, you already have:
+
+ngOnInit(): void {
+  this.buildForm();
+  this.roleSrv.roles()
+  ...
+}
+
+👉 ADD THIS RIGHT AFTER this.buildForm();
+
+this.pipForm.get('hrbp.uid')?.valueChanges
+  .pipe(debounceTime(500))
+  .subscribe(uid => {
+    this.validateHRBP(uid);
+  });
+
+
+⸻
+
+✅ 2. ADD METHOD (ANYWHERE INSIDE CLASS)
+
+Scroll down in the same file (pipform.component.ts)
+
+👉 Add this below other methods (like saveOrUpdate)
+
+validateHRBP(uid: string) {
+
+  if (!uid) return;
+
+  this.sp.ensureUser(uid).subscribe({
+
+    next: (user) => {
+
+      // ✅ valid → fill name + email
+      this.pipForm.patchValue({
+        hrbp: {
+          name: user.Title,
+          email: user.Email
+        }
+      });
+
+      this.pipForm.get('hrbp.uid')?.setErrors(null);
+    },
+
+    error: () => {
+
+      // ❌ invalid UID
+      this.pipForm.get('hrbp.uid')?.setErrors({ invalidUID: true });
+
+      this.pipForm.patchValue({
+        hrbp: {
+          name: '',
+          email: ''
+        }
+      });
+    }
+  });
+}
+
+
+⸻
+
+✅ 3. HTML CHANGE (VERY IMPORTANT)
+
+Go to your HTML → where HRBP UID input is
+
+Add this below input field
+
+<small *ngIf="pipForm.get('hrbp.uid')?.errors?.invalidUID" style="color:red">
+  Please enter a valid HRBP UID
+</small>
+
+
+⸻
+
+✅ 4. ADD IMPORT (TOP OF TS FILE)
+
+At top of file:
+
+import { debounceTime } from 'rxjs/operators';
+
+
+⸻
+
+🔥 FINAL FLOW (NOW WORKS PERFECT)
+
+Action	Result
+Enter UID	waits 500ms
+Valid UID	Name + Email auto-fill
+Invalid UID	❌ Error shown
+Clear UID	clears fields
+
+
+⸻
+
+⚠️ OPTIONAL (STRONG VALIDATION IN SAVE)
+
+Inside saveOrUpdate() at top:
+
+if (this.pipForm.get('hrbp.uid')?.invalid) {
+  this.fireAlert('Please enter a valid HRBP UID', 'error');
+  return;
+}
+
+
+⸻
+
+💯 DONE
+
+You don’t need to touch anything else.
+
+⸻
+
+If next you want:
+👉 prevent typing non-existing UID using dropdown (best UX)
+
+I can show that too 👍
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 Perfect 👍 now I clearly see your last gap.
 
 ✅ Current situation
