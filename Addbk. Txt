@@ -1,3 +1,16 @@
+hrbp: this.fb.group({
+  uid: [{ value: '', disabled: true }, [
+    Validators.required,
+    Validators.pattern(/^[a-zA-Z0-9]{6}$/)
+  ]],
+  name: [{ value: '', disabled: true }],
+  email: [{ value: '', disabled: true }]
+})
+
+
+
+
+
 
 Hi Arvind,
 
