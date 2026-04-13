@@ -1,3 +1,11 @@
+
+So another thing is, now HRBP will also be able to view the audits. He is able to view the audit, everything is fine, but same thing is happening. When the status is draft, we don't want the HRBP to view the audit for the employees who have the, whose status is still in the draft. Okay. Once it is submitted, only then the audit should be visible for the employee. Before the, before, now even before he sub-manager is actually submitting, the draft status, still it is the draft status and the audits are there, but it is visible for HRBP also. I should not restrict the HRBP to view audits only after the draft status, like whatever the draft, because this is done for the view point of view, but audit is still not there. So look on to that audit and give me a minimal fix.
+
+
+
+
+
+
 const env = DynamicEnv.getEnv();
 
 const style = document.createElement('style');
