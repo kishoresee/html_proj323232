@@ -1,3 +1,15 @@
+const env = DynamicEnv.getEnv();
+
+const style = document.createElement('style');
+style.innerHTML = `
+@font-face {
+  font-family: 'primeicons';
+  src: url('${env.site_url}/SiteAssets/PIP/primeicons.woff2') format('woff2');
+}
+`;
+document.head.appendChild(style);
+
+
 
 So you can see in the load data for HRBP method, I've restricted that if the status is in draft, I want to show the alert, you do not have permission to access this page for. Okay, but what is happening now, so there are a number of employees under the HRBP, and then if one manager has submitted the tip and it is moved to the non-draft status, it is showing, but at the same time, another manager is drafting under the same HRBP. So now one tip is under draft under the HRBP, another tip is submitted under the same HRBP. Now this draft status which is submitted by another manager is clashing and it is showing this permission denied, access denied, and it is not letting the HRBP to view the tip which is actually the submitted status also. So this is what happening. I want to show this error only. So what I want to do is, like here, if an PIP is in draft status, I just want to ignore that and hide from the HRBP view, okay? And I won't let the HRBP view the PIPs which are submitted stage, okay? Apart from the draft, which are all the PIPs under the PIPs are submitted, I want HRBP to view them. So what is this draft status, which is a blocker for other submitted status also? How to fix this and what is the minimal change I have to do?
 
