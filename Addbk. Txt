@@ -1,4 +1,19 @@
 
+insert_job: ORION_CODE_BASE_JOB
+job_type: CMD
+command: python "D:\apps\pyrion_fed\code_base.py"
+machine: localhost
+owner: yourname@company.com
+description: "Run code_base.py"
+std_out_file: "D:\autosys\out\code_base.out"
+std_err_file: "D:\autosys\out\code_base.err"
+alarm_if_fail: 1
+
+
+
+
+
+
 
 git commit --amend -m "MISPRJ-76927: added code"
 
