@@ -1,4 +1,21 @@
 
+file_name = "orion_file_trace.xlsx"
+file_path = os.path.join(target_folder, file_name)
+
+with pd.ExcelWriter(file_path, engine='openpyxl') as writer:
+    df.to_excel(writer, index=False, sheet_name='ORION_FILE_TRACE')
+
+# Ensure file is fully released
+import time
+time.sleep(1)
+
+print(f"Excel created at: {file_path}")
+
+
+
+
+
+
 insert_job: ORION_CODE_BASE_JOB
 job_type: CMD
 command: python "D:\apps\pyrion_fed\code_base.py"
