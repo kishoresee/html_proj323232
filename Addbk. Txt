@@ -1,3 +1,157 @@
+I am working on an Angular application with the following components:
+- PIPFormComponent (TS + HTML)
+- DashboardComponent
+- ManagerAuditComponent
+- MenuBarComponent
+- RoleService
+
+I need to implement role-based UI and logic changes with minimal code modifications.
+
+-----------------------------------
+🔹 ROLE LOGIC REQUIREMENT
+-----------------------------------
+A user can have BOTH roles:
+- Manager
+- HRBP
+
+Currently:
+- HRBP view is always shown by default
+- Manager has higher priority
+
+Required change:
+- Add a toggle in MenuBarComponent to switch between:
+  - Manager View
+  - HRBP View
+
+Conditions:
+- If both roles exist → show toggle
+- If only one role → no toggle, show that role view
+
+Default:
+- Manager view should be default when both roles exist
+
+-----------------------------------
+🔹 VIEW-BASED UI BEHAVIOR
+-----------------------------------
+
+👉 Manager View:
+- Only Manager-related data should be visible
+- HRBP-related fields/buttons must be hidden
+
+👉 HRBP View:
+- Only HRBP-related data should be visible
+- Manager-related fields/buttons must be hidden
+
+This should dynamically reflect in:
+- Dashboard
+- PIPFormComponent (HTML + TS)
+- ManagerAuditComponent
+
+-----------------------------------
+🔹 HRBP FIELD RESTRICTIONS (PIPForm)
+-----------------------------------
+
+- HRBP cannot toggle themselves by default
+- If user switches to HRBP view → allow HRBP interactions
+- Manager view → HRBP fields should be:
+  - Disabled OR hidden (based on UX)
+
+Also ensure:
+- HRBP UID validation remains intact
+- HRBP UID ≠ Manager UID
+- HRBP UID ≠ Employee UID
+
+-----------------------------------
+🔹 SESSION LOGIC CHANGE (IMPORTANT)
+-----------------------------------
+
+Current:
+- Exactly 8 sessions are mandatory
+
+New Requirement:
+- Default sessions = 6
+- Allow adding up to 2 extra sessions (max = 8)
+
+Behavior:
+- Initially show 6 sessions
+- Show "Add Session" button → allows adding up to 8
+- Show "Remove Session" button ONLY for:
+  - Session 7
+  - Session 8
+
+Constraints:
+- First 6 sessions cannot be removed
+- Existing data (already saved 8 sessions) should NOT break
+
+-----------------------------------
+🔹 BUTTON VISIBILITY RULES
+-----------------------------------
+
+Buttons must be role-aware:
+
+Manager View:
+- Show manager actions only
+
+HRBP View:
+- Show HRBP actions only
+
+Also:
+- Some buttons must be conditionally disabled instead of hidden
+- Align all button states with role + status (Draft / Submitted)
+
+-----------------------------------
+🔹 VALIDATION & FLOW REQUIREMENT
+-----------------------------------
+
+- Validation errors should NOT block application flow
+- Show errors visually but allow navigation / actions
+- Avoid breaking API calls or UI rendering
+
+-----------------------------------
+🔹 TECHNICAL EXPECTATION
+-----------------------------------
+
+- Use Angular Reactive Forms
+- Use minimal changes (no major refactor)
+- Prefer:
+  - *ngIf for visibility
+  - [disabled] for control
+  - FormControl.disable() where required
+
+- Avoid breaking existing APIs and data structure
+
+-----------------------------------
+🔹 FINAL EXPECTATION
+-----------------------------------
+
+Provide:
+1. Required changes in:
+   - PIPFormComponent.ts
+   - PIPFormComponent.html
+   - MenuBarComponent
+   - RoleService (if needed)
+
+2. Clean role-based conditions
+
+3. Minimal and production-safe solution
+
+4. No unnecessary rewrites — only targeted fixes
+
+-----------------------------------
+
+Goal:
+Ensure correct role-based UI behavior, session flexibility (6–8), and stable validation without breaking existing functionality.
+
+
+
+
+
+
+
+
+
+
+
 So, hello, I have given all the things like the role service, book form component, dash board manager audit, and then menu bar component. The thing is, what I need to make two changes, the major changes, like, so when there are certain roles in the role service, you can look on to that. There is an exception where a manager is also an HRBP. So, they are both HR and manager. They are single person is playing both HR and manager role. When that happens particularly, I want to have a toggle button in the menu bar where it will be toggling the roles between manager and HRBP. Initially, what is happening in the sense, whenever when both roles, when a person is playing both roles, playing both roles, the person is only viewing as manager. He cannot be able to toggle to HRBP by default. Like he is viewing only as manager and HRBP view is disabled for him because manager is a higher priority, higher hierarchy role. So, it is enabled for him, but he couldn't view as HRBP. Now, I want them to view as HRBP, so switch the roles and the dashboard should display whatever HRBP should, whatever he as an HRBP, he should see, only that should be visible. Same like when he is seeing, you know, when he toggles back to as a manager, he should see only the clips raised by him and only as a manager view he should see. That is what I need to do. Another thing, second requirement is that, now I have a standard of eight sessions, okay? Like by default, whenever the manager enters the session, there are eight sessions. Now, I want to make it optional to six. Like a six, there can be eight sessions. I need to have an add button called add session similar to the add performance button you can see there. So, I need to add that, but add session and then by default there will be six sessions, but by max they can enter other two sessions, like eight sessions by using the add session button, okay. Because there are already users in the production, they started using the enter eight sessions, but now they are saying like the eight sessions are very long, so I need to make it as six. So, without affecting the already raised clips, I should able to add as an optional thing. So, this add session button also I need to add and there should be six sessions and adding that, adding that add session button will have an option of adding two other things. So, six plus two, eight. The eight will be remaining and then when the session is added, a cross button, the remove session button should be visible only for the seventh and eighth session, not for all the things, okay. So, these are the changes I need to make. So, what are, analyze all the code like the manager audit, the form component, HTML component, menu bar and then dashboard. Tell me what all I need to change with the minimal fix.
 
 
