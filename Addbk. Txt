@@ -1,3 +1,11 @@
+
+So, and once I analyze completely, you can see that initially I have kept like eight sessions. If a user must go, if a user goes to, if a manager goes to a check-in calendar tab, he has to enter the details for eight sessions, okay. This project has already gone to live, and what I am doing is, already some managers have raised and they are going with the eight sessions. But some told review like they need the sessions are very long, so I'll reduce it to six. The same time, I want to keep that eight session which is raised to the other managers, and I want to reduce it to six. So what I'm going to do is, I can make, I can make an optional like, options like, optional like, I'm going to keep it as six, then I'm gonna have an add session button below it, like, like similar to the add performance button. And then I'm letting the users, letting the managers to add up to another two, okay. Another two sessions. And then, As you can see the entire flow, I'm having that validations for eight sessions. And then when they extend the session, it's gonna add like four sessions. And then when they are extended, it's gonna add another four sessions. It will be, like, worst case, it will be 16 sessions, okay. Now, when I'm going with the six sessions and then I'm going to make it as optional like two sessions, I can add a two, I can let the manager to add another two sessions initially. So it will not affect the production flow already, which is, which are having eight sessions. But the thing is, the overall validation which I kept for eight sessions followed by the four extending the sessions, like the things will be affected in my code level. So check, analyze, and add this feature a minimum of six, and I'm letting the manager to add another two sessions using the add session button. And the remove button, the remove session button should appear only for the seventh and eighth session, and it should vanish once the sessions are submitted, like, it should be visible only during the check-ins draft state, okay.
+
+
+
+
+
+
 I am working on an Angular application with the following components:
 - PIPFormComponent (TS + HTML)
 - DashboardComponent
