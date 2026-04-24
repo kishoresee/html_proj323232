@@ -1,4 +1,120 @@
 
+### Objective
+Enhance the "Check-in Calendar" feature to support a minimum of 6 sessions with up to 2 optional sessions (7th and 8th), while preserving all existing functionality and UI behavior.
+
+---
+
+### IMPORTANT: Code Analysis First (MANDATORY)
+Before making any changes:
+1. Carefully analyze the existing HTML, TypeScript, and conditional rendering logic.
+2. Identify:
+   - All session-related logic
+   - All button-related conditions (Draft, Submit, Extend, ER Extend, Success, etc.)
+   - Role-based rendering (Manager, ER, Employee)
+3. Understand dependencies like:
+   - isSubmitted
+   - hasExtensionRows
+   - isLastSessionOnOrBeforeToday
+   - isExtensionPopupRow
+   - Any other flags controlling UI visibility
+
+👉 Do NOT assume anything. Work strictly based on existing code behavior.
+
+---
+
+### STRICT NON-BREAKING RULE (CRITICAL)
+This is an enhancement — NOT a rewrite.
+
+- Do NOT modify or impact:
+  - Draft button logic
+  - Submit button logic
+  - Extend button (Manager flow)
+  - Extend button (ER flow)
+  - Success / Exit / Closure buttons
+  - Dialog popup behavior (manager comment submission)
+
+- Do NOT change:
+  - Existing ngIf conditions
+  - Existing [disabled] conditions
+  - Existing role-based rendering logic
+
+- The new implementation must be fully isolated to session handling only
+
+---
+
+### Functional Changes (Scoped Only to Sessions)
+
+#### Default Behavior
+- Show 6 sessions by default
+
+#### Add Session
+- Add an "Add Session" button below session 6
+- Clicking:
+  - Adds Session 7 → then Session 8
+- After Session 8:
+  - Disable or hide "Add Session"
+
+#### Remove Session
+- Show Remove (trash icon) ONLY for:
+  - Session 7 and 8
+  - Only when status = Draft
+- Hide remove option after submission
+
+---
+
+### Validation Logic
+- Keep validation for first 6 sessions unchanged
+- Apply same validation dynamically for sessions 7 & 8
+- Refactor any hardcoded "8 session" logic → dynamic (6–8)
+
+---
+
+### Data Model
+- Store sessions in a dynamic array (size: 6 to 8)
+- Ensure backward compatibility:
+  - Existing 8-session records must work without modification
+
+---
+
+### Critical Isolation Requirement
+Ensure that:
+- Session count changes DO NOT affect:
+  - Button visibility
+  - Button enable/disable conditions
+  - Dialog workflows
+- No shared state or variable used by:
+  - Extend buttons
+  - Submit/Draft buttons  
+  should be modified or reused
+
+---
+
+### Special Instruction (VERY IMPORTANT)
+If any existing logic is tightly coupled with session count (e.g., assumes exactly 8 sessions):
+- Refactor ONLY that part carefully
+- Do NOT alter unrelated logic
+- Preserve original behavior for existing flows
+
+---
+
+### Acceptance Criteria
+- Loads with 6 sessions initially
+- Sessions 7 & 8 can be added/removed
+- All existing buttons behave EXACTLY the same as before
+- Extend / ER Extend flows are NOT impacted
+- No regression in Manager / ER / Employee flows
+- Existing data (8 sessions) works without errors
+
+---
+
+### Final Instruction
+Analyze the provided code thoroughly first, then implement the changes as a safe, minimal, non-breaking enhancement, strictly limited to session management.
+
+
+
+
+
+
 So, and once I analyze completely, you can see that initially I have kept like eight sessions. If a user must go, if a user goes to, if a manager goes to a check-in calendar tab, he has to enter the details for eight sessions, okay. This project has already gone to live, and what I am doing is, already some managers have raised and they are going with the eight sessions. But some told review like they need the sessions are very long, so I'll reduce it to six. The same time, I want to keep that eight session which is raised to the other managers, and I want to reduce it to six. So what I'm going to do is, I can make, I can make an optional like, options like, optional like, I'm going to keep it as six, then I'm gonna have an add session button below it, like, like similar to the add performance button. And then I'm letting the users, letting the managers to add up to another two, okay. Another two sessions. And then, As you can see the entire flow, I'm having that validations for eight sessions. And then when they extend the session, it's gonna add like four sessions. And then when they are extended, it's gonna add another four sessions. It will be, like, worst case, it will be 16 sessions, okay. Now, when I'm going with the six sessions and then I'm going to make it as optional like two sessions, I can add a two, I can let the manager to add another two sessions initially. So it will not affect the production flow already, which is, which are having eight sessions. But the thing is, the overall validation which I kept for eight sessions followed by the four extending the sessions, like the things will be affected in my code level. So check, analyze, and add this feature a minimum of six, and I'm letting the manager to add another two sessions using the add session button. And the remove button, the remove session button should appear only for the seventh and eighth session, and it should vanish once the sessions are submitted, like, it should be visible only during the check-ins draft state, okay.
 
 
