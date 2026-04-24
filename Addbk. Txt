@@ -1,4 +1,16 @@
 
+
+Previously, it was statically eight sessions, okay? We were a manager after enter the eight-session details and they can proceed on to extend, they can proceed to initiate and they can once all the sessions got over, they'll be enabled with exit, extend and success button. That time there is no problem. Now, we made optional as seven and eight session as optional. Either manager can enter seven and eight or they can leave up to six itself. So now what happened, after this, the validations are failing and then manager couldn't able to click on exit, success or extend button. The form validation is failing. So check once again. I'm not saying the ER part will come at the end, not the first of all. And leave the ER part for now. ER can only extend, ER can extend if he needs at the end, okay? First of all, see the manager, I'm trying to extend as manager, but I'm not able to extend from the six sessions already present, six or seven sessions. Previously, I kept eight sessions statically, now as a manager I can able to extend. Now I cannot able to extend, that is the case.
+
+
+
+
+
+
+
+
+
+
 ### Objective
 Enhance the "Check-in Calendar" feature to support a minimum of 6 sessions with up to 2 optional sessions (7th and 8th), while preserving all existing functionality and UI behavior.
 
