@@ -1,4 +1,137 @@
 
+You’re right to question that — blindly adding another <div> inside your toolbar can break alignment, especially since your .custom-toolbar is already using flex with justify-content: flex-end.
+
+So let’s fix this properly, minimal, and clean — no layout break.
+
+⸻
+
+✅ What you should NOT do
+
+* ❌ Don’t add extra wrapper <div> (like I gave earlier)
+* ❌ Don’t disturb .custom-toolbar flex structure
+* ❌ Don’t change existing button structure
+
+⸻
+
+✅ Correct approach (fits YOUR current structure)
+
+You already have this:
+
+<div class="custom-toolbar">
+  <span class="spacer"></span>
+  <button class="menuButtons">Dashboard</button>
+  <button *ngIf="isManager" class="menuButtons">+ New PIP</button>
+  <button *ngIf="canViewAudit" class="menuButtons">Audit</button>
+  <!-- THIS IS WHERE YOUR TOGGLE SHOULD GO -->
+</div>
+
+👉 Replace ONLY your existing switch button (no extra div)
+
+⸻
+
+🔥 FINAL HTML (Correct Placement)
+
+<label *ngIf="isDualRole" class="toggle-btn">
+  <input
+    type="checkbox"
+    [checked]="activeView === 'hrbp'"
+    (change)="toggleRoleView()"
+  />
+  <span class="slider"></span>
+</label>
+
+👉 Place it exactly where your current button is (line 30–35 area)
+
+⸻
+
+🎨 CSS (Aligned with your existing design)
+
+Add this below your existing .menuButtons styles
+
+.toggle-btn {
+  margin-left: 10px;
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 20px;
+}
+/* hide checkbox */
+.toggle-btn input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+/* slider background */
+.toggle-btn .slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: #ccc;
+  border-radius: 20px;
+  transition: 0.3s;
+}
+/* circle */
+.toggle-btn .slider::before {
+  content: "";
+  position: absolute;
+  height: 14px;
+  width: 14px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  border-radius: 50%;
+  transition: 0.3s;
+}
+/* active state */
+.toggle-btn input:checked + .slider {
+  background-color: white; /* contrast against green bar */
+}
+.toggle-btn input:checked + .slider::before {
+  transform: translateX(18px);
+  background-color: #2e7d32; /* BNP green */
+}
+
+⸻
+
+🎯 Why this works perfectly in YOUR UI
+
+* ✔ No extra div → no layout break
+* ✔ Uses same inline flow as .menuButtons
+* ✔ Matches your toolbar alignment (flex-end)
+* ✔ White toggle → visible on green navbar
+* ✔ Minimal change (safe for production)
+
+⸻
+
+💡 Optional (better UX but still minimal)
+
+If you want label without breaking layout:
+
+<span class="menuButtons">HRBP</span>
+<label ...></label>
+
+But honestly, your business asked just toggle → keep it clean.
+
+⸻
+
+🚀 Final Result
+
+* No UI shift
+* No broken alignment
+* Clean toggle switch
+* Fully compatible with your current CSS
+
+⸻
+
+If you want next step:
+👉 I can make it PrimeNG style (p-inputSwitch) so it matches your UI library perfectly — that will look even more professional.
+
+
+
+
+
+
+
 
 Previously, it was statically eight sessions, okay? We were a manager after enter the eight-session details and they can proceed on to extend, they can proceed to initiate and they can once all the sessions got over, they'll be enabled with exit, extend and success button. That time there is no problem. Now, we made optional as seven and eight session as optional. Either manager can enter seven and eight or they can leave up to six itself. So now what happened, after this, the validations are failing and then manager couldn't able to click on exit, success or extend button. The form validation is failing. So check once again. I'm not saying the ER part will come at the end, not the first of all. And leave the ER part for now. ER can only extend, ER can extend if he needs at the end, okay? First of all, see the manager, I'm trying to extend as manager, but I'm not able to extend from the six sessions already present, six or seven sessions. Previously, I kept eight sessions statically, now as a manager I can able to extend. Now I cannot able to extend, that is the case.
 
