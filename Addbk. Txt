@@ -1,4 +1,116 @@
 
+Yeah this is a good UX catch — right now your toggle is clean, but it lacks clarity. We’ll fix that without breaking your layout and keep it minimal.
+
+⸻
+
+✅ Goal
+
+* Keep your current toggle (don’t disturb layout)
+* Add clear text indicator
+* Make it obvious:
+    * Default → Manager View
+    * Toggle → HRBP View
+* No UI shift, no extra blocks
+
+⸻
+
+🔥 BEST FIT FOR YOUR CURRENT TOOLBAR (Minimal + Clean)
+
+👉 Just wrap your toggle with a small inline label + dynamic text below
+
+⸻
+
+✅ FINAL HTML (Replace your toggle line)
+
+<span *ngIf="isDualRole" class="role-switch-container">
+  <!-- Toggle -->
+  <label class="toggle-btn">
+    <input
+      type="checkbox"
+      [checked]="activeView === 'hrbp'"
+      (change)="toggleRoleView()"
+    />
+    <span class="slider"></span>
+  </label>
+  <!-- Dynamic text -->
+  <span class="role-text">
+    {{ activeView === 'manager' ? 'Manager View' : 'HRBP View' }}
+  </span>
+</span>
+
+👉 No extra div — just a <span> (safe inside your flex toolbar)
+
+⸻
+
+🎨 CSS (Add below your existing styles)
+
+.role-switch-container {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  margin-left: 10px;
+}
+/* text under toggle */
+.role-text {
+  font-size: 10px;
+  color: white;
+  margin-top: 2px;
+  white-space: nowrap;
+}
+
+⸻
+
+🎯 What this gives you
+
+✔ Toggle stays exactly where it is
+✔ No layout break (still inline with buttons)
+✔ Text appears below toggle (clean + readable)
+✔ User clearly understands current mode
+✔ Matches your green navbar
+
+⸻
+
+💡 UX Behavior
+
+Toggle State	UI Shows
+OFF (default)	Manager View
+ON	HRBP View
+
+⸻
+
+🚀 Optional (if you want even better clarity)
+
+Instead of only text below, you can do:
+
+<span class="role-text">
+  View: {{ activeView === 'manager' ? 'Manager' : 'HRBP' }}
+</span>
+
+⸻
+
+⚠️ Why this is the right approach
+
+* You avoided nested divs ✔
+* You didn’t touch .menuButtons ✔
+* You kept flex alignment intact ✔
+* You improved UX without redesign ✔
+
+⸻
+
+If you want next level polish, I can:
+
+* Add icons (👤 Manager / 🧑‍💼 HRBP)
+* Animate text color change
+* Show tooltip on hover
+
+Just tell 👍
+
+
+
+
+
+
+
 You’re right to question that — blindly adding another <div> inside your toolbar can break alignment, especially since your .custom-toolbar is already using flex with justify-content: flex-end.
 
 So let’s fix this properly, minimal, and clean — no layout break.
