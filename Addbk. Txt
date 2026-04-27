@@ -1,3 +1,14 @@
+Initially, I have like six sessions, okay, which is which we made like six sessions and then optional two sessions we can add before initiating the group. Once I add a session and click on add session button and now checking seven appears and I fill the details and I save the calendar, I click on save calendar button. Now, what I see is share extended group button is appearing near the same calendar instead of initiate group. Initiate group should only appear and share extended group only should appear on later on when we extend and when we do the things. But here it is appearing even before extending. Why it is happening and what is the minimal fix?
+
+
+
+
+
+
+
+
+
+
 
 Actually, the initiate put button is not visible. It is visible only till the check-in session 6. If I add 7 and 8 and then if I click on save calendar, the status will be changing to the check-in calendar in draft. In that state, when there is only check-in 7 sessions or check-in till 8, the initiate button is not coming out. Instead, only share Excel button is coming up. Okay, I want the share Excel button only during once after the manager has submitted and then it's going to the HRBP and then the sessions are got over. And if manager clicks on the extend, then when he drops the Excel sessions, then only the share Excel should be visible. But it is even visible during the session draft thing where manager is currently, just now he is entering the first 8 sessions or like 6 sessions is mandatory and 7 and 8 is optional, which we made it. Before he is entering, but I'm not, he should actually see initiate put, we should not see share Excel button. It should be only seen after manager clicked on extend and then proceeding to further. Why it is happening, analyze and tell me the fix.
 
