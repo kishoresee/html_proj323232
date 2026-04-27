@@ -1,3 +1,12 @@
+
+"scripts": {
+  "build": "node --max-old-space-size=8192 ./node_modules/@angular/cli/bin/ng build"
+}
+
+
+
+
+
 Initially, I have like six sessions, okay, which is which we made like six sessions and then optional two sessions we can add before initiating the group. Once I add a session and click on add session button and now checking seven appears and I fill the details and I save the calendar, I click on save calendar button. Now, what I see is share extended group button is appearing near the same calendar instead of initiate group. Initiate group should only appear and share extended group only should appear on later on when we extend and when we do the things. But here it is appearing even before extending. Why it is happening and what is the minimal fix?
 
 
