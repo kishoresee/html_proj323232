@@ -1,4 +1,111 @@
 
+import pandas as pd
+import tkinter as tk
+from tkinter import filedialog, messagebox
+import os
+
+def excel_col_name(n):
+    """Convert column index to Excel-style name (0 -> A, 1 -> B...)"""
+    name = ""
+    while n >= 0:
+        name = chr(n % 26 + 65) + name
+        n = n // 26 - 1
+    return name
+
+def compare_files(file1, file2):
+    try:
+        df1 = pd.read_csv(file1)
+        df2 = pd.read_csv(file2)
+
+        # Save Excel versions
+        excel1 = file1.replace(".csv", "_R3_8.xlsx")
+        excel2 = file2.replace(".csv", "_R3_11.xlsx")
+
+        df1.to_excel(excel1, index=False)
+        df2.to_excel(excel2, index=False)
+
+        differences = []
+
+        # Compare headers
+        cols1 = list(df1.columns)
+        cols2 = list(df2.columns)
+
+        if cols1 != cols2:
+            differences.append("⚠️ Column headers differ")
+            differences.append(f"R3_8 headers: {cols1}")
+            differences.append(f"R3_11 headers: {cols2}")
+
+        # Align columns
+        common_cols = list(set(cols1).intersection(set(cols2)))
+
+        max_rows = max(len(df1), len(df2))
+
+        for i in range(max_rows):
+            for col in common_cols:
+                val1 = df1[col][i] if i < len(df1) else None
+                val2 = df2[col][i] if i < len(df2) else None
+
+                if pd.isna(val1) and pd.isna(val2):
+                    continue
+
+                if val1 != val2:
+                    col_index = df1.columns.get_loc(col)
+                    excel_cell = f"{excel_col_name(col_index)}{i+2}"  # +2 because header row
+
+                    differences.append({
+                        "Cell": excel_cell,
+                        "Column": col,
+                        "Row": i + 2,
+                        "R3_8_Value": val1,
+                        "R3_11_Value": val2
+                    })
+
+        # Save report
+        if differences:
+            report_file = os.path.join(os.path.dirname(file1), "comparison_report.xlsx")
+            pd.DataFrame(differences).to_excel(report_file, index=False)
+            messagebox.showinfo("Done", f"Differences found!\nReport saved at:\n{report_file}")
+        else:
+            messagebox.showinfo("Done", "✅ No differences found!")
+
+    except Exception as e:
+        messagebox.showerror("Error", str(e))
+
+
+def select_files():
+    file1 = filedialog.askopenfilename(title="Select R3_8 CSV")
+    file2 = filedialog.askopenfilename(title="Select R3_11 CSV")
+
+    if file1 and file2:
+        compare_files(file1, file2)
+
+
+# UI
+root = tk.Tk()
+root.title("CSV Comparison Tool")
+root.geometry("300x150")
+
+btn = tk.Button(root, text="Select CSV Files & Compare", command=select_files, padx=10, pady=10)
+btn.pack(expand=True)
+
+root.mainloop()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 So, see the two files which are similar files .csv. First file you can see that the parenthesis 1 and another file you can see that without the parenthesis 1 in a normal file. Compare these two files. Keep the parenthesis 1 file named as R3_8 and the normal file which is without the parenthesis 1 as R3_11. Okay, the file name should be kept like this and analyze all the headers and the data inside the headers. Tell me which row exactly, like some A1 or B12 like that, which row has the differing data. Compare these two files and tell me what are the differences, what are the variations we have.
 
 
