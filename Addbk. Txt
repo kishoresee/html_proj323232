@@ -1,4 +1,19 @@
 
+So, see the two files which are similar files .csv. First file you can see that the parenthesis 1 and another file you can see that without the parenthesis 1 in a normal file. Compare these two files. Keep the parenthesis 1 file named as R3_8 and the normal file which is without the parenthesis 1 as R3_11. Okay, the file name should be kept like this and analyze all the headers and the data inside the headers. Tell me which row exactly, like some A1 or B12 like that, which row has the differing data. Compare these two files and tell me what are the differences, what are the variations we have.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 "scripts": {
   "build": "node --max-old-space-size=8192 ./node_modules/@angular/cli/bin/ng build"
 }
