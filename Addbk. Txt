@@ -1,4 +1,132 @@
 
+Got it — you don’t need UI anymore. Here’s a clean, importable Python module where you can manually pass file paths.
+
+⸻
+
+✅ File: csv_compare.py
+
+import pandas as pd
+import os
+def excel_col_name(n):
+    """Convert column index to Excel-style name (0 -> A, 1 -> B...)"""
+    name = ""
+    while n >= 0:
+        name = chr(n % 26 + 65) + name
+        n = n // 26 - 1
+    return name
+def compare_csv(file_r3_8, file_r3_11, output_dir=None):
+    """
+    Compare two CSV files:
+    - file_r3_8 → CSV with (1)
+    - file_r3_11 → normal CSV
+    Returns:
+        differences list + saves Excel report
+    """
+    df1 = pd.read_csv(file_r3_8)
+    df2 = pd.read_csv(file_r3_11)
+    if output_dir is None:
+        output_dir = os.path.dirname(file_r3_8)
+    # Save Excel versions
+    excel1 = os.path.join(output_dir, "R3_8.xlsx")
+    excel2 = os.path.join(output_dir, "R3_11.xlsx")
+    df1.to_excel(excel1, index=False)
+    df2.to_excel(excel2, index=False)
+    differences = []
+    # --- Compare headers ---
+    cols1 = list(df1.columns)
+    cols2 = list(df2.columns)
+    if cols1 != cols2:
+        differences.append({
+            "Type": "Header Mismatch",
+            "R3_8_Headers": cols1,
+            "R3_11_Headers": cols2
+        })
+    # --- Compare data ---
+    common_cols = list(set(cols1).intersection(set(cols2)))
+    max_rows = max(len(df1), len(df2))
+    for i in range(max_rows):
+        for col in common_cols:
+            val1 = df1[col][i] if i < len(df1) else None
+            val2 = df2[col][i] if i < len(df2) else None
+            if pd.isna(val1) and pd.isna(val2):
+                continue
+            if val1 != val2:
+                col_index = df1.columns.get_loc(col)
+                excel_cell = f"{excel_col_name(col_index)}{i+2}"
+                differences.append({
+                    "Type": "Value Mismatch",
+                    "Cell": excel_cell,
+                    "Column": col,
+                    "Row": i + 2,
+                    "R3_8_Value": val1,
+                    "R3_11_Value": val2
+                })
+    # --- Save report ---
+    report_path = os.path.join(output_dir, "comparison_report.xlsx")
+    if differences:
+        pd.DataFrame(differences).to_excel(report_path, index=False)
+        print(f"✅ Differences found. Report saved at:\n{report_path}")
+    else:
+        print("✅ No differences found.")
+    return differences
+
+⸻
+
+✅ How to use (your main file)
+
+Create another file → main.py
+
+from csv_compare import compare_csv
+file_r3_8 = r"C:\your_path\file(1).csv"
+file_r3_11 = r"C:\your_path\file.csv"
+compare_csv(file_r3_8, file_r3_11)
+
+⸻
+
+🔧 Install once
+
+pip install pandas openpyxl
+
+⸻
+
+🧠 What this version gives you
+
+* No UI (clean for real projects)
+* Reusable function → compare_csv()
+* Excel outputs:
+    * R3_8.xlsx
+    * R3_11.xlsx
+    * comparison_report.xlsx
+* Exact mismatch info:
+    * Column name
+    * Excel cell (A2, B5…)
+    * Row number
+    * Both values
+
+⸻
+
+⚡ Optional upgrade (tell me if you want)
+
+I can extend this to:
+
+* Highlight differences in Excel (colored cells 🔴🟢)
+* Ignore column order differences
+* Match rows using a primary key (very useful in real projects)
+* Handle large files efficiently (chunk processing)
+
+Just tell 👍
+
+
+
+
+
+
+
+
+
+
+
+
 import pandas as pd
 import tkinter as tk
 from tkinter import filedialog, messagebox
