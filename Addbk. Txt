@@ -1,4 +1,170 @@
 
+You’re very close — just need to tweak the report naming + pairing logic.
+
+Below is your fully revised, production-ready code:
+
+⸻
+
+✅ What’s improved
+
+* 📁 Compares all files in both folders
+* 🔗 Matches files by sorted order (1st with 1st, 2nd with 2nd)
+    (since your filenames differ slightly like timestamps)
+* 📄 Report name =
+    file1name_file2name_comparison_report.xlsx
+* 📊 Clean difference report (same as before)
+
+⸻
+
+✅ FULL FINAL CODE
+
+import pandas as pd
+import os
+def excel_col_name(n):
+    name = ""
+    while n >= 0:
+        name = chr(n % 26 + 65) + name
+        n = n // 26 - 1
+    return name
+def compare_two_csv(df1, df2):
+    differences = []
+    cols1 = set(df1.columns)
+    cols2 = set(df2.columns)
+    # Header differences
+    unique_r3_8 = list(cols1 - cols2)
+    unique_r3_11 = list(cols2 - cols1)
+    if unique_r3_8:
+        differences.append({
+            "Type": "Header Only in R3_8",
+            "Cell": "-",
+            "Column": ", ".join(unique_r3_8),
+            "Row": "-",
+            "R3_8_Value": "Present",
+            "R3_11_Value": "Missing"
+        })
+    if unique_r3_11:
+        differences.append({
+            "Type": "Header Only in R3_11",
+            "Cell": "-",
+            "Column": ", ".join(unique_r3_11),
+            "Row": "-",
+            "R3_8_Value": "Missing",
+            "R3_11_Value": "Present"
+        })
+    # Data comparison
+    common_cols = list(cols1.intersection(cols2))
+    max_rows = max(len(df1), len(df2))
+    for i in range(max_rows):
+        for col in common_cols:
+            val1 = df1[col][i] if i < len(df1) else None
+            val2 = df2[col][i] if i < len(df2) else None
+            if pd.isna(val1) and pd.isna(val2):
+                continue
+            if val1 != val2:
+                col_index = list(df1.columns).index(col)
+                cell_name = f"{excel_col_name(col_index)}{i+2}"
+                differences.append({
+                    "Type": "Value Mismatch",
+                    "Cell": cell_name,
+                    "Column": col,
+                    "Row": i + 2,
+                    "R3_8_Value": val1,
+                    "R3_11_Value": val2
+                })
+    return differences
+def clean_filename(name):
+    """Remove .csv and keep only name"""
+    return os.path.splitext(name)[0]
+def batch_compare(folder_r3_8, folder_r3_11, output_folder):
+    os.makedirs(output_folder, exist_ok=True)
+    files_r3_8 = sorted([f for f in os.listdir(folder_r3_8) if f.endswith(".csv")])
+    files_r3_11 = sorted([f for f in os.listdir(folder_r3_11) if f.endswith(".csv")])
+    print(f"R3_8 files: {len(files_r3_8)}")
+    print(f"R3_11 files: {len(files_r3_11)}")
+    min_len = min(len(files_r3_8), len(files_r3_11))
+    if min_len == 0:
+        print("❌ No files to compare")
+        return
+    for i in range(min_len):
+        file1 = files_r3_8[i]
+        file2 = files_r3_11[i]
+        path1 = os.path.join(folder_r3_8, file1)
+        path2 = os.path.join(folder_r3_11, file2)
+        print(f"🔄 Comparing:\n  {file1}\n  {file2}")
+        df1 = pd.read_csv(path1)
+        df2 = pd.read_csv(path2)
+        differences = compare_two_csv(df1, df2)
+        # --- NEW REPORT NAMING ---
+        report_name = f"{clean_filename(file1)}_{clean_filename(file2)}_comparison_report.xlsx"
+        report_path = os.path.join(output_folder, report_name)
+        if differences:
+            df_report = pd.DataFrame(differences)
+        else:
+            df_report = pd.DataFrame([{
+                "Type": "No Differences",
+                "Cell": "-",
+                "Column": "-",
+                "Row": "-",
+                "R3_8_Value": "-",
+                "R3_11_Value": "-"
+            }])
+        df_report.to_excel(report_path, index=False)
+    print(f"\n✅ All reports generated in:\n{output_folder}")
+
+⸻
+
+✅ HOW TO RUN
+
+from your_file import batch_compare
+folder_r3_8 = r"D:\your_path\3.8"
+folder_r3_11 = r"D:\your_path\3.11"
+output_folder = r"D:\your_path\reports"
+batch_compare(folder_r3_8, folder_r3_11, output_folder)
+
+⸻
+
+🔥 Output Example
+
+DH_Real_Pt_sc_incoming_20260505_DH_Real_Pt_sc_incoming_20260505_comparison_report.xlsx
+fileA_fileB_comparison_report.xlsx
+...
+
+⸻
+
+⚡ Important (based on your screenshots)
+
+Since your filenames differ slightly (timestamps):
+
+* This code matches by order (sorted) ✔️
+* If you later want smart matching (by partial name / ID) → I can upgrade it
+
+⸻
+
+🚀 If you want next upgrade (real pro level)
+
+I can add:
+
+* 🔑 Match files by pattern instead of order
+* 🎯 Match rows using primary key instead of index
+* 🔴 Highlight mismatches inside Excel
+* 📊 Summary dashboard (counts per file)
+
+Just tell 👍
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import pandas as pd
 import os
 
