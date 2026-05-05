@@ -1,8 +1,97 @@
 
+import pandas as pd
+import os
+
+def excel_col_name(n):
+    name = ""
+    while n >= 0:
+        name = chr(n % 26 + 65) + name
+        n = n // 26 - 1
+    return name
 
 
+def compare_csv_to_excel(file_r3_8, file_r3_11, output_path=None):
+    df1 = pd.read_csv(file_r3_8)
+    df2 = pd.read_csv(file_r3_11)
 
-Got it — one Excel report only, clean and focused on differences. No extra files.
+    if output_path is None:
+        output_path = os.path.dirname(file_r3_8)
+
+    differences = []
+
+    # --- Header comparison (IMPROVED) ---
+    cols1 = set(df1.columns)
+    cols2 = set(df2.columns)
+
+    unique_r3_8 = list(cols1 - cols2)
+    unique_r3_11 = list(cols2 - cols1)
+
+    if unique_r3_8 or unique_r3_11:
+        if unique_r3_8:
+            differences.append({
+                "Type": "Header Only in R3_8",
+                "Cell": "-",
+                "Column": ", ".join(unique_r3_8),
+                "Row": "-",
+                "R3_8_Value": "Present",
+                "R3_11_Value": "Missing"
+            })
+
+        if unique_r3_11:
+            differences.append({
+                "Type": "Header Only in R3_11",
+                "Cell": "-",
+                "Column": ", ".join(unique_r3_11),
+                "Row": "-",
+                "R3_8_Value": "Missing",
+                "R3_11_Value": "Present"
+            })
+
+    # --- Data comparison ---
+    common_cols = list(cols1.intersection(cols2))
+    max_rows = max(len(df1), len(df2))
+
+    for i in range(max_rows):
+        for col in common_cols:
+            val1 = df1[col][i] if i < len(df1) else None
+            val2 = df2[col][i] if i < len(df2) else None
+
+            if pd.isna(val1) and pd.isna(val2):
+                continue
+
+            if val1 != val2:
+                col_index = df1.columns.get_loc(col)
+                cell_name = f"{excel_col_name(col_index)}{i+2}"
+
+                differences.append({
+                    "Type": "Value Mismatch",
+                    "Cell": cell_name,
+                    "Column": col,
+                    "Row": i + 2,
+                    "R3_8_Value": val1,
+                    "R3_11_Value": val2
+                })
+
+    # --- Save single Excel report ---
+    report_file = os.path.join(output_path, "CSV_Differences_Report.xlsx")
+
+    if differences:
+        df_report = pd.DataFrame(differences)
+    else:
+        df_report = pd.DataFrame([{
+            "Type": "No Differences",
+            "Cell": "-",
+            "Column": "-",
+            "Row": "-",
+            "R3_8_Value": "-",
+            "R3_11_Value": "-"
+        }])
+
+    df_report.to_excel(report_file, index=False)
+
+    print(f"✅ Report generated at:\n{report_file}")
+
+    return df_reportGot it — one Excel report only, clean and focused on differences. No extra files.
 
 This version:
 
