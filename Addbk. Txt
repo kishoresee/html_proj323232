@@ -1,4 +1,13 @@
 
+df1 = pd.read_csv(path1, dtype=str, low_memory=False)
+df2 = pd.read_csv(path2, dtype=str, low_memory=False)
+
+
+
+
+
+
+
 You’re very close — just need to tweak the report naming + pairing logic.
 
 Below is your fully revised, production-ready code:
