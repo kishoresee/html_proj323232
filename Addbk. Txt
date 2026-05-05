@@ -1,4 +1,112 @@
-You’re right — generating 2 Excel files is unnecessary for your goal.
+
+
+
+
+Got it — one Excel report only, clean and focused on differences. No extra files.
+
+This version:
+
+* Compares headers + data
+* Gives exact Excel cell (A1, B12…)
+* Shows column name + both values
+* Outputs ONLY ONE Excel file
+
+⸻
+
+✅ Python Code (Single Excel Report)
+
+import pandas as pd
+import os
+def excel_col_name(n):
+    name = ""
+    while n >= 0:
+        name = chr(n % 26 + 65) + name
+        n = n // 26 - 1
+    return name
+def compare_csv_to_excel(file_r3_8, file_r3_11, output_path=None):
+    df1 = pd.read_csv(file_r3_8)
+    df2 = pd.read_csv(file_r3_11)
+    if output_path is None:
+        output_path = os.path.dirname(file_r3_8)
+    differences = []
+    # --- Header comparison ---
+    cols1 = list(df1.columns)
+    cols2 = list(df2.columns)
+    if cols1 != cols2:
+        differences.append({
+            "Type": "Header Mismatch",
+            "Cell": "-",
+            "Column": "ALL",
+            "Row": "-",
+            "R3_8_Value": str(cols1),
+            "R3_11_Value": str(cols2)
+        })
+    # --- Data comparison ---
+    common_cols = list(set(cols1).intersection(set(cols2)))
+    max_rows = max(len(df1), len(df2))
+    for i in range(max_rows):
+        for col in common_cols:
+            val1 = df1[col][i] if i < len(df1) else None
+            val2 = df2[col][i] if i < len(df2) else None
+            if pd.isna(val1) and pd.isna(val2):
+                continue
+            if val1 != val2:
+                col_index = df1.columns.get_loc(col)
+                cell_name = f"{excel_col_name(col_index)}{i+2}"
+                differences.append({
+                    "Type": "Value Mismatch",
+                    "Cell": cell_name,
+                    "Column": col,
+                    "Row": i + 2,
+                    "R3_8_Value": val1,
+                    "R3_11_Value": val2
+                })
+    # --- Save single Excel report ---
+    report_file = os.path.join(output_path, "CSV_Differences_Report.xlsx")
+    if differences:
+        df_report = pd.DataFrame(differences)
+    else:
+        df_report = pd.DataFrame([{
+            "Type": "No Differences",
+            "Cell": "-",
+            "Column": "-",
+            "Row": "-",
+            "R3_8_Value": "-",
+            "R3_11_Value": "-"
+        }])
+    df_report.to_excel(report_file, index=False)
+    print(f"✅ Report generated at:\n{report_file}")
+    return df_report
+
+⸻
+
+✅ Usage
+
+from your_file_name import compare_csv_to_excel
+file_r3_8 = r"C:\path\file(1).csv"
+file_r3_11 = r"C:\path\file.csv"
+compare_csv_to_excel(file_r3_8, file_r3_11)
+
+⸻
+
+📊 Output (Excel)
+
+Type	Cell	Column	Row	R3_8_Value	R3_11_Value
+Value Mismatch	B5	Name	5	Kumar	Kumaar
+Value Mismatch	D10	Salary	10	50000	52000
+
+⸻
+
+⚡ If you want even better (optional upgrades)
+
+I can enhance this to:
+
+* Highlight cells in red inside Excel
+* Show only changed columns summary
+* Handle row mismatch using ID (not index) → very important in real datasets
+* Speed up for large files (1L+ rows)
+
+Just tell 👍You’re right — generating 2 Excel files is unnecessary for your goal.
 You only need a clear report that says exactly what differs (cell, column, values).
 Let’s fix it properly.
 
