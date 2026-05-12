@@ -1,4 +1,103 @@
 
+def batch_compare(folder_r3_8, folder_r3_11, output_folder):
+
+    os.makedirs(output_folder, exist_ok=True)
+
+    # Get CSV files
+    files_r3_8 = [f for f in os.listdir(folder_r3_8) if f.endswith('.csv')]
+    files_r3_11 = [f for f in os.listdir(folder_r3_11) if f.endswith('.csv')]
+
+    print(f"R3_8 files: {len(files_r3_8)}")
+    print(f"R3_11 files: {len(files_r3_11)}")
+
+    # Create size mapping for R3_11
+    r3_11_size_map = {}
+
+    for file in files_r3_11:
+        path = os.path.join(folder_r3_11, file)
+        size = os.path.getsize(path)
+
+        if size not in r3_11_size_map:
+            r3_11_size_map[size] = []
+
+        r3_11_size_map[size].append(file)
+
+    matched_count = 0
+
+    # Compare files based on same size
+    for file1 in files_r3_8:
+
+        path1 = os.path.join(folder_r3_8, file1)
+        size1 = os.path.getsize(path1)
+
+        # Check matching size file exists
+        if size1 not in r3_11_size_map:
+            print(f"❌ No matching size file for: {file1}")
+            continue
+
+        # Take first matching file
+        file2 = r3_11_size_map[size1].pop(0)
+
+        # Remove empty list
+        if len(r3_11_size_map[size1]) == 0:
+            del r3_11_size_map[size1]
+
+        path2 = os.path.join(folder_r3_11, file2)
+
+        print(f"\n🔄 Comparing:")
+        print(f"R3_8  : {file1}")
+        print(f"R3_11 : {file2}")
+        print(f"Size  : {size1} bytes")
+
+        try:
+            df1 = pd.read_csv(path1, dtype=str, low_memory=False)
+            df2 = pd.read_csv(path2, dtype=str, low_memory=False)
+
+            differences = compare_two_csv(df1, df2)
+
+            # Report naming
+            report_name = (
+                f"{clean_filename(file1)}_"
+                f"{clean_filename(file2)}_comparison_report.xlsx"
+            )
+
+            report_path = os.path.join(output_folder, report_name)
+
+            if differences:
+                df_report = pd.DataFrame(differences)
+            else:
+                df_report = pd.DataFrame([{
+                    "Type": "No Differences",
+                    "Cell": "-",
+                    "Column": "-",
+                    "Row": "-",
+                    "R3_8_Value": "-",
+                    "R3_11_Value": "-"
+                }])
+
+            df_report.to_excel(report_path, index=False)
+
+            print(f"✅ Report Generated: {report_name}")
+
+            matched_count += 1
+
+        except Exception as e:
+            print(f"❌ Error comparing files:")
+            print(f"{file1}")
+            print(f"{file2}")
+            print(f"Reason: {e}")
+
+    print(f"\n✅ Total matched comparisons: {matched_count}")
+    print(f"📁 Reports generated in:\n{output_folder}")
+
+
+
+
+
+
+
+
+
 df1 = pd.read_csv(path1, dtype=str, low_memory=False)
 df2 = pd.read_csv(path2, dtype=str, low_memory=False)
 
