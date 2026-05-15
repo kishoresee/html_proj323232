@@ -1,4 +1,91 @@
 
+
+Yes now the comment is coming correctly 👍
+Only spacing/padding issue is there.
+
+Right now the text is sticking to the left border because your .comment-text or .withdraw-comments-box has no padding.
+
+✅ Minimal Proper UI Fix
+
+Add this in your pipform.component.css
+
+.withdraw-comments-box {
+    padding: 12px 16px;
+    margin-top: 8px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    border-left: 4px solid #00915a;
+}
+.comment-text {
+    margin: 0;
+    padding-left: 4px;
+    color: #333;
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+⸻
+
+✅ Why this is best
+
+This will:
+
+✅ Start text with proper spacing
+✅ Give clean professional alignment
+✅ Match your green BNP theme
+✅ Not affect any other UI
+✅ Keep minimal change only to withdraw section
+
+⸻
+
+✅ Your HTML can remain SAME
+
+<div class="withdraw-comments-box">
+    <div class="comment-text"
+         [innerHTML]="pipForm.get('withdrawComments')?.value">
+    </div>
+</div>
+
+No further TS change needed.
+
+⸻
+
+✅ Result after fix
+
+Instead of:
+
+|improved
+
+You’ll get:
+
+|   improved
+
+with proper padding and clean alignment.
+
+⸻
+
+🔥 Optional Better Premium Look (recommended)
+
+If you want slightly more modern UI:
+
+.withdraw-comments-box {
+    padding: 14px 18px;
+    margin-top: 10px;
+    background: #f4fdf8;
+    border: 1px solid #ccebdd;
+    border-left: 5px solid #00915a;
+    border-radius: 6px;
+}
+
+This will look much more enterprise-level without affecting your existing page styling.
+
+
+
+
+
+
+
+
 def batch_compare(folder_r3_8, folder_r3_11, output_folder):
 
     os.makedirs(output_folder, exist_ok=True)
