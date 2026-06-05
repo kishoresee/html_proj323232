@@ -1,1 +1,36 @@
 
+If I understand correctly, you want the Edit Session option to be available only within a 5-day window centered around the session date:
+
+Session Date	Editable?
+2 days before	✅ Yes
+1 day before	✅ Yes
+Session day	✅ Yes
+1 day after	✅ Yes
+2 days after	✅ Yes
+More than 2 days before	❌ No
+More than 2 days after	❌ No
+
+For example, if the session date is 5 June:
+
+* 3 June → ✅ Edit allowed
+* 4 June → ✅ Edit allowed
+* 5 June → ✅ Edit allowed
+* 6 June → ✅ Edit allowed
+* 7 June → ✅ Edit allowed
+* 2 June or earlier → ❌ Not allowed
+* 8 June or later → ❌ Not allowed
+
+The logic would be:
+
+DateTime today = DateTime.Today;
+DateTime sessionDate = session.SessionDate.Date;
+int daysDifference = (today - sessionDate).Days;
+bool canEdit = daysDifference >= -2 && daysDifference <= 2;
+
+Or more simply:
+
+bool canEdit = Math.Abs((today - sessionDate).Days) <= 2;
+
+This allows editing from 2 days before to 2 days after the session date, and blocks editing outside that range.
+
+If you share the current C# code where the date check is implemented, I can show the minimal change needed instead of rewriting the whole logic.
