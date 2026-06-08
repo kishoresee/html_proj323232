@@ -1,5 +1,110 @@
 
+From your screenshots, the gap is specifically between “Check In Notes” and “Action” columns.
+
+I can already see you’re using:
+
+.session-table .checkin-notes-col,
+.session-table td.checkin-notes-col {
+    width: 80px;
+    padding-left: 0.1rem !important;
+    padding-right: 0.1rem !important;
+}
+.session-table .action-col,
+.session-table td.action-col {
+    width: 40px;
+    padding-left: 0.1rem !important;
+    padding-right: 0.1rem !important;
+}
+
+The problem is usually table-layout:auto or a min-width on one of the columns.
+
+Quick Fix #1 (Most likely)
+
+Add:
+
+.session-table {
+    table-layout: fixed;
+    width: 100%;
+}
+
+Quick Fix #2
+
+Force both columns to shrink:
+
+.session-table th.checkin-notes-col,
+.session-table td.checkin-notes-col {
+    width: 60px !important;
+    max-width: 60px !important;
+    min-width: 60px !important;
+    padding: 0 2px !important;
+}
+.session-table th.action-col,
+.session-table td.action-col {
+    width: 40px !important;
+    max-width: 40px !important;
+    min-width: 40px !important;
+    padding: 0 2px !important;
+}
+
+Quick Fix #3
+
+Inspect the column before “Action”. If it contains:
+
+white-space: nowrap;
+
+or
+
+display:flex;
+justify-content: space-between;
+
+remove them temporarily and check.
+
+Quick Check in Browser
+
+Press F12 → Inspect the empty green area → Look at the highlighted <th> width.
+
+If the <th class="checkin-notes-col"> is showing something like 150px+, then another CSS rule is overriding your width.
+
+Search in VS Code:
+
+checkin-notes-col
+min-width
+table-layout
+th
+
+and look for any:
+
+min-width: 120px;
+flex: 1;
+width: auto;
+
+that’s overriding your new CSS.
+
+The safest fix is usually:
+
+.session-table {
+    table-layout: fixed;
+}
+
+followed by
+
+.checkin-notes-col { width: 60px !important; }
+.action-col { width: 40px !important; }
+
+Can you send the HTML for those two <th> columns (Check In Notes and Action)? I can tell the exact line causing the gap.
+
+
+
+
+
+
+
+
+
 If I understand correctly, you want the Edit Session option to be available only within a 5-day window centered around the session date:
+
+
+
 
 Session Date	Editable?
 2 days before	✅ Yes
