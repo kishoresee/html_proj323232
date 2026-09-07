@@ -1,4 +1,11 @@
 
+So check carefully in the ER data list where I have given, like as an ER and admin both have similar roles. But ER has an ability to, like exit an employee, like confirmation from the ER. So you can check the text file and you can analyze and you can know that. The problem is there is one case, actually ER can see all the cases, like in the put details, So now here can see all the details, like whatever in the PIP details list, they can see all the details. Okay, but there's one case is missing, like name, like some employee name, some employee name called Nizanthan, and his UID starts with, like some F two nine two nine zero. It is his UID, but the one case, he's just a normal employee. He's not a manager at all. So all other cases, similar cases are visible, similar to that employee who is a normal employee and who has been praised on him, the cases are visible for ER. But this case alone is not visible for ER. What may be the possible drawback, or like what may be the possible thing that ER not able to see this particular case alone? Because, like, this is only happening for one case. I don't know why it is happening. I analyzed end to end, like in the PIP details. The details are present. The PIP has been raised on him, and it is decided as an exit thing. So, however an ER should see in all the cases, like all the most of the status ERs have been able to see what are the status and what is the thing. Only in the exit case he can able to choose, like exit, like or any other thing like that. He can exit or extend. So in this case already the particular ER has exited certain cases and it all worked. But for particular this case alone it is not working. I don't know why. Unless possible, like possible defects or some bugs in the code. And tell me what may be the possible cause. Same for the admin also. Admin also from admin point of view also this case is not visible. Some certain cases, like one or two cases, not visible, but most of the cases are visible.
+
+
+
+
+
+
 From your screenshots, the gap is specifically between “Check In Notes” and “Action” columns.
 
 I can already see you’re using:
