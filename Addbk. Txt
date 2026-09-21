@@ -1,4 +1,35 @@
 
+I can see what happened. The extraction worked, but the command that was supposed to edit the temporary web.xml was blocked with Permission denied.
+
+So do not repackage anything yet.
+
+Let’s first check the permissions/ownership of that temporary file.
+
+Run exactly:
+
+ls -ld /tmp/AdminTools_fix_20260921_v2
+ls -ld /tmp/AdminTools_fix_20260921_v2/WEB-INF
+ls -l /tmp/AdminTools_fix_20260921_v2/WEB-INF/web.xml
+
+Then run:
+
+grep -n "dispatcher" /tmp/AdminTools_fix_20260921_v2/WEB-INF/web.xml
+
+Send me that output.
+
+Why we’re checking this
+
+The important thing is:
+
+* AdminTools.war does contain <dispatcher>REQUEST</dispatcher> ✅
+* We successfully extracted the WAR ✅
+* The edit to the extracted copy didn’t happen because of permissions ❌
+* Therefore we haven’t changed the original WAR yet — good, your backup is still safe.
+
+Once I see the ownership/permissions, I’ll give you the safest way to modify the temporary copy without touching the original WAR.
+
+
+
 I see the issue in the screenshot. Nothing is wrong with the WAR yet. The command failed because your server’s security tool blocked rm -rf. The popup says you are not authorized to execute rm.
 
 So we will not use rm at all.
