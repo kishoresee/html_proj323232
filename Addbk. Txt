@@ -1,3 +1,42 @@
+Yes — now I can see the actual problem.
+
+Your <filter> / <filter-mapping> is after the <servlet> and <servlet-mapping> sections. With the Servlet 2.3 DTD used by this web.xml, the required order is:
+
+filter → filter-mapping → servlet → servlet-mapping. 
+
+Your current file is effectively:
+
+servlet
+servlet-mapping
+filter
+filter-mapping   ← wrong position
+
+So let’s fix the order, not change the filter again.
+
+1. First keep your backup
+
+You already created:
+
+web.xml.bak_20260921
+
+Good.
+
+2. Show me lines 1–50 before we edit
+
+Run exactly:
+
+nl -ba web.xml | sed -n '1,50p'
+
+Send me the screenshot/output.
+
+Don’t edit anything yet. I want to make sure the exact <servlet> starting line is what I expect before giving you the move command.
+
+
+
+
+
+
+
 I checked the latest screenshots carefully. The restart worked, but AdminTools is still failing to deploy. The error has actually moved forward.
 
 The important new error is:
