@@ -1,4 +1,40 @@
 
+Yes — the second start was aborted because Tomcat is already running. This is not a new failure.
+
+Your screen clearly says:
+
+Existing PID file found during start.
+Tomcat appears to still be running with PID 2489470.
+Start aborted.
+
+So DO NOT delete the PID file and DO NOT run start again. PID 2489470 is currently a Java/Tomcat process.
+
+Now check the actual application status
+
+Run:
+
+ps -fp 2489470
+
+Then:
+
+cd /data/tomcat_DH_TOMCAT_43_UAT/tomcat/logs
+
+And run:
+
+grep -i -A5 -B5 "AdminTools\|Parse error\|dispatcher\|filter-mapping\|startup failed" catalina.out | tail -80
+
+Important
+
+We need this output because there are two separate things:
+
+1. Tomcat process → appears to be running already. ✅
+2. AdminTools deployment → we need to confirm whether our fixed WAR deployed successfully.
+
+Don’t stop Tomcat again yet. Send me the output of those two commands.
+
+
+
+
 Perfect. ✅ The verification is successful.
 
 From your screenshot:
