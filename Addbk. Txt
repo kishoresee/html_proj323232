@@ -1,5 +1,5 @@
 
-
+nl -ba /tmp/AdminTools_fix_20260921_v2/WEB-INF/web.xml | sed -n '15,50p'
 
 Now we found the exact reason for the Permission denied.
 
