@@ -1,4 +1,82 @@
 
+Yes. Now we have confirmed the exact root cause.
+
+Your screenshot shows that inside AdminTools.war itself the file contains:
+
+<filter-mapping>
+    <filter-name>HstsFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+    <dispatcher>REQUEST</dispatcher>
+</filter-mapping>
+
+So the changes we made to the extracted webapps/AdminTools/WEB-INF/web.xml were being overwritten/ignored when Tomcat deployed AdminTools.war.
+
+We need to fix the WAR, not the extracted folder.
+
+Do this exactly
+
+1. Stop Tomcat
+
+From your current webapps directory:
+
+cd /data/tomcat_DH_TOMCAT_43_UAT/scripts
+./tomcat.sh stop
+
+Wait until you see:
+
+Tomcat stopped.
+
+2. Go to webapps
+
+cd /data/tomcat_DH_TOMCAT_43_UAT/tomcat/webapps
+
+3. Make a backup of the original WAR
+
+cp -p AdminTools.war AdminTools.war.bak_20260921
+
+Do not skip this.
+
+4. Extract the WAR to a temporary directory
+
+rm -rf /tmp/AdminTools_fix_20260921
+mkdir /tmp/AdminTools_fix_20260921
+unzip -q AdminTools.war -d /tmp/AdminTools_fix_20260921
+
+5. Remove the invalid dispatcher
+
+Run:
+
+sed -i '/<dispatcher>REQUEST<\/dispatcher>/d' /tmp/AdminTools_fix_20260921/WEB-INF/web.xml
+
+6. Verify it is gone
+
+grep -n "dispatcher" /tmp/AdminTools_fix_20260921/WEB-INF/web.xml
+
+This command should return nothing.
+
+Then run:
+
+grep -n -A6 -B4 "HstsFilter" /tmp/AdminTools_fix_20260921/WEB-INF/web.xml
+
+You should see the HSTS mapping without <dispatcher>.
+
+STOP HERE
+
+Don’t repackage the WAR yet.
+
+Send me the output/screenshot of these two commands:
+
+grep -n "dispatcher" /tmp/AdminTools_fix_20260921/WEB-INF/web.xml
+
+and
+
+grep -n -A6 -B4 "HstsFilter" /tmp/AdminTools_fix_20260921/WEB-INF/web.xml
+
+I’ll verify the modified WAR contents first, then I’ll give you the exact repackaging and restart commands.
+
+
+
+
 Yes — now we have the real reason. The latest logs are very useful.
 
 What the logs prove
