@@ -1,3 +1,43 @@
+Good, this screenshot is much clearer.
+
+I can see around lines 43–46:
+
+<filter-mapping>
+    <filter-name>BasicFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+    <dispatcher>REQUEST</dispatcher>
+</filter-mapping>
+
+And Tomcat is complaining:
+
+Element type "dispatcher" must be declared
+
+This usually happens when:
+
+* The web.xml version/schema does not support <dispatcher>, or
+* The file is malformed/corrupted, causing XML validation to fail.
+
+Before changing anything, let’s identify the Tomcat version.
+
+Run:
+
+cd /data/tomcat_DH_TOMCAT_43_UAT/tomcat
+bin/version.sh
+
+or if that doesn’t exist:
+
+java -version
+
+Send the output.
+
+Also check whether this file was recently modified:
+
+ls -l /data/tomcat_DH_TOMCAT_43_UAT/tomcat/webapps/AdminTools/WEB-INF/web.xml
+
+From the logs, the issue is now narrowed down to AdminTools/WEB-INF/web.xml, not SAPCryptoLibs or the login credentials themselves. The next step is to confirm the Tomcat version before touching the XML.
+
+
+
 
 nl -ba /data/tomcat_DH_TOMCAT_43_UAT/tomcat/webapps/AdminTools/WEB-INF/web.xml | sed -n '35,75p'
 
