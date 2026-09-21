@@ -1,4 +1,7 @@
 
+grep -nEi "ERROR|SEVERE|Exception|500" catalina.out catalina.2026-09-21.log | tail -100
+
+
 Yes — this confirms idp-meta-downloaded.xml is missing from BOE/WEB-INF.
 
 Don’t create an empty file. First we need to see why SAML is configured and whether this UAT server is supposed to use it.
