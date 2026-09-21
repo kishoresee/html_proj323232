@@ -1,4 +1,51 @@
 
+
+
+Now we found the exact reason for the Permission denied.
+
+The extracted WEB-INF directory has no permissions for the owner, which is why even grep cannot read web.xml. This is only the temporary extracted copy, so we can safely fix its permissions.
+
+Do this now
+
+You’re currently in webapps.
+
+1. Give yourself access to the temporary copy
+
+chmod -R u+rwX /tmp/AdminTools_fix_20260921_v2
+
+2. Check the file
+
+ls -l /tmp/AdminTools_fix_20260921_v2/WEB-INF/web.xml
+
+3. Remove the dispatcher
+
+sed -i '/<dispatcher>REQUEST<\/dispatcher>/d' /tmp/AdminTools_fix_20260921_v2/WEB-INF/web.xml
+
+4. Confirm it is gone
+
+grep -n "dispatcher" /tmp/AdminTools_fix_20260921_v2/WEB-INF/web.xml
+
+It should show nothing.
+
+5. Confirm the HSTS section
+
+grep -n -A6 -B4 "HstsFilter" /tmp/AdminTools_fix_20260921_v2/WEB-INF/web.xml
+
+It should look like:
+
+<filter-mapping>
+    <filter-name>HstsFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+</filter-mapping>
+
+Important
+
+Do not touch AdminTools.war yet. We are still working on /tmp/AdminTools_fix_20260921_v2, so the original WAR and your backup remain untouched.
+
+Send me a screenshot after commands 3–5. Then we’ll repackage it safely.
+
+
+
 I can see what happened. The extraction worked, but the command that was supposed to edit the temporary web.xml was blocked with Permission denied.
 
 So do not repackage anything yet.
