@@ -1,5 +1,69 @@
 
+Yes — now we have the real reason. The latest logs are very useful.
 
+What the logs prove
+
+Your latest catalina output still contains:
+
+Parse error at line [45] column [21]
+Element type "dispatcher" must be declared
+
+and:
+
+Context [/AdminTools] startup failed due to previous errors
+
+So Tomcat is still reading a web.xml that contains <dispatcher>.
+
+That means our previous edit to the exploded directory did not become the file Tomcat is ultimately deploying.
+
+And your log explicitly shows:
+
+Deploying web application archive
+.../webapps/AdminTools.war
+
+This is the important part.
+
+Tomcat is deploying AdminTools.war. If that WAR contains the original WEB-INF/web.xml, changing only:
+
+webapps/AdminTools/WEB-INF/web.xml
+
+is not enough. Tomcat can redeploy/re-expand the WAR and bring the original descriptor back. Tomcat’s deployment documentation confirms that WAR deployment/redeployment can recreate the exploded application directory. 
+
+Don’t edit anything else yet
+
+We need to confirm what is actually inside the WAR.
+
+Go to:
+
+cd /data/tomcat_DH_TOMCAT_43_UAT/tomcat/webapps
+
+Then run this one command:
+
+unzip -p AdminTools.war WEB-INF/web.xml | grep -n -A8 -B5 "HstsFilter"
+
+Also run:
+
+unzip -p AdminTools.war WEB-INF/web.xml | grep -n "dispatcher"
+
+What I expect
+
+If the second command returns something like:
+
+<dispatcher>REQUEST</dispatcher>
+
+then we’ve confirmed it:
+
+The bad <dispatcher> is inside AdminTools.war, not just the exploded directory.
+
+Don’t modify the WAR yet.
+
+Send me the output of those two commands, and I’ll give you the exact next commands to fix the actual deployed file.
+
+One more thing: your other screenshot shows:
+
+Metadata file '/WEB-INF/idp-meta-downloaded.xml' does not exist
+
+That’s a separate BOE/metadata issue appearing during application startup. Let’s fix the AdminTools.war deployment error first; otherwise we can’t reliably diagnose the CMC 500.
 
 Yes — the fact that you still see HTTP 500 does not mean the filter change was necessarily wrong. The important point is that the browser screenshot only shows the final symptom. We need to see what Tomcat is reporting after the latest restart.
 
