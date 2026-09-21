@@ -1,4 +1,59 @@
 
+I see the issue in the screenshot. Nothing is wrong with the WAR yet. The command failed because your server’s security tool blocked rm -rf. The popup says you are not authorized to execute rm.
+
+So we will not use rm at all.
+
+Also, your grep failed because /tmp/AdminTools_fix_20260921 was never successfully created/extracted.
+
+Do this from your current prompt
+
+1. Go to webapps
+
+cd /data/tomcat_DH_TOMCAT_43_UAT/tomcat/webapps
+
+2. Create a new temporary directory
+
+Use a new name so we don’t need to delete anything:
+
+mkdir /tmp/AdminTools_fix_20260921_v2
+
+If it says the directory already exists, tell me — don’t delete it.
+
+3. Extract the WAR
+
+unzip -q AdminTools.war -d /tmp/AdminTools_fix_20260921_v2
+
+4. Now remove <dispatcher> from the extracted copy
+
+sed -i '/<dispatcher>REQUEST<\/dispatcher>/d' /tmp/AdminTools_fix_20260921_v2/WEB-INF/web.xml
+
+5. Verify
+
+Run:
+
+grep -n "dispatcher" /tmp/AdminTools_fix_20260921_v2/WEB-INF/web.xml
+
+It should produce no output.
+
+Then:
+
+grep -n -A6 -B4 "HstsFilter" /tmp/AdminTools_fix_20260921_v2/WEB-INF/web.xml
+
+You should see:
+
+<filter-mapping>
+    <filter-name>HstsFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+</filter-mapping>
+
+Stop there.
+
+Don’t repackage the WAR yet. Send me a screenshot of steps 4–5. Then I’ll give you the exact command to rebuild AdminTools.war while preserving the existing WAR structure.
+
+
+
+
+
 Yes. Now we have confirmed the exact root cause.
 
 Your screenshot shows that inside AdminTools.war itself the file contains:
