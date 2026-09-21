@@ -1,3 +1,67 @@
+
+Yes — this is now correct. ✅
+
+The screenshot shows the required order:
+
+<filter>
+<filter-mapping>
+<servlet>
+<servlet-mapping>
+
+And the <dispatcher> line is gone.
+
+Now we can safely rebuild the WAR.
+
+1. Create the fixed WAR
+
+Run:
+
+cd /tmp/AdminTools_fix_20260921_v2
+
+Then:
+
+zip -qr /tmp/AdminTools_fixed_20260921.war .
+
+2. Verify the new WAR
+
+Run:
+
+unzip -p /tmp/AdminTools_fixed_20260921.war WEB-INF/web.xml | grep -n "dispatcher"
+
+It should return nothing.
+
+Then:
+
+unzip -p /tmp/AdminTools_fixed_20260921.war WEB-INF/web.xml | grep -n -A6 -B4 "HstsFilter"
+
+You should see:
+
+<filter>
+    <filter-name>HstsFilter</filter-name>
+    <filter-class>com.crystaldecisions.examples.HstsFilter</filter-class>
+</filter>
+<filter-mapping>
+    <filter-name>HstsFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+</filter-mapping>
+
+3. Don’t replace the original yet
+
+Send me the output/screenshot of those two verification commands.
+
+Once that is confirmed, we’ll replace:
+
+/data/tomcat_DH_TOMCAT_43_UAT/tomcat/webapps/AdminTools.war
+
+while keeping your backup:
+
+AdminTools.war.bak_20260921
+
+Then we’ll restart Tomcat and check whether the dispatcher / filter-mapping parse error is gone.
+
+
+
+
 Yes — this screenshot confirms it 100%.
 
 Your temporary web.xml currently has:
