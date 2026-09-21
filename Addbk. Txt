@@ -1,5 +1,58 @@
+Yes. Based on the error we can give you a specific procedure. The key is that Tomcat is rejecting AdminTools/WEB-INF/web.xml at the <dispatcher> element.
 
+Do not remove <dispatcher> yet. First confirm the XML declaration/DOCTYPE, because that determines the correct fix.
+
+Step 1 — Go to the file
+
+You are currently in logs. Run:
+
+cd /data/tomcat_DH_TOMCAT_43_UAT/tomcat/webapps/AdminTools/WEB-INF
+
+Step 2 — Take a backup
+
+cp web.xml web.xml.bak_20260921
+
+Step 3 — Show the beginning of the file
+
+Run:
+
+head -35 web.xml
+
+Send me the output.
+
+I specifically need to see the first few lines containing something like:
+
+<!DOCTYPE web-app ...>
+
+or
+
+<web-app ... version="...">
+
+Why this is important
+
+Your error:
+
+Element type "dispatcher" must be declared
+
+is happening because the XML definition being used by web.xml does not recognize <dispatcher>.
+
+If the file is using an old Servlet DTD/schema, while the application configuration contains:
+
+<dispatcher>REQUEST</dispatcher>
+
+Tomcat will reject the entire AdminTools application.
+
+So the exact fix may be to correct the web.xml schema/DTD, rather than deleting the dispatcher.
+
+Don’t restart Tomcat yet
+
+Run only:
+
+head -35 web.xml
+
+and send me that output. Once I see those first lines, I’ll give you the exact edit command and restart/redeployment commands step-by-step.
 The SAP BusinessObjects **AdminTools web application is failing to deploy in Tomcat because its WEB-INF/web.xml is failing XML/schema validation. Tomcat reports errors around the <dispatcher> element inside the filter-mapping section (Element type "dispatcher" must be declared) and subsequently marks the application unavailable. Because AdminTools does not start successfully, the CMC login request is returning HTTP 500 Internal Server Error.
+ 
 
 
 
