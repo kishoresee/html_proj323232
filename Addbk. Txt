@@ -1,4 +1,8 @@
 
+nl -ba /data/tomcat_DH_TOMCAT_43_UAT/tomcat/webapps/AdminTools/WEB-INF/web.xml | sed -n '35,75p'
+
+
+
 Yes, I can see the new log output. 👍
 
 There are several log messages appearing after your login attempt, but the photo is too blurry to reliably read the exact exception.
