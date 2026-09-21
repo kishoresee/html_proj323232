@@ -1,3 +1,43 @@
+I checked the latest screenshots carefully. The restart worked, but AdminTools is still failing to deploy. The error has actually moved forward.
+
+The important new error is:
+
+Parse error at line [45] column [22]
+The content of element type "filter-mapping" must match
+"(filter-name,(url-pattern | servlet-name))"
+
+So don’t make another random change. We need to inspect every filter-mapping in the file.
+
+Do this now
+
+You should still be in the scripts directory. Run:
+
+cd /data/tomcat_DH_TOMCAT_43_UAT/tomcat/webapps/AdminTools/WEB-INF
+
+Then:
+
+grep -n -A6 -B2 "<filter-mapping>" web.xml
+
+This will show every filter-mapping and its contents.
+
+Also run:
+
+grep -nE "filter-mapping|filter-name|url-pattern|servlet-name|dispatcher" web.xml
+
+Send me the output of those two commands.
+
+Do not edit the file yet.
+
+The first <filter-mapping> around line 42–45 looks correct visually, so I want to see all mappings. There may be another malformed mapping later in the file, and Tomcat is reporting the first one it encounters.
+
+Also, your earlier <dispatcher> error is consistent with the Servlet 2.3 DTD: that DTD defines filter-mapping as filter-name followed by either url-pattern or servlet-name; it does not define dispatcher. 
+
+So we’re now debugging the remaining XML structure, not the server restart.
+
+
+
+
+
 
 Now we have the exact cause.
 
