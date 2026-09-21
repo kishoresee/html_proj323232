@@ -1,3 +1,78 @@
+
+Now we have the exact cause.
+
+Your web.xml starts with:
+
+<!DOCTYPE web-app PUBLIC
+  "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+  "http://java.sun.com/dtd/web-app_2_3.dtd">
+
+But later it contains:
+
+<dispatcher>REQUEST</dispatcher>
+
+The Servlet 2.3 DTD does not define <dispatcher>, which is why Tomcat reports:
+
+Element type "dispatcher" must be declared
+
+Do this exactly
+
+You already created the backup:
+
+web.xml.bak_20260921
+
+So we’re safe.
+
+1. Check how many dispatcher entries exist
+
+You’re already in:
+
+/data/tomcat_DH_TOMCAT_43_UAT/tomcat/webapps/AdminTools/WEB-INF
+
+Run:
+
+grep -n "dispatcher" web.xml
+
+You should see something like:
+
+45: <dispatcher>REQUEST</dispatcher>
+
+2. Remove the dispatcher line
+
+If it shows only the REQUEST line, run:
+
+sed -i '/<dispatcher>REQUEST<\/dispatcher>/d' web.xml
+
+This is appropriate here because REQUEST is the default dispatcher, so removing that explicit element doesn’t change the normal request behavior.
+
+3. Verify it was removed
+
+grep -n "dispatcher" web.xml
+
+If nothing is returned, that’s expected.
+
+4. Check the relevant section
+
+nl -ba web.xml | sed -n '35,50p'
+
+You should see the filter-mapping without the dispatcher line.
+
+Then Tomcat must reload AdminTools
+
+Don’t restart yet if this is a shared UAT server without your senior’s approval. If you have permission to restart Tomcat, we can do that next.
+
+If your senior has asked you specifically to fix and restart it, tell me “I have permission to restart”, and I’ll give you the exact stop/start commands for this Tomcat instance.
+
+If you need to explain the fix to your senior:
+
+Root cause: AdminTools/WEB-INF/web.xml declares Servlet 2.3 DTD, but contains the Servlet 2.4+ <dispatcher> element. Tomcat therefore fails XML validation and AdminTools doesn’t deploy, resulting in the CMC HTTP 500. The fix is to remove the unnecessary <dispatcher>REQUEST</dispatcher> entry (after backup), since REQUEST is the default.
+
+
+
+
+
+
+
 Yes. Based on the error we can give you a specific procedure. The key is that Tomcat is rejecting AdminTools/WEB-INF/web.xml at the <dispatcher> element.
 
 Do not remove <dispatcher> yet. First confirm the XML declaration/DOCTYPE, because that determines the correct fix.
