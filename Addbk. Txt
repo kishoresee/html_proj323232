@@ -1,4 +1,25 @@
 
+Yes — this confirms idp-meta-downloaded.xml is missing from BOE/WEB-INF.
+
+Don’t create an empty file. First we need to see why SAML is configured and whether this UAT server is supposed to use it.
+
+You are already in:
+
+/data/tomcat_DH_TOMCAT_43_UAT/tomcat/webapps/BOE/WEB-INF
+
+Step 1 — run this
+
+grep -n "idp-meta-downloaded.xml" securityContext.xml
+
+Then run:
+
+grep -Rni "saml.enabled\|FilesystemMetadataProvider\|idp-meta-downloaded.xml" . | head -100
+
+Send me the output/screenshot of both.
+
+Don’t restart Tomcat or change anything yet.
+
+
 Yes — the latest screenshots show something important: the original AdminTools XML parse error is no longer the main problem. The logs now show AdminTools.war being deployed and finishing deployment, while the prominent error is:
 
 Metadata file '/WEB-INF/idp-meta-downloaded.xml' does not exist
