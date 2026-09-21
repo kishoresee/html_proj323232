@@ -1,4 +1,41 @@
 
+Yes — the latest screenshots show something important: the original AdminTools XML parse error is no longer the main problem. The logs now show AdminTools.war being deployed and finishing deployment, while the prominent error is:
+
+Metadata file '/WEB-INF/idp-meta-downloaded.xml' does not exist
+
+That is a SAML/IdP metadata configuration issue in the BOE application, separate from the AdminTools web.xml problem. SAP’s documentation says that when SAML is configured, the IdP metadata file must be placed in BOE/WEB-INF with exactly that filename; on non-Windows systems SAP also documents a path-separator adjustment in securityContext.xml. 
+
+Don’t edit anything yet
+
+First, let’s confirm whether the file is actually missing.
+
+Run:
+
+cd /data/tomcat_DH_TOMCAT_43_UAT/tomcat/webapps/BOE/WEB-INF
+
+Then:
+
+ls -l idp-meta-downloaded.xml
+
+Then:
+
+grep -n "idp-meta-downloaded.xml" securityContext.xml
+
+What I’m expecting
+
+If the first command says:
+
+No such file or directory
+
+then we have confirmed why BOE is throwing that error.
+
+Do not create an empty idp-meta-downloaded.xml file. It needs to contain the actual IdP metadata if SAML is intentionally enabled. SAP specifically instructs that the metadata be obtained from the IdP and copied into BOE/WEB-INF under that filename. 
+
+Send me the output of those two commands. Then we can determine whether this UAT environment is supposed to have SAML enabled and what the correct next step is.
+
+
+
+
 Yes — the second start was aborted because Tomcat is already running. This is not a new failure.
 
 Your screen clearly says:
