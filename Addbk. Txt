@@ -1,3 +1,86 @@
+Yes. This screenshot confirms the issue clearly.
+
+Your current web.xml has the HSTS filter after the servlet and servlet-mapping:
+
+servlet
+servlet-mapping
+filter          ← currently here
+filter-mapping
+
+For this Servlet 2.3 web.xml, the filter section needs to come before the servlet section.
+
+Do this exactly
+
+You are already in:
+
+/data/tomcat_DH_TOMCAT_43_UAT/tomcat/webapps/AdminTools/WEB-INF
+
+1. Create one more backup
+
+cp web.xml web.xml.before_filter_move
+
+2. Save the HSTS block temporarily
+
+sed -n '35,45p' web.xml > /tmp/hsts_block
+
+3. Remove the HSTS block from its current location
+
+sed -i '35,45d' web.xml
+
+4. Insert it before the Servlet Mappings section
+
+sed -i '19r /tmp/hsts_block' web.xml
+
+5. Verify the result
+
+Run:
+
+nl -ba web.xml | sed -n '1,50p'
+
+You should now see approximately:
+
+19  <!-- Enabled HSTS Filter -->
+20  <filter>
+21      <filter-name>HstsFilter</filter-name>
+22      <filter-class>com.crystaldecisions.examples.HstsFilter</filter-class>
+23  </filter>
+24  <filter-mapping>
+25      <filter-name>HstsFilter</filter-name>
+26      <url-pattern>/*</url-pattern>
+27  </filter-mapping>
+...
+30  <!-- Servlet Mappings -->
+31  <servlet>
+32      <servlet-name>logon</servlet-name>
+...
+
+Important: There should be no <dispatcher> in this HSTS mapping.
+
+Then restart Tomcat
+
+Go to the scripts directory:
+
+cd /data/tomcat_DH_TOMCAT_43_UAT/scripts
+
+Stop:
+
+./tomcat.sh stop
+
+Then start:
+
+./tomcat.sh start
+
+After it starts, check the latest AdminTools error:
+
+grep -i -A5 -B5 "AdminTools\|Parse error\|Context.*AdminTools" /data/tomcat_DH_TOMCAT_43_UAT/tomcat/logs/catalina.out | tail -50
+
+Don’t make any more changes yet. First show me the output of step 5 (nl -ba ...) before restarting if you want me to verify the XML order.
+
+
+
+
+
+
 Yes — now I can see the actual problem.
 
 Your <filter> / <filter-mapping> is after the <servlet> and <servlet-mapping> sections. With the Servlet 2.3 DTD used by this web.xml, the required order is:
