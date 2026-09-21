@@ -1,3 +1,38 @@
+
+
+
+Yes — the fact that you still see HTTP 500 does not mean the filter change was necessarily wrong. The important point is that the browser screenshot only shows the final symptom. We need to see what Tomcat is reporting after the latest restart.
+
+Also, I checked SAP documentation: AdminTools is part of the SAP BusinessObjects web applications used by CMC, so an AdminTools deployment failure can affect CMC access. 
+
+Don’t change web.xml again yet
+
+Run these exact commands.
+
+1. Go to Tomcat logs
+
+cd /data/tomcat_DH_TOMCAT_43_UAT/tomcat/logs
+
+2. Find the latest AdminTools error
+
+grep -Rni "AdminTools\|Parse error\|Context.*AdminTools\|startup failed" . | tail -80
+
+3. Also check the latest Catalina log
+
+tail -100 catalina.out
+
+Send me the output of those two commands
+
+I specifically want to see whether it still says:
+
+Parse error ... web.xml
+
+or whether the XML error is gone and we’re now dealing with a different SAP/CMC error.
+
+That’s important because the Servlet 2.3 deployment descriptor does require filter/filter-mapping before servlet/servlet-mapping, so the structural change we made is consistent with that specification. 
+
+Don’t make another edit until we see the new log. The current browser 500 by itself isn’t enough to identify the next root cause.
+
 Yes. This screenshot confirms the issue clearly.
 
 Your current web.xml has the HSTS filter after the servlet and servlet-mapping:
