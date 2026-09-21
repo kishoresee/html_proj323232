@@ -1,3 +1,9 @@
+
+The SAP BusinessObjects **AdminTools web application is failing to deploy in Tomcat because its WEB-INF/web.xml is failing XML/schema validation. Tomcat reports errors around the <dispatcher> element inside the filter-mapping section (Element type "dispatcher" must be declared) and subsequently marks the application unavailable. Because AdminTools does not start successfully, the CMC login request is returning HTTP 500 Internal Server Error.
+
+
+
+
 Good, this screenshot is much clearer.
 
 I can see around lines 43–46:
