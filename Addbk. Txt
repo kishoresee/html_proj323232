@@ -1,3 +1,76 @@
+Yes — this screenshot confirms it 100%.
+
+Your temporary web.xml currently has:
+
+21  <servlet>
+...
+30  <servlet-mapping>
+...
+35  <!-- Enabled HSTS Filter -->
+36  <filter>
+...
+42  <filter-mapping>
+...
+
+So the HSTS filter is still below the servlet section. That’s why Tomcat’s Servlet 2.3 parser rejects it.
+
+Let’s move it now.
+
+1. Save the HSTS block
+
+Run:
+
+sed -n '35,45p' /tmp/AdminTools_fix_20260921_v2/WEB-INF/web.xml > /tmp/hsts_block_20260921
+
+2. Remove the old HSTS block
+
+sed -i '35,45d' /tmp/AdminTools_fix_20260921_v2/WEB-INF/web.xml
+
+3. Insert it before the servlet section
+
+The <!-- Servlet Mappings --> comment is at line 19, so run:
+
+sed -i '19r /tmp/hsts_block_20260921' /tmp/AdminTools_fix_20260921_v2/WEB-INF/web.xml
+
+4. Verify
+
+nl -ba /tmp/AdminTools_fix_20260921_v2/WEB-INF/web.xml | sed -n '15,50p'
+
+You should now see this order:
+
+19  <!-- Servlet Mappings -->
+20  <!-- Enabled HSTS Filter -->
+21  <filter>
+22      <filter-name>HstsFilter</filter-name>
+23      <filter-class>com.crystaldecisions.examples.HstsFilter</filter-class>
+24  </filter>
+25  <filter-mapping>
+26      <filter-name>HstsFilter</filter-name>
+27      <url-pattern>/*</url-pattern>
+28  </filter-mapping>
+...
+30/31  <servlet>
+...
+
+And importantly:
+
+No <dispatcher> anywhere.
+
+Run this too:
+
+grep -n "dispatcher" /tmp/AdminTools_fix_20260921_v2/WEB-INF/web.xml
+
+It should return nothing.
+
+Stop there
+
+Send me the screenshot of the nl -ba output. Once I confirm the order, we’ll repackage the WAR.
+
+
+
+
+
+
 
 nl -ba /tmp/AdminTools_fix_20260921_v2/WEB-INF/web.xml | sed -n '15,50p'
 
