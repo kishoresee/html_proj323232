@@ -1,4 +1,85 @@
 
+Perfect. ✅ The verification is successful.
+
+From your screenshot:
+
+* dispatcher → no output ✅
+* HSTS filter is before <servlet> ✅
+* New WAR was created successfully: /tmp/AdminTools_fixed_20260921.war ✅
+
+Now we can replace the original WAR.
+
+1. First validate the WAR
+
+Run:
+
+unzip -t /tmp/AdminTools_fixed_20260921.war | tail -5
+
+You should see:
+
+No errors detected
+
+2. Go to webapps
+
+cd /data/tomcat_DH_TOMCAT_43_UAT/tomcat/webapps
+
+3. Keep the original backup
+
+You already have:
+
+AdminTools.war.bak_20260921
+
+So now replace the WAR:
+
+cp -p /tmp/AdminTools_fixed_20260921.war AdminTools.war
+
+4. Verify the actual AdminTools.war
+
+Run:
+
+unzip -p AdminTools.war WEB-INF/web.xml | grep -n "dispatcher"
+
+It should return nothing.
+
+Then:
+
+unzip -p AdminTools.war WEB-INF/web.xml | grep -n -A6 -B4 "HstsFilter"
+
+You should see the filter before the servlet section.
+
+5. Start Tomcat
+
+cd /data/tomcat_DH_TOMCAT_43_UAT/scripts
+./tomcat.sh start
+
+Wait for:
+
+Tomcat started.
+
+6. Check the NEW deployment log
+
+Immediately run:
+
+cd /data/tomcat_DH_TOMCAT_43_UAT/tomcat/logs
+
+Then:
+
+grep -i -A5 -B5 "AdminTools\|Parse error\|dispatcher\|filter-mapping\|startup failed" catalina.out | tail -80
+
+Send me that output.
+
+The key thing we’re looking for now is whether this old error is gone:
+
+Element type "dispatcher" must be declared
+
+If that disappears, we’ve successfully fixed the original web.xml deployment problem and can move on to whatever is causing the remaining CMC 500.
+
+
+
+
+
+
+
 Yes — this is now correct. ✅
 
 The screenshot shows the required order:
