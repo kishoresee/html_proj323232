@@ -1,4 +1,10 @@
 
+find /apps/install/ast-tomcat9/current/lib /data/tomcat_DH_TOMCAT_43_UAT/tomcat/webapps/BOE/WEB-INF/lib -type f -iname "*servlet*.jar" -printf '%p\n' 2>/dev/null
+
+
+
+
+
 sed -n '1,100p' /data/tomcat_DH_TOMCAT_43_UAT/tomcat/logs/localhost.2026-09-21.log
 
 
