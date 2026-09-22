@@ -1,3 +1,6 @@
+ps -ef | grep '[o]rg.apache.catalina.startup.Bootstrap'
+
+
 PID=$(pgrep -f 'org.apache.catalina.startup.Bootstrap' | head -1); echo "PID=$PID"; lsof -p "$PID" 2>/dev/null | grep -Ei 'servlet|tomcat.*\.jar|\.jar' | head -100
 
 
