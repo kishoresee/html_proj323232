@@ -1,4 +1,6 @@
 
+find /apps/install/ast-tomcat9/current /data/tomcat_DH_TOMCAT_43_UAT/tomcat/webapps/BOE -type f -path "*javax/servlet/LocalStrings.properties" -print 2>/dev/null
+
 find /apps/install/ast-tomcat9/current/lib /data/tomcat_DH_TOMCAT_43_UAT/tomcat/webapps/BOE/WEB-INF/lib -type f -iname "*servlet*.jar" -printf '%p\n' 2>/dev/null
 
 
