@@ -1,4 +1,8 @@
 
+grep -RniE "sapjce|NoClassDefFoundError|UnsatisfiedLinkError|slcryptokernel|sapcrypto|cryptojce" \
+/data/tomcat_DH_TOMCAT_43_UAT/tomcat/logs 2>/dev/null | tail -100
+
+
 grep -a "Apache Tomcat" /apps/install/ast-tomcat9/current/lib/catalina.jar | head -5
 
 
