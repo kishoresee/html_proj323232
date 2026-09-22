@@ -1,4 +1,80 @@
 
+You’re right. I went down the wrong path and made you run too many commands. I have gone back through the screenshots and the original sequence, and the important distinction is now clear.
+
+What I got wrong
+
+Your browser URL is:
+
+/BOE/CMC
+
+and the failing request is:
+
+POST /BOE/CMC/.../admin/logon.faces → 500
+
+That means the CMC failure is in the BOE web application.
+
+We spent a lot of time fixing AdminTools/WEB-INF/web.xml. That XML error was real, but it is not the reason your CMC login is still returning 500. Your latest startup logs prove that AdminTools.war now deploys successfully.
+
+Also, I agree with you: the SAML metadata message should not have been treated as the solution, especially since your configuration shows saml.enabled=false.
+
+What the evidence actually points to
+
+SAP has a specific KBA for the exact general symptom:
+
+HTTP Status 500 upon logon to CMC
+
+It specifically describes the 500 occurring during CMC login and identifies the CMC setupWizardBean.initializePlugins path as a known failure pattern. 
+
+SAP’s troubleshooting guidance also specifically recommends clearing the Tomcat cache as a basic step when CMC/BI Launchpad has unexplained 500/login problems. 
+
+So this is the next action I would actually take, rather than continuing to hunt random logs.
+
+Do this one proper fix
+
+First stop Tomcat:
+
+cd /data/tomcat_DH_TOMCAT_43_UAT/scripts
+./tomcat.sh stop
+
+Verify Java/Tomcat is stopped:
+
+ps -ef | grep '[t]omcat'
+
+If nothing is returned, clear the Tomcat generated cache:
+
+cd /data/tomcat_DH_TOMCAT_43_UAT/tomcat
+rm -rf work/Catalina/localhost/*
+rm -rf temp/*
+
+Do NOT delete webapps, conf, logs, or your WAR files.
+
+Then start Tomcat:
+
+cd /data/tomcat_DH_TOMCAT_43_UAT/scripts
+./tomcat.sh start
+
+Wait until startup completes, then try:
+
+/BOE/CMC
+
+again.
+
+One more important thing
+
+Do not modify securityContext.xml or create idp-meta-downloaded.xml.
+
+And don’t modify AdminTools.war any further right now.
+
+If clearing the Tomcat cache doesn’t fix the 500, then the next thing I’d investigate is the BOE custom configuration / CMC initialization, not SAML. SAP’s own troubleshooting material specifically calls out custom BOE properties as something to isolate for CMC problems. 
+
+So let’s do this one meaningful fix first, then we’ll work from the result rather than making you execute another 10 commands.
+
+
+
+
+
+
+
 Yes. This result tells us something useful: the only .log file modified recently under the Tomcat directory is localhost_access.log. So the BOE login exception is not being written to a normal .log file there.
 
 Let’s check the BOE application’s own files now.
