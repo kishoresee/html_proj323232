@@ -1,3 +1,8 @@
+
+
+ls -l /apps/install/ast-tomcat9/current/lib/*servlet*
+
+
 ps -ef | grep '[o]rg.apache.catalina.startup.Bootstrap'
 
 
