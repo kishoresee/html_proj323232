@@ -1,3 +1,7 @@
+find /data/tomcat_DH_TOMCAT_43_UAT -type f \( -iname "wdeploy*.properties" -o -iname "config*.properties" \) -print 2>/dev/null
+
+
+
 
 grep -nEi "authentication.default|cms|6400|server|trusted|saml" \
 /data/tomcat_DH_TOMCAT_43_UAT/tomcat/webapps/BOE/WEB-INF/config/default/cmc.properties \
