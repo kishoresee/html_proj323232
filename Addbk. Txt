@@ -1,3 +1,8 @@
+
+find /data/tomcat_DH_TOMCAT_43_UAT/tomcat/webapps/BOE -type f \( -iname "trace.log" -o -iname "*trace*.log" -o -iname "*trace*.txt" \) -printf '%TY-%Tm-%Td %TH:%TM:%TS %p\n' 2>/dev/null | sort -r | head -50
+
+
+
 Good — these screenshots tell us something important.
 
 The find command did not find a normal .log file inside BOE/WEB-INF, but it did find a TraceLog directory. SAP BusinessObjects web applications can use WEB-INF/TraceLog for web-application tracing. 
