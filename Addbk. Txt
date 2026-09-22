@@ -1,4 +1,22 @@
 
+Yes. This result tells us something useful: the only .log file modified recently under the Tomcat directory is localhost_access.log. So the BOE login exception is not being written to a normal .log file there.
+
+Let’s check the BOE application’s own files now.
+
+Run:
+
+cd /data/tomcat_DH_TOMCAT_43_UAT/tomcat/webapps/BOE
+
+Then:
+
+find . -type f -mmin -60 2>/dev/null | head -100
+
+Send me the output.
+
+Don’t change or restart anything. We are just locating where BOE is writing its current error information.
+
+
+
 Now we have the missing piece.
 
 Your listing shows there is no catalina.2026-09-22.log. The current Catalina output is going into:
