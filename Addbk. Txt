@@ -29,6 +29,36 @@ This time we’re searching all the .log files, not just the access log, so we c
 
 
 
+Yes — I see the issue with what we just did.
+
+Your screenshot is only the localhost_access.log output. It confirms:
+
+POST /BOE/CMC/.../admin/logon.faces → 500
+
+but it does not contain the Java exception causing the 500.
+
+So we shouldn’t keep using tail -f on catalina.out.
+
+Let’s search ALL current Tomcat logs for the login error
+
+Run exactly:
+
+cd /data/tomcat_DH_TOMCAT_43_UAT/tomcat/logs
+
+Then:
+
+grep -RniE "Logon.faces|FacesException|ServletException|Exception|ERROR|SEVERE" . --include="*.log" | tail -100
+
+Send me the screenshot of the output.
+
+Don’t restart Tomcat and don’t edit anything.
+
+This time we’re searching all the .log files, not just the access log, so we can find the actual exception behind the Logon.faces → 500.
+
+
+
+
+
 tail -f "$(ls -t catalina.*.log | head -1)"
 
 
