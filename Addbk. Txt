@@ -1,4 +1,9 @@
 
+sed -n '1,100p' /data/tomcat_DH_TOMCAT_43_UAT/tomcat/logs/localhost.2026-09-21.log
+
+
+
+
 grep -RniE "sapjce|NoClassDefFoundError|UnsatisfiedLinkError|slcryptokernel|sapcrypto|cryptojce" \
 /data/tomcat_DH_TOMCAT_43_UAT/tomcat/logs 2>/dev/null | tail -100
 
