@@ -1,4 +1,11 @@
 
+grep -nEi "authentication.default|cms|6400|server|trusted|saml" \
+/data/tomcat_DH_TOMCAT_43_UAT/tomcat/webapps/BOE/WEB-INF/config/default/cmc.properties \
+/data/tomcat_DH_TOMCAT_43_UAT/tomcat/webapps/BOE/WEB-INF/config/custom/* 2>/dev/null
+
+
+
+
 find /data/tomcat_DH_TOMCAT_43_UAT/tomcat/webapps/BOE -type f \( -iname "trace.log" -o -iname "*trace*.log" -o -iname "*trace*.txt" \) -printf '%TY-%Tm-%Td %TH:%TM:%TS %p\n' 2>/dev/null | sort -r | head -50
 
 
