@@ -1,4 +1,32 @@
 
+Yes, that screenshot confirms the current browser error is still HTTP 500 at /BOE/CMC.
+
+The important thing is: the browser alone doesn’t tell us the cause. We need the Tomcat log entry generated at the exact time of this request.
+
+Do this now
+
+On the Linux terminal:
+
+cd /data/tomcat_DH_TOMCAT_43_UAT/tomcat/logs
+
+Then run:
+
+grep "BOE/CMC" localhost_access.log | tail -20
+
+If it shows entries, send me the screenshot.
+
+If it shows nothing, run:
+
+grep -E "BOE|CMC" localhost_access.log | tail -30
+
+Important
+
+Don’t change AdminTools.war, web.xml, SAML files, or restart Tomcat again yet.
+
+We already established Tomcat is successfully deploying both BOE.war and AdminTools.war. Now we need to identify what Tomcat records for this exact /BOE/CMC 500 request.
+
+
+
 grep -nEi "ERROR|SEVERE|Exception|500" catalina.out catalina.2026-09-21.log | tail -100
 
 
