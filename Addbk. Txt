@@ -1,3 +1,67 @@
+I checked all the screenshots carefully. The results are actually useful now. We should not start changing files yet.
+
+What we know now
+
+1. Tomcat is running.
+    Your ps -ef | grep '[t]omcat' shows the Java/Tomcat process.
+2. BOE is deployed.
+    The BOE/ directory and BOE.war are present.
+3. Your BOE custom configuration directory is effectively empty.
+    The command:
+
+ls -la /data/tomcat_DH_TOMCAT_43_UAT/tomcat/webapps/BOE/WEB-INF/config/custom
+
+    shows only . and ... So custom BOE properties are not the cause based on this check.
+4. The CMC request really is reaching BOE.
+    Your access log shows:
+
+POST /BOE/CMC/2609161628/admin/logon.faces
+
+    with both 500 and later 200 responses.
+5. There is still an AdminTools XML problem in the current log.
+    The current catalina.2026-09-22.log contains:
+
+Cannot find the declaration of element 'web-app'
+Element type "dispatcher" must be declared
+/webapps/AdminTools/WEB-INF/web.xml
+
+    But this is AdminTools, not BOE/CMC, so I’m not going to make you modify it again right now.
+6. Most importantly: our command did NOT find the actual BOE CMC exception yet.
+
+So we need one final targeted check before changing anything.
+
+⸻
+
+Do ONLY these 2 commands now
+
+You are currently in:
+
+/data/tomcat_DH_TOMCAT_43_UAT/tomcat/logs
+
+Command 1
+
+grep -RniE "setupWizardBean|initializePlugins|FacesException|EvaluationException|logon.faces|FWM|SDKException" /data/tomcat_DH_TOMCAT_43_UAT/tomcat --include="*.log" 2>/dev/null | tail -100
+
+Command 2
+
+grep -RniE "HTTP Status 500|ServletException|NullPointerException|Exception|ERROR|SEVERE" /data/tomcat_DH_TOMCAT_43_UAT/tomcat/logs --include="*.log" 2>/dev/null | tail -150
+
+Don’t restart Tomcat. Don’t delete anything. Don’t edit anything.
+
+Send me a screenshot of the output of those two commands.
+
+Then I’ll have enough information to decide whether the 500 is:
+
+* CMC initialization,
+* CMS connection/authentication,
+* a BOE library/configuration problem,
+* or something else.
+
+And importantly, we won’t touch AdminTools or SAML unless the evidence actually points there.
+
+
+
+
 
 Yes. Since your session expired and you have logged in again, let’s restart the diagnosis cleanly from the current state.
 
