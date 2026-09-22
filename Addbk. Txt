@@ -1,3 +1,9 @@
+
+ps -efww | grep '[o]rg.apache.catalina.startup.Bootstrap'
+
+
+
+
 find / -type f -name "wdeploy.sh" 2>/dev/null
 
 
