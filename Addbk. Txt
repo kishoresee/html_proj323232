@@ -1,4 +1,100 @@
 
+Yes. Since your session expired and you have logged in again, let’s restart the diagnosis cleanly from the current state.
+
+From your screenshot, I can already confirm:
+
+* You are logged into the UAT server.
+* You are currently here:
+
+/data/tomcat_DH_TOMCAT_43_UAT/tomcat/webapps
+
+* BOE.war and the extracted BOE/ application exist.
+* AdminTools.war and AdminTools/ also exist.
+* The modified AdminTools.war is timestamped Sep 21 16:00, so I don’t want to touch it further yet.
+
+What I need to know
+
+We need to establish 4 things:
+
+1. Is Tomcat currently running?
+2. What exactly is the current BOE/CMC error?
+3. Which log is receiving that error?
+4. What BOE custom configuration is present?
+
+Phase 1 — run these READ-ONLY commands
+
+You can copy/paste them one at a time.
+
+1. Confirm where we are
+
+pwd
+
+2. Check Tomcat process
+
+ps -ef | grep '[t]omcat'
+
+3. Check today’s Tomcat logs
+
+cd /data/tomcat_DH_TOMCAT_43_UAT/tomcat/logs
+ls -ltr catalina* | tail -20
+
+4. Check today’s log for the CMC failure
+
+grep -nEi "logon.faces|setupWizardBean|FacesException|EvaluationException|ServletException|FWM|SDKException|SEVERE|ERROR" catalina.2026-09-22.log | tail -100
+
+5. Search all Tomcat logs for the CMC-specific error
+
+grep -RniE "logon.faces|setupWizardBean|FacesException|EvaluationException" /data/tomcat_DH_TOMCAT_43_UAT/tomcat/logs --include="*.log" | tail -100
+
+6. Check BOE custom configuration
+
+ls -la /data/tomcat_DH_TOMCAT_43_UAT/tomcat/webapps/BOE/WEB-INF/config/custom
+
+7. Check whether the BOE application has its own relevant logs/config files
+
+find /data/tomcat_DH_TOMCAT_43_UAT/tomcat/webapps/BOE/WEB-INF -maxdepth 3 -type f \( -iname "*log*" -o -iname "*properties" -o -iname "*xml" \) | head -100
+
+⸻
+
+Then one important test
+
+After running those commands, open the CMC in your browser and reproduce the 500 once:
+
+/BOE/CMC
+
+Try logging in and let it produce the 500.
+
+Then immediately run:
+
+cd /data/tomcat_DH_TOMCAT_43_UAT/tomcat/logs
+grep -nEi "logon.faces|setupWizardBean|FacesException|EvaluationException|ServletException|FWM|SDKException|SEVERE|ERROR" catalina.2026-09-22.log | tail -100
+
+Don’t do these yet
+
+Do NOT run:
+
+rm -rf ...
+
+and don’t modify:
+
+* BOE.war
+* BOE/WEB-INF
+* AdminTools.war
+* securityContext.xml
+* SAML files
+* web.xml
+
+until we see the current error.
+
+What to send me
+
+You can send me screenshots of the command outputs instead of typing them.
+
+Start with commands 1–7 above. Once I see those results, I’ll know the actual Tomcat/BOE state and give you the next commands specifically for this server—not a generic troubleshooting sequence.
+
+
+
+
 You’re right. I went down the wrong path and made you run too many commands. I have gone back through the screenshots and the original sequence, and the important distinction is now clear.
 
 What I got wrong
