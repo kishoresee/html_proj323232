@@ -1,3 +1,40 @@
+Good — these screenshots tell us something important.
+
+The find command did not find a normal .log file inside BOE/WEB-INF, but it did find a TraceLog directory. SAP BusinessObjects web applications can use WEB-INF/TraceLog for web-application tracing. 
+
+So let’s inspect that before changing anything.
+
+Run only this command
+
+ls -lah /data/tomcat_DH_TOMCAT_43_UAT/tomcat/webapps/BOE/WEB-INF/TraceLog
+
+Then immediately run:
+
+find /data/tomcat_DH_TOMCAT_43_UAT/tomcat/webapps/BOE/WEB-INF/TraceLog -type f -maxdepth 3 -print
+
+What I want to see
+
+If files are present there, we’ll search those files for the CMC failure:
+
+setupWizardBean
+initializePlugins
+FacesException
+EvaluationException
+logon.faces
+FWM
+SDKException
+
+Don’t modify anything and don’t restart Tomcat yet.
+
+Your CMC symptom does match SAP’s documented HTTP 500 upon logon to CMC family, including setupWizardBean.initializePlugins, but we need the actual exception from your server before choosing the fix. 
+
+Send me the output/screenshots of those two commands only.
+
+
+
+
+
+
 I checked the new screenshots. This result is important: we still do not have the actual BOE CMC exception.
 
 The first command is mostly showing the localhost_access.log entries. It confirms repeatedly:
