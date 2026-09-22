@@ -1,4 +1,6 @@
 
+/apps/install/ast-tomcat9/current/bin/version.sh
+
 /apps/install/java/jdk8_current/bin/java -version
 
 
