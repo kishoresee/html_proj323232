@@ -1,4 +1,8 @@
 
+
+tail -f "$(ls -t catalina.*.log | head -1)"
+
+
 Yes, that screenshot confirms the current browser error is still HTTP 500 at /BOE/CMC.
 
 The important thing is: the browser alone doesn’t tell us the cause. We need the Tomcat log entry generated at the exact time of this request.
