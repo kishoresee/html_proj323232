@@ -1,4 +1,8 @@
 
+/apps/install/java/jdk8_current/bin/java -version
+
+
+
 ps -efww | grep '[o]rg.apache.catalina.startup.Bootstrap'
 
 
