@@ -1,3 +1,7 @@
+find /data -type f \( -iname "wdeploy.sh" -o -iname "wdeploy.bat" -o -iname "config.*.properties" \) 2>/dev/null | grep -i wdeploy | head -50
+
+find /data /usr/sap /opt/sap -type f \( -iname "wdeploy.sh" -o -iname "wdeploy.bat" -o -iname "config*.properties" -o -iname "wdeploy*.properties" \) 2>/dev/null | grep -iE "wdeploy|businessobjects|sap" | head -100
+
 find /data/tomcat_DH_TOMCAT_43_UAT -type f \( -iname "wdeploy*.properties" -o -iname "config*.properties" \) -print 2>/dev/null
 
 
