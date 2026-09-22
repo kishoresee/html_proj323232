@@ -1,4 +1,38 @@
 
+Now I can see the problem with our search. The command searched all old Catalina logs, so the output is dominated by the old AdminTools XML errors from Sept 19–21.
+
+Those are not the current 500.
+
+Also, the bottom of your second screenshot shows an unrelated:
+
+java.lang.IllegalArgumentException
+Invalid character found in the request target
+
+That isn’t the CMC login error either.
+
+Let’s check ONLY today’s log
+
+Run exactly:
+
+cd /data/tomcat_DH_TOMCAT_43_UAT/tomcat/logs
+
+Then:
+
+grep -nEi "Logon.faces|Exception|SEVERE|ERROR" catalina.2026-09-22.log | tail -100
+
+Then:
+
+grep -n "admin/logon.faces" catalina.2026-09-22.log
+
+Send me the output of those two commands.
+
+Do not change anything or restart Tomcat.
+
+This time we’re restricting the search to September 22, so the old AdminTools errors cannot contaminate the result.
+
+
+
+
 Yes — I see the issue with what we just did.
 
 Your screenshot is only the localhost_access.log output. It confirms:
