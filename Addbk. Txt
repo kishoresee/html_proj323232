@@ -1,4 +1,33 @@
 
+Now we have the missing piece.
+
+Your listing shows there is no catalina.2026-09-22.log. The current Catalina output is going into:
+
+catalina.out
+
+But we already confirmed catalina.out isn’t showing the CMC login exception.
+
+So the BOE application is likely writing the login exception to its own log, not Catalina.
+
+Next step — find BOE’s current log
+
+Run exactly:
+
+cd /data/tomcat_DH_TOMCAT_43_UAT/tomcat
+
+Then:
+
+find . -type f -name "*.log" -mmin -60 -print
+
+This will show log files that have been modified in the last hour.
+
+Send me the output.
+
+Don’t restart Tomcat or modify anything. We’re now looking for the BOE-specific log that records the exception behind:
+
+POST /BOE/CMC/.../admin/logon.faces 500
+
+
 Now I can see the problem with our search. The command searched all old Catalina logs, so the output is dominated by the old AdminTools XML errors from Sept 19–21.
 
 Those are not the current 500.
