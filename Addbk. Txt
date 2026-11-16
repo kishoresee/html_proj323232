@@ -1,3 +1,14 @@
+
+UPDATE [DH-CORE-METADATA].[dbo].[batch_Events]
+SET [status] = 'P'
+WHERE session_id = 26044
+  AND date_batch = '2026-10-31'
+  AND code_site = 'HKG'
+  AND job_name = 'fitax_atl'
+  AND repository_name = 'pyfitax'
+  AND layer = 'fed';
+
+
 I’ve reviewed all 10 screenshots and extracted only the leave dates from August to October 2026. I’ve excluded November dates, WDE hostnames, deployment details and other information.
 
 Below is the copy-pasteable format, person by person. Date ranges are preserved where the leave was taken for consecutive days.
