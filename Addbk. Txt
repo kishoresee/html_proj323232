@@ -1,3 +1,7 @@
+I would like to refer Yamini for this opportunity as she has approximately 10 months of experience as a Data Operations Analyst at NIQ. She has hands-on experience in data validation, data accuracy, Microsoft Excel and basic SQL, along with exposure to ticket management. Her attention to detail, analytical skills and ability to work with structured data make her a suitable candidate for this role. I believe she would be a valuable addition to the team.
+
+
+
 
 UPDATE [DH-CORE-METADATA].[dbo].[batch_Events]
 SET [status] = 'P'
