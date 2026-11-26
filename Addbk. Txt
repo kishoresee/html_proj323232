@@ -1,3 +1,7 @@
+Once done, I need a perfect verification. Like generate the columns and generate the files again. And then you check yourself first the columns are available or not. Check with the older version of the file which you already generated, okay? It is also available in S3 also. You can also go and check in feedback it. Just check there. Like since these columns are missing, my lead told, recently we have generated for certain countries, right?  certain countries we generated. Check that. And check the newly generated file which is available here, okay? So this DEU, COL are generated recently in S3 bucket USING comands i ran i. Pycharm. Go and check there, Fed bucket. So cross check the final output and give me a perfect verified response with a clean code
+
+
+
 Okay, let them be at the original informatic portion itself because any column which is already existing, which is already existing and we have removed and the data is coming but the column is not present is a very big problem. So keep the columns as it is like because an empty column is not going to affect us. But if a column has a data and we have not given that column in that Excel or the final output, it is a big problem for us. So keep the columns as it is, like informatica portion itself. So analyze such discrepancies, similar kind of discrepancies is there anywhere in this thing because it is a big issue. My lead is scolding at the same time we have a release that flows Monday. And it should not be the case, right? Because I gave you a task but it's like not giving a proper output
 
 
