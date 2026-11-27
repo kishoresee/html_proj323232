@@ -1,3 +1,24 @@
+I have been assigned a project called Data Lineage in my Data Engineering team. My team lead gave me an overview of what Data Lineage is and how it works in our data team.
+
+He showed me a UI where we can search for specific column names. Since we work in a Data Engineering team, we deal with large amounts of data and a large number of tables within different datasets.
+
+Our data flows through different layers, starting from the NAS path to the Raw Layer, then to the Stage Layer, and finally to the Feed Layer.
+
+The main objective of this Data Lineage application is to allow users to search for a particular column name associated with a table. Once we search for a column, the UI displays the matching results. We can select a result and click on the View Flow button.
+
+Once we click View Flow, it displays exactly where that column’s data originated from and how it flows through the different layers, from the NAS drive to the Raw Layer, Stage Layer, and Feed Layer.
+
+It also shows the logic behind that particular column in the table, including where the data source is fetched from and the other relevant logical details.
+
+This is the overall project overview that my team lead explained to me. However, I don’t know exactly how the implementation works or what is happening internally.
+
+I have an upcoming task related to this project, and my team lead mentioned that I need to deliver a JSON file. He has also provided me with a prompt for that task.
+
+Before proceeding with that task, I want you to analyze the repository and explain how the Data Lineage project works and how the overall flow is implemented, based on my understanding and the actual codebase.
+
+
+
+
 Once done, I need a perfect verification. Like generate the columns and generate the files again. And then you check yourself first the columns are available or not. Check with the older version of the file which you already generated, okay? It is also available in S3 also. You can also go and check in feedback it. Just check there. Like since these columns are missing, my lead told, recently we have generated for certain countries, right?  certain countries we generated. Check that. And check the newly generated file which is available here, okay? So this DEU, COL are generated recently in S3 bucket USING comands i ran i. Pycharm. Go and check there, Fed bucket. So cross check the final output and give me a perfect verified response with a clean code
 
 
